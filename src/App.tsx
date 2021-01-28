@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import classNames from 'classnames';
 import { Client } from 'pg';
 import styles from 'App.css';
 
@@ -12,8 +13,58 @@ const client = new Client({
 
 client.connect();
 
-function getPK(fields, row) {
-  return fields.filter(e => e.indisprimary).map(e => row[e.attname]).join('-');
+enum RowType {
+  Initial,
+  New,
+  Edited,
+  Deleted,
+}
+
+class Row {
+  uid: string
+  type: RowType
+  fields: any
+  values: any
+  changes: any
+
+  constructor(fields, values, type = RowType.Initial) {
+    this.uid = fields.filter(e => e.primary).map(e => values[e.name]).join('-');
+    this.fields = fields;
+    this.values = values;
+    this.changes = {};
+    this.type = type;
+  }
+
+  getValue(fieldName) {
+    const val = this.changes[fieldName] || this.values[fieldName];
+
+    if (val === null || val === undefined) {
+      return '[NULL]';
+    } else {
+      return val;
+    }
+  }
+
+  toChangeSQL() {
+    const key = this.fields
+      .filter(e => e.primary)
+      .map(e => `${e.name} = ${this.values[e.name]}`).join(' AND ');
+
+    if (this.type === RowType.Deleted) {
+      return `DELETE FROM db1_books_complex_primary_key WHERE ${key}`;
+    }
+
+    if (this.type === RowType.New) {
+      const fields = this.fields.map(e => e.name).join(', ');
+      const changes = Object.keys(this.changes).map(key => `'${this.changes[key]}'`).join(', ');
+      return `INSERT INTO db1_books_complex_primary_key (${fields}) VALUES (${changes})`;
+    }
+
+    if (this.type === RowType.Edited) {
+      const changes = Object.keys(this.changes).map(key => `${key} = '${this.changes[key]}'`).join(', ');
+      return `UPDATE db1_books_complex_primary_key SET ${changes} WHERE ${key}`;
+    }
+  }
 }
 
 export default function App() {
@@ -22,12 +73,13 @@ export default function App() {
 
   const [selectedRow, setSelectedRow] = useState(-1);
   const [selectedColumn, setSelectedColumn] = useState(-1);
+  const [editedCell, setEditedCell] = useState({ x: -1, y: -1 });
 
   useEffect(() => {
     async function queryDB() {
       const [metadata, res] = await Promise.all([
         client.query(`
-          SELECT a.attname, a.attnum, pg_catalog.format_type(a.atttypid, a.atttypmod), i.indisprimary
+          SELECT a.attname as name, a.attnum as num, i.indisprimary as primary
           FROM pg_catalog.pg_attribute a
           LEFT JOIN pg_index i ON i.indrelid = a.attrelid AND a.attnum = ANY(i.indkey)
           WHERE a.attrelid = '16943' AND a.attnum > 0 AND NOT a.attisdropped
@@ -37,44 +89,123 @@ export default function App() {
       ]);
 
       setFields(metadata.rows);
-      setRows(res.rows);
+      setRows(res.rows.map(e => new Row(metadata.rows, e)));
     };
 
     queryDB();
   }, []);
 
+  function addRow(e) {
+    e.preventDefault();
+    const record = Object.assign({}, ...fields.map(e => ({ [e.name]: null })));
+    setRows(prevRows => [...prevRows, new Row(fields, record, RowType.New)]);
+    setSelectedRow(rows.length);
+    setSelectedColumn(0);
+  }
+
+  function deleteRow(e) {
+    e.preventDefault();
+    setRows(prevRows => {
+      const newRows = [...prevRows];
+      const row = newRows[selectedRow];
+      row.type = RowType.Deleted;
+      newRows[selectedRow] = row;
+      return newRows;
+    });
+  }
+
+  function editRow(event, editedRow, field) {
+    setRows(prevRows => {
+      const idx = prevRows.indexOf(editedRow);
+      const newRows = [...prevRows];
+      const row = newRows[idx];
+      if (row.type !== RowType.New) row.type = RowType.Edited;
+      row.changes[field] = event.target.value;
+      newRows[idx] = row;
+      return newRows;
+    });
+  }
+
   const body = rows.map((row, i) => {
     const cols = fields.map((field, j) => {
+      let content = row.getValue(field.name);
+
+      if (editedCell.x === i && editedCell.y === j) {
+        content = <input
+          type="text"
+          value={row.getValue(field.name)}
+          autoFocus
+          onBlur={() => setEditedCell({ x: -1, y: -1 })}
+          onChange={(e) => editRow(e, row, field.name)}
+        />;
+      }
+
       return (
         <td
-          key={getPK(fields, row) + '-' + j}
+          key={`${row.uid}-${j}`}
           onClick={() => setSelectedColumn(j)}
-          className={selectedRow === i && selectedColumn === j ? styles.selectedCell : null}
+          onDoubleClick={() => setEditedCell({ x: i, y: j })}
+          className={
+            classNames({
+              [styles.selectedCell]: selectedRow === i && selectedColumn === j
+            })
+          }
           >
-          {row[field.attname]}
+          {content}
         </td>
       );
     });
 
     return (
       <tr
-        key={getPK(fields, row)}
+        key={row.uid}
         onClick={() => setSelectedRow(i)}
-        className={selectedRow === i ? styles.selectedRow : null}
+        className={
+          classNames({
+            [styles.selectedRow]: selectedRow === i,
+            [styles.editedRow]: row.type === RowType.Edited,
+            [styles.deletedRow]: row.type === RowType.Deleted,
+            [styles.newRow]: row.type === RowType.New,
+          })
+        }
       >
         {cols}
       </tr>
     );
   });
 
+  function saveChanges(e) {
+    e.preventDefault();
+
+    rows.forEach(row => {
+      if (row.type === RowType.Initial) return;
+      client.query(row.toChangeSQL());
+    });
+  }
+
+  let changes = null;
+
+  if (rows.some(e => e.type !== RowType.Initial)) {
+    changes = <div>
+      <a href="" onClick={saveChanges}>Save Changes</a>
+    </div>;
+  }
+
   return (
-    <table className={styles.table}>
-      <thead>
-        <tr>
-          {fields.map(row => <th key={row.attname}>{row.attname}</th>)}
-        </tr>
-      </thead>
-      <tbody>{body}</tbody>
-    </table>
+    <div>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            {fields.map(row => <th key={row.num}>{row.name}</th>)}
+          </tr>
+        </thead>
+        <tbody>{body}</tbody>
+      </table>
+      {changes}
+      <div className={styles.actions}>
+        <a href="" onClick={addRow}>add</a>
+        {selectedRow > -1 ? <a href="" onClick={deleteRow}>delete</a> : <span>delete</span>}
+      </div>
+    </div>
   );
 }
