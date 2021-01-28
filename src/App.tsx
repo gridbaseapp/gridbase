@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Client } from 'pg';
-import styles from 'index.css';
+import styles from 'App.css';
 
 const client = new Client({
   user: 'db1',
@@ -12,9 +12,16 @@ const client = new Client({
 
 client.connect();
 
+function getPK(fields, row) {
+  return fields.filter(e => e.indisprimary).map(e => row[e.attname]).join('-');
+}
+
 export default function App() {
   const [fields, setFields] = useState([]);
   const [rows, setRows] = useState([]);
+
+  const [selectedRow, setSelectedRow] = useState(-1);
+  const [selectedColumn, setSelectedColumn] = useState(-1);
 
   useEffect(() => {
     async function queryDB() {
@@ -36,6 +43,30 @@ export default function App() {
     queryDB();
   }, []);
 
+  const body = rows.map((row, i) => {
+    const cols = fields.map((field, j) => {
+      return (
+        <td
+          key={getPK(fields, row) + '-' + j}
+          onClick={() => setSelectedColumn(j)}
+          className={selectedRow === i && selectedColumn === j ? styles.selectedCell : null}
+          >
+          {row[field.attname]}
+        </td>
+      );
+    });
+
+    return (
+      <tr
+        key={getPK(fields, row)}
+        onClick={() => setSelectedRow(i)}
+        className={selectedRow === i ? styles.selectedRow : null}
+      >
+        {cols}
+      </tr>
+    );
+  });
+
   return (
     <table className={styles.table}>
       <thead>
@@ -43,9 +74,7 @@ export default function App() {
           {fields.map(row => <th key={row.attname}>{row.attname}</th>)}
         </tr>
       </thead>
-      <tbody>
-        {rows.map(row => <tr key={fields.filter(e => e.indisprimary).map(e => row[e.attname]).join('-')}>{fields.map((field, i) => <td key={fields.filter(e => e.indisprimary).map(e => row[e.attname]).join('-') + '-' + i}>{row[field.attname]}</td>)}</tr>)}
-      </tbody>
+      <tbody>{body}</tbody>
     </table>
   );
 }
