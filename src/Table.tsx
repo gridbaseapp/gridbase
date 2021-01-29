@@ -1,17 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
-import { Client } from 'pg';
 import styles from 'Table.scss';
-
-const client = new Client({
-  user: 'db1',
-  password: 'db1',
-  database: 'db1',
-  host: 'localhost',
-  port: 5432,
-});
-
-client.connect();
 
 enum RowType {
   Initial,
@@ -69,7 +58,7 @@ class Row {
   }
 }
 
-export default function Table({ tableName }) {
+export default function Table({ connection, tableName }) {
   const [fields, setFields] = useState([]);
   const [rows, setRows] = useState([]);
 
@@ -79,7 +68,7 @@ export default function Table({ tableName }) {
 
   useEffect(() => {
     async function queryDB() {
-      const oidRes = await client.query(`
+      const oidRes = await connection.query(`
         SELECT c.oid
         FROM pg_catalog.pg_class c
         JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
@@ -87,14 +76,14 @@ export default function Table({ tableName }) {
       );
 
       const [metadata, res] = await Promise.all([
-        client.query(`
+        connection.query(`
           SELECT a.attname as name, a.attnum as num, i.indisprimary as primary
           FROM pg_catalog.pg_attribute a
           LEFT JOIN pg_index i ON i.indrelid = a.attrelid AND a.attnum = ANY(i.indkey)
           WHERE a.attrelid = '${oidRes.rows[0].oid}' AND a.attnum > 0 AND NOT a.attisdropped
           ORDER BY a.attnum`
         ),
-        client.query(`SELECT * FROM ${tableName}`),
+        connection.query(`SELECT * FROM ${tableName}`),
       ]);
 
       setFields(metadata.rows);
@@ -189,7 +178,7 @@ export default function Table({ tableName }) {
     rows.forEach(row => {
       if (row.type === RowType.Initial) return;
       console.log(row.toChangeSQL());
-      client.query(row.toChangeSQL(), (res, err) => { console.log(err) });
+      connection.query(row.toChangeSQL(), (res, err) => { console.log(err) });
     });
   }
 

@@ -1,24 +1,13 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { Client } from 'pg';
 import styles from 'Sidebar.scss';
 
-const client = new Client({
-  user: 'db1',
-  password: 'db1',
-  database: 'db1',
-  host: 'localhost',
-  port: 5432,
-});
-
-client.connect();
-
-export default function Sidebar({ onClickRow }) {
+export default function Sidebar({ connection, onClickRow }) {
   const [rows, setRows] = useState([]);
 
   useEffect(() => {
     async function queryDB() {
-      const { rows } = await client.query(`
+      const { rows } = await connection.query(`
         SELECT c.relname AS name
         FROM pg_catalog.pg_class c
         LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
@@ -30,7 +19,7 @@ export default function Sidebar({ onClickRow }) {
     };
 
     queryDB();
-  }, []);
+  }, [connection]);
 
   return (
     <div className={styles.sidebar}>
