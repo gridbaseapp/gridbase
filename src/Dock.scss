@@ -1,0 +1,13 @@
+.dock {
+  a {
+    display: block;
+    padding: 10px;
+    background-color: #ddd;
+    text-align: center;
+    margin: 5px;
+
+    &:hover {
+      background-color: #ccc;
+    }
+  }
+}

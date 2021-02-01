@@ -177,7 +177,6 @@ export default function Table({ connection, tableName }) {
 
     rows.forEach(row => {
       if (row.type === RowType.Initial) return;
-      console.log(row.toChangeSQL());
       connection.query(row.toChangeSQL(), (res, err) => { console.log(err) });
     });
   }

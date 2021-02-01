@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Client } from 'pg';
 import styles from 'NewConnection.scss';
 
-export default function NewConnection({ onConnect }) {
+export default function NewConnection({ onConnect, onClose }) {
   const [host, setHost] = useState('localhost');
   const [port, setPort] = useState(5432);
   const [database, setDatabase] = useState('');
@@ -11,6 +11,11 @@ export default function NewConnection({ onConnect }) {
   const [password, setPassword] = useState('');
 
   const [error, setError] = useState(null);
+
+  function onCancel(e) {
+    e.preventDefault();
+    onClose();
+  }
 
   async function connect() {
     try {
@@ -72,6 +77,7 @@ export default function NewConnection({ onConnect }) {
 
       <div>
         <input type="submit" value="Connect" onClick={connect} />
+        or <a href="" onClick={onCancel}>Cancel</a>
       </div>
 
       <div className={styles.error}>

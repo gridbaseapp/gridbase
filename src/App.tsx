@@ -1,33 +1,38 @@
-import * as React from 'react';
-import { Fragment, useState } from 'react';
+import React, { useState } from 'react';
 import NewConnection from 'NewConnection';
-import Sidebar from 'Sidebar';
-import Table from 'Table';
+import Dock from 'Dock';
+import Content from 'Content';
 import styles from 'App.scss';
 
 export default function App() {
-  const [connection, setConnection] = useState(null);
-  const [selectedTable, setSelectedTable] = useState(null);
+  const [showNewConnection, setShowNewConnection] = useState(true);
+  const [connections, setConnections] = useState([]);
+  const [selectedConnection, setSelectedConnection] = useState(null);
 
-  function clickRow(e, row) {
-    e.preventDefault();
-    setSelectedTable(row.name);
-  }
-
-  let content = <NewConnection onConnect={setConnection} />;
-
-  if (connection) {
-    content = (
-      <Fragment>
-        <Sidebar connection={connection} onClickRow={clickRow} />
-        {selectedTable && <Table connection={connection} tableName={selectedTable} />}
-      </Fragment>
-    );
+  function addConnection(connection) {
+    const conns = [...connections];
+    conns.push(connection);
+    setConnections(conns);
+    setSelectedConnection(connection);
+    setShowNewConnection(false);
   }
 
   return (
     <div className={styles.app}>
-      {content}
+      {showNewConnection && <NewConnection
+        onConnect={addConnection}
+        onClose={() => setShowNewConnection(false)}
+      />}
+      <div className={styles.appContent}>
+        <Dock
+          connections={connections}
+          onSelectConnection={(conn) => setSelectedConnection(conn)}
+          onNewConnection={() => setShowNewConnection(true)}
+        />
+        {connections.map((e, i) => {
+          return <Content active={e === selectedConnection} key={i} connection={e} />
+        })}
+      </div>
     </div>
   );
 }
