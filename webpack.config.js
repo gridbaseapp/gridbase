@@ -38,6 +38,7 @@ module.exports = {
     new webpack.IgnorePlugin({
       resourceRegExp: /^pg-native$/,
     }),
+    new webpack.ExternalsPlugin('commonjs', ['keytar']),
   ],
   devtool: 'eval-cheap-source-map',
 };
