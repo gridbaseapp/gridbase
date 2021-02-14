@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "css-loader": "^5.0.1",
-    "electron": "^11.2.1",
+    "electron": "^11.2.3",
     "sass": "^1.32.5",
     "sass-loader": "^10.1.1",
     "style-loader": "^2.0.0",
