@@ -1,6 +1,9 @@
 const { app, BrowserWindow } = require('electron');
+const Store = require('electron-store');
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = false;
+
+Store.initRenderer();
 
 function createWindow () {
   const win = new BrowserWindow({

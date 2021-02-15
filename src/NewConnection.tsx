@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import { Client } from 'pg';
 import styles from './NewConnection.scss';
+import { loadConnections, saveConnections } from './store';
 
 export default function NewConnection({ onConnect, onClose }) {
   const [host, setHost] = useState('localhost');
@@ -21,6 +22,11 @@ export default function NewConnection({ onConnect, onClose }) {
     try {
       const client = new Client({ host, port, database, user, password });
       await client.connect();
+
+      const savedConnections = await loadConnections();
+      savedConnections.push({ host, port, database, user, password });
+      await saveConnections(savedConnections);
+
       setError(null);
       onConnect(client);
     } catch (err) {
