@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from 'Dock.scss';
+import styles from './Dock.scss';
 
 export default function Dock({ connections, onNewConnection, onSelectConnection }) {
   function addConnection(e) {

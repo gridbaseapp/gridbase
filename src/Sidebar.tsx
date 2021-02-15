@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import styles from 'Sidebar.scss';
+import styles from './Sidebar.scss';
 
 export default function Sidebar({ connection, onClickRow }) {
   const [rows, setRows] = useState([]);

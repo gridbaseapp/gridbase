@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import NewConnection from 'NewConnection';
-import Dock from 'Dock';
-import Content from 'Content';
-import styles from 'App.scss';
+import NewConnection from './NewConnection';
+import Dock from './Dock';
+import Content from './Content';
+import styles from './App.scss';
 
 export default function App() {
   const [showNewConnection, setShowNewConnection] = useState(true);

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import Sidebar from 'Sidebar';
-import Table from 'Table';
 import classNames from 'classnames';
-import styles from 'Content.scss';
+import Sidebar from './Sidebar';
+import Table from './Table';
+import styles from './Content.scss';
 
 export default function App({ active, connection }) {
   const [selectedTable, setSelectedTable] = useState(null);

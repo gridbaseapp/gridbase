@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { Client } from 'pg';
-import styles from 'NewConnection.scss';
+import styles from './NewConnection.scss';
 
 export default function NewConnection({ onConnect, onClose }) {
   const [host, setHost] = useState('localhost');
