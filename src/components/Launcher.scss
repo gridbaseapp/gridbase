@@ -5,10 +5,15 @@
   top: 0;
   bottom: 0;
   background-color: #fff;
+  padding: 50px;
 
-  div {
+  .connection {
     margin: 10px;
     padding: 10px;
     border: 1px solid #eee;
+
+    a {
+      margin: 0 10px;
+    }
   }
 }

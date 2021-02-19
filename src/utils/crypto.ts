@@ -1,27 +1,11 @@
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
-import { getPassword, setPassword } from 'keytar';
-
-const SECRET_LENGTH = 64;
-const SERVICE_NAME = 'dbadmin';
-const ACCOUNT_NAME = 'dbadmin';
 
 const ALGORITHM = 'aes-256-gcm';
 const SALT_LENGTH = 32;
 const KEY_LENGTH = 32;
 const IV_LENGTH = 16;
 
-export async function getPasswordFromKeyStore() {
-  let secret = await getPassword(SERVICE_NAME, ACCOUNT_NAME);
-
-  if (!secret) {
-    secret = randomBytes(SECRET_LENGTH).toString('hex');
-    await setPassword(SERVICE_NAME, ACCOUNT_NAME, secret);
-  }
-
-  return secret;
-}
-
-export function encrypt(password, message) {
+export function encrypt(password: string, message: string) {
   const salt = randomBytes(SALT_LENGTH);
   const key = scryptSync(password, salt, KEY_LENGTH);
   const iv = randomBytes(IV_LENGTH);
@@ -43,7 +27,7 @@ export function encrypt(password, message) {
   return Buffer.from(out, 'utf8').toString('hex');
 }
 
-export function decrypt(password, message) {
+export function decrypt(password: string, message: string) {
   const payload = JSON.parse(Buffer.from(message, 'hex').toString());
   const salt = Buffer.from(payload.salt, 'hex');
   const key = scryptSync(password, salt, KEY_LENGTH);
