@@ -1,6 +1,6 @@
 import Store from 'electron-store';
 import { decrypt, encrypt } from './crypto';
-import { IConnectionDetails } from '../connection-details';
+import { IConnectionDetails } from '../connection';
 
 const KEY_CONNECTIONS = 'connections';
 

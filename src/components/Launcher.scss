@@ -6,6 +6,7 @@
   bottom: 0;
   background-color: #fff;
   padding: 50px;
+  z-index: 9999;
 
   .connection {
     margin: 10px;
@@ -15,5 +16,9 @@
     a {
       margin: 0 10px;
     }
+  }
+
+  .error {
+    color: red;
   }
 }

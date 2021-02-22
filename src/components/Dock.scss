@@ -5,9 +5,35 @@
     background-color: #ddd;
     text-align: center;
     margin: 5px;
+    position: relative;
 
     &:hover {
       background-color: #ccc;
+
+      .details {
+        display: block;
+      }
+    }
+
+    &.selected {
+      border: 1px solid #555;
+    }
+
+    .details {
+      display: none;
+      position: absolute;
+      text-align: left;
+      background-color: #eee;
+      border: 1px solid #ddd;
+      padding: 5px;
+      top: 0;
+      left: 100%;
+      width: 150px;
+      // z-index: 999;
+
+      div {
+        margin: 5px;
+      }
     }
   }
 }

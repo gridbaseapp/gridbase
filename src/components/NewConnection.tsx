@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { Client } from 'pg';
+import { v4 as uuid } from 'uuid';
 import LocalStore from '../utils/local-store'
-import { IConnectionDetails, ConnectionTypeEnum } from '../connection-details';
+import { IConnectionDetails, ConnectionTypeEnum, IConnection } from '../connection';
 import styles from './NewConnection.scss';
 
 interface INewConnectionProps {
   localStore: LocalStore;
+  onConnect(connection: IConnection): void;
   onClose?(): void;
 }
 
@@ -26,7 +28,9 @@ export default function NewConnection(props: INewConnectionProps) {
   const { errors, handleSubmit, register } = useForm<IConnectionDetails>({ mode: 'onChange' });
 
   async function onSubmit(data: IConnectionDetails) {
+    data.uuid = uuid();
     data.type = ConnectionTypeEnum.PostgreSQL;
+    console.log(data)
     const connections = props.localStore.getConnections();
     const existingConnection = findExistingConnection(connections, data);
 
@@ -40,7 +44,7 @@ export default function NewConnection(props: INewConnectionProps) {
       }
 
       setError(null);
-//       onConnect(client);
+      props.onConnect({ connectionDetails: data, client: client });
     } catch (err) {
       setError(err.message);
     }
