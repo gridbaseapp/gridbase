@@ -1,21 +1,33 @@
 import React, { useState, useEffect } from 'react';
+import { Client } from 'pg';
 import { getPasswordFromKeyStore } from '../utils/key-store';
 import LocalStore from '../utils/local-store';
-import { IConnection } from '../connection';
+import { IConnection, IConnectionDetails } from '../connection';
 import Splash from './Splash';
 import Launcher from './Launcher';
 import Dock from './Dock';
 // import Content from './Content';
 import styles from './App.scss';
-import { Connection } from 'pg';
 
 const SPLASH_SCREEN_TIMOUT = 1;
 
+function findExistingConnectionDetails(conns: IConnectionDetails[], conn: IConnectionDetails) {
+  return conns.find(e => {
+    return e.type === conn.type &&
+           e.host === conn.host &&
+           e.port === conn.port &&
+           e.database === conn.database &&
+           e.user === conn.user &&
+           e.password === conn.password;
+  });
+}
+
 export default function App() {
   const [localStore, setLocalStore] = useState<LocalStore>();
-  const [showLauncher, setShowLauncher] = useState(true);
-  const [connections, setConnections] = useState<IConnection[]>([]);
+  const [connectionsDetails, setConnectionsDetails] = useState<IConnectionDetails[]>([]);
+  const [openConnections, setOpenConnections] = useState<IConnection[]>([]);
   const [selectedConnection, setSelectedConnection] = useState<IConnection>();
+  const [showLauncher, setShowLauncher] = useState(true);
 
   useEffect(() => {
     async function run() {
@@ -24,27 +36,55 @@ export default function App() {
         // show splash screen for at least {SPLASH_SCREEN_TIMOUT} to prevent flickering
         new Promise<void>(resolve => setTimeout(() => resolve(), SPLASH_SCREEN_TIMOUT)),
       ]);
-      setLocalStore(new LocalStore(pass));
+
+      const store = new LocalStore(pass);
+
+      setConnectionsDetails(store.getConnections());
+      setLocalStore(store);
     }
 
     run();
   }, []);
 
-  function addConnection(connection: IConnection) {
-    const conns = [...connections];
-    conns.push(connection);
-    setConnections(conns);
+  async function onCreateConnectionDetails(details: IConnectionDetails) {
+    const found = findExistingConnectionDetails(connectionsDetails, details);
+
+    if (found) {
+      await onConnect(found);
+    } else {
+      await onConnect(details);
+
+      const updatedConnectionsDetails = [...connectionsDetails, details];
+      setConnectionsDetails(updatedConnectionsDetails);
+      localStore?.setConnections(updatedConnectionsDetails);
+    }
+  }
+
+  function onDeleteConnectionDetails(details: IConnectionDetails) {
+    const filtered = connectionsDetails.filter(e => e !== details);
+    setConnectionsDetails(filtered);
+    localStore?.setConnections(filtered);
+  }
+
+  async function onConnect(details: IConnectionDetails) {
+    const client = new Client(details);
+    await client.connect();
+
+    const connection = { connectionDetails: details, client: client }
+
+    setOpenConnections([...openConnections, connection]);
     setSelectedConnection(connection);
     setShowLauncher(false);
   }
 
-  function disconnect(connection: IConnection) {
-    const conns = connections.filter(e => e !== connection);
-    setConnections(conns);
-    connection.client.end();
+  async function onDisconnect(connection: IConnection) {
+    await connection.client.end();
 
-    if (conns.length > 0) {
-      setSelectedConnection(conns[0]);
+    const connections = openConnections.filter(e => e !== connection);
+    setOpenConnections(connections);
+
+    if (connections.length > 0) {
+      setSelectedConnection(connections[0]);
     } else {
       setSelectedConnection(undefined);
       setShowLauncher(true);
@@ -55,24 +95,25 @@ export default function App() {
 
   if (localStore) {
     content = (
-      <React.Fragment>
+      <>
         {showLauncher && <Launcher
-          localStore={localStore}
-          openConnections={connections}
-          onConnect={addConnection}
-          onDisconnect={disconnect}
+          connectionsDetails={connectionsDetails}
+          openConnectionsDetails={openConnections.map(e => e.connectionDetails)}
+          onCreateConnectionDetails={onCreateConnectionDetails}
+          onDeleteConnectionDetails={onDeleteConnectionDetails}
+          onConnect={onConnect}
           onClose={() => setShowLauncher(false)}
         />}
-        {connections.length > 0 && selectedConnection && <div className={styles.appContent}>
+        {openConnections.length > 0 && selectedConnection && <div className={styles.appContent}>
           <Dock
-            connections={connections}
+            openConnections={openConnections}
             selectedConnection={selectedConnection}
-            showLauncher={() => setShowLauncher(true)}
-            selectConnection={setSelectedConnection}
-            onDisconnect={disconnect}
+            onShowLauncher={() => setShowLauncher(true)}
+            onSelectConnection={setSelectedConnection}
+            onDisconnect={onDisconnect}
           />
         </div>}
-      </React.Fragment>
+      </>
     );
 
   //   if (connections.length > 0) {

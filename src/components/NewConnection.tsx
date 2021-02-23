@@ -1,26 +1,13 @@
 import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
-import { Client } from 'pg';
 import { v4 as uuid } from 'uuid';
-import LocalStore from '../utils/local-store'
-import { IConnectionDetails, ConnectionTypeEnum, IConnection } from '../connection';
+import { IConnectionDetails, ConnectionTypeEnum } from '../connection';
 import styles from './NewConnection.scss';
 
 interface INewConnectionProps {
-  localStore: LocalStore;
-  onConnect(connection: IConnection): void;
-  onClose?(): void;
-}
-
-function findExistingConnection(conns: IConnectionDetails[], conn: IConnectionDetails) {
-  return conns.find((e: IConnectionDetails) => {
-    return e.type === conn.type &&
-           e.host === conn.host &&
-           e.port === conn.port &&
-           e.database === conn.database &&
-           e.user === conn.user &&
-           e.password === conn.password;
-  });
+  connectionsDetails: IConnectionDetails[];
+  onCreateConnectionDetails(details: IConnectionDetails): Promise<void>;
+  onClose(): void;
 }
 
 export default function NewConnection(props: INewConnectionProps) {
@@ -28,23 +15,13 @@ export default function NewConnection(props: INewConnectionProps) {
   const { errors, handleSubmit, register } = useForm<IConnectionDetails>({ mode: 'onChange' });
 
   async function onSubmit(data: IConnectionDetails) {
-    data.uuid = uuid();
-    data.type = ConnectionTypeEnum.PostgreSQL;
-    console.log(data)
-    const connections = props.localStore.getConnections();
-    const existingConnection = findExistingConnection(connections, data);
-
     try {
-      const client = new Client(data);
-      await client.connect();
-
-      if (!existingConnection) {
-        connections.push(data);
-        props.localStore.setConnections(connections);
-      }
-
       setError(null);
-      props.onConnect({ connectionDetails: data, client: client });
+
+      data.uuid = uuid();
+      data.type = ConnectionTypeEnum.PostgreSQL;
+
+      await props.onCreateConnectionDetails(data);
     } catch (err) {
       setError(err.message);
     }
@@ -57,7 +34,7 @@ export default function NewConnection(props: INewConnectionProps) {
 
   return (
     <div className={styles.newConnection}>
-      {props.onClose && <a href="" onClick={onClose}>Close</a>}
+      {props.connectionsDetails.length > 0 && <a href="" onClick={onClose}>Close</a>}
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>

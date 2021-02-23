@@ -1,62 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import LocalStore from '../utils/local-store'
-import { Client } from 'pg';
 import NewConnection from './NewConnection';
 import styles from './Launcher.scss'
-import { IConnection, IConnectionDetails } from '../connection';
+import { IConnectionDetails } from '../connection';
 
 interface ILauncherProps {
-  localStore: LocalStore;
-  openConnections: IConnection[];
-  onConnect(conection: IConnection): void;
-  onDisconnect(conection: IConnection): void;
+  connectionsDetails: IConnectionDetails[];
+  openConnectionsDetails: IConnectionDetails[];
+  onCreateConnectionDetails(details: IConnectionDetails): Promise<void>;
+  onDeleteConnectionDetails(details: IConnectionDetails): void;
+  onConnect(details: IConnectionDetails): Promise<void>;
   onClose(): void;
 }
 
 export default function Launcher(props: ILauncherProps) {
   const [showNewConnection, setShowNewConnection] = useState(false);
-  const [connections, setConnections] = useState<IConnectionDetails[]>([]);
   const [error, setError] = useState();
 
-  useEffect(() => {
-    const conns = props.localStore.getConnections();
-    setConnections(conns);
-    setShowNewConnection(conns.length === 0);
-  }, [])
-
-  function newConnection(ev: React.MouseEvent) {
+  function onDeleteConnectionDetails(ev: React.MouseEvent, details: IConnectionDetails) {
     ev.preventDefault();
-    setShowNewConnection(true);
+    props.onDeleteConnectionDetails(details);
   }
 
-  function closeNewConnection() {
-    setShowNewConnection(false);
-  }
-
-  function deleteConnection(ev: React.MouseEvent, connection: IConnectionDetails) {
-    ev.preventDefault();
-
-    const conns = connections.filter(e => e !== connection);
-    props.localStore.setConnections(conns);
-    setConnections(conns);
-    if (conns.length === 0) setShowNewConnection(true);
-  }
-
-  async function connect(ev: React.MouseEvent, connection: IConnectionDetails) {
+  async function onConnect(ev: React.MouseEvent, details: IConnectionDetails) {
     ev.preventDefault();
 
     try {
-      const client = new Client(connection);
-      await client.connect();
-      props.onConnect({ connectionDetails: connection, client: client });
+      await props.onConnect(details);
     } catch(err) {
       setError(err.message);
     }
   }
 
-  function disconnect(ev: React.MouseEvent, connection: IConnection) {
+  function onNewConnection(ev: React.MouseEvent) {
     ev.preventDefault();
-    props.onDisconnect(connection);
+    setShowNewConnection(true);
   }
 
   function onClose(ev: React.MouseEvent) {
@@ -64,40 +41,36 @@ export default function Launcher(props: ILauncherProps) {
     props.onClose();
   }
 
-  const list = connections.map((conn: IConnectionDetails) => {
-    const open = props.openConnections.find(e => e.connectionDetails.uuid === conn.uuid);
+  const list = props.connectionsDetails.map((details) => {
+    const open = props.openConnectionsDetails.find(e => e === details);
 
     return (
-      <div className={styles.connection} key={conn.uuid}>
-        {conn.name} / {conn.host} / {conn.port} / {conn.database} / {conn.user}
+      <div className={styles.connection} key={details.uuid}>
+        {details.name} / {details.host} / {details.port} / {details.database} / {details.user}
         {!open && <a
           href=""
-          onClick={(ev) => connect(ev, conn)}
+          onClick={(ev) => onConnect(ev, details)}
         >Connect</a>}
         {!open && <a
           href=""
-          onClick={(ev) => deleteConnection(ev, conn)}
+          onClick={(ev) => onDeleteConnectionDetails(ev, details)}
         >Delete</a>}
-        {open && <a
-          href=""
-          onClick={(ev) => disconnect(ev, open)}
-        >Disconnect</a>}
       </div>
     );
   });
 
   return (
     <div className={styles.launcher}>
-      {showNewConnection && <NewConnection
-        localStore={props.localStore}
-        onConnect={props.onConnect}
-        onClose={connections.length > 0 ? closeNewConnection : undefined}
+      {(props.connectionsDetails.length === 0 || showNewConnection) && <NewConnection
+        connectionsDetails={props.connectionsDetails}
+        onCreateConnectionDetails={props.onCreateConnectionDetails}
+        onClose={() => setShowNewConnection(false)}
       />}
 
-      {props.openConnections.length > 0 && <a href="" onClick={onClose}>Close</a>}
+      {props.openConnectionsDetails.length > 0 && <a href="" onClick={onClose}>Close</a>}
 
       <div className={styles.connection}>
-        <a href="" onClick={newConnection}>new connection</a>
+        <a href="" onClick={onNewConnection}>new connection</a>
       </div>
 
       {list}
