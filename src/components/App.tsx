@@ -50,7 +50,14 @@ export default function App() {
     const found = findExistingConnectionDetails(connectionsDetails, details);
 
     if (found) {
-      await onConnect(found);
+      const alreadyOpened = openConnections.find(e => e.connectionDetails === found);
+
+      if (alreadyOpened) {
+        setSelectedConnection(alreadyOpened);
+        setShowLauncher(false);
+      } else {
+        await onConnect(found);
+      }
     } else {
       await onConnect(details);
 
