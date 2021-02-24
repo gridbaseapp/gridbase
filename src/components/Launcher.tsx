@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import NewConnection from './NewConnection';
 import styles from './Launcher.scss'
 import { IConnectionDetails } from '../connection';
