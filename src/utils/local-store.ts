@@ -14,14 +14,22 @@ export default class LocalStore {
   }
 
   getConnections(): IConnectionDetails[] {
-    return this.get(KEY_CONNECTIONS, []);
+    return this.getSecure(KEY_CONNECTIONS, []);
   }
 
   setConnections(connections: IConnectionDetails[]) {
-    this.set(KEY_CONNECTIONS, connections);
+    this.setSecure(KEY_CONNECTIONS, connections);
   }
 
-  get(key: string, defaultValue?: any) {
+  getSchema(connectionUUID: string) {
+    return <string>this.store.get(`${connectionUUID}-schema`);
+  }
+
+  setSchema(connectionUUID: string, value: string) {
+    this.store.set(`${connectionUUID}-schema`, value);
+  }
+
+  getSecure(key: string, defaultValue?: any) {
     const value = <string>this.store.get(key);
 
     if (value) {
@@ -31,7 +39,7 @@ export default class LocalStore {
     }
   }
 
-  set(key: string, value: any) {
+  setSecure(key: string, value: any) {
     this.store.set(key, encrypt(this.password, JSON.stringify(value)));
   }
 }

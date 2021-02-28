@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Client } from 'pg';
+import classNames from 'classnames';
 import { getPasswordFromKeyStore } from '../utils/key-store';
 import LocalStore from '../utils/local-store';
 import { IConnection, IConnectionDetails } from '../connection';
 import Splash from './Splash';
 import Launcher from './Launcher';
 import Dock from './Dock';
-// import Content from './Content';
+import Content from './Content';
 import styles from './App.scss';
 
 const SPLASH_SCREEN_TIMOUT = 1;
@@ -101,6 +102,19 @@ export default function App() {
   let content = <Splash />;
 
   if (localStore) {
+    let connectionsRender = null;
+
+    if (openConnections.length > 0) {
+      connectionsRender = openConnections.map(
+        e => <Content
+          key={e.connectionDetails.uuid}
+          localStore={localStore}
+          connection={e}
+          className={classNames({ [styles.hidden]: e !== selectedConnection })}
+        />
+      );
+    }
+
     content = (
       <>
         {showLauncher && <Launcher
@@ -119,17 +133,10 @@ export default function App() {
             onSelectConnection={setSelectedConnection}
             onDisconnect={onDisconnect}
           />
+          {connectionsRender}
         </div>}
       </>
     );
-
-  //   if (connections.length > 0) {
-  //     content += (
-  // //       {connections.map((e, i) => {
-  // //         return <Content active={e === selectedConnection} key={i} connection={e} />
-  // //       })} */}
-  //     );
-  //   }
   }
 
   return (

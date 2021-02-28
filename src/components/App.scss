@@ -5,7 +5,14 @@ html, body {
 }
 
 .app {
+  height: 100%;
+
   .app-content {
     display: flex;
+    height: 100%;
   }
+}
+
+.hidden {
+  display: none;
 }
