@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import classNames from 'classnames';
 import { IConnection } from '../connection';
 import styles from './SidebarTables.scss';
 
-interface ISidebarTables {
+interface ISidebarTablesProps {
   connection: IConnection;
   selectedSchema: string;
+  selectedTable: string | undefined;
+  onOpenTable(table: string): void;
 }
 
-export default function SidebarTables(props: ISidebarTables) {
+export default function SidebarTables(props: ISidebarTablesProps) {
   const [tables, setTables] = useState<string[]>([]);
 
   useEffect(() => {
@@ -26,9 +29,22 @@ export default function SidebarTables(props: ISidebarTables) {
     run();
   }, [props.selectedSchema]);
 
+  function onOpenTable(ev: React.MouseEvent, table: string) {
+    ev.preventDefault();
+    props.onOpenTable(table);
+  }
+
   return (
     <div className={styles.sidebarTables}>
-      {tables.map(e => <a href="" key={e}>{e}</a>)}
+      {tables.map(table => <a
+        href=""
+        className={classNames({ [styles.selected]: table === props.selectedTable})}
+        key={table}
+        onClick={(ev) => ev.preventDefault()}
+        onDoubleClick={(ev) => onOpenTable(ev, table)}
+      >
+        {table}
+      </a>)}
     </div>
   );
 }

@@ -8,5 +8,9 @@
     &:hover {
       background-color: #eee;
     }
+
+    &.selected {
+      font-weight: bold;
+    }
   }
 }

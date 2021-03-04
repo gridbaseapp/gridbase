@@ -8,7 +8,9 @@ interface ISidebarProps {
   connection: IConnection;
   schemas: string[];
   selectedSchema: string;
+  selectedTable: string | undefined;
   onSelectSchema(schema: string): void;
+  onOpenTable(table: string): void;
 }
 
 export default function Sidebar(props: ISidebarProps) {
@@ -23,6 +25,8 @@ export default function Sidebar(props: ISidebarProps) {
       <SidebarTables
         connection={props.connection}
         selectedSchema={props.selectedSchema}
+        selectedTable={props.selectedTable}
+        onOpenTable={props.onOpenTable}
       />
     </div>
   );

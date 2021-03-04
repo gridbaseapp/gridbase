@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { IConnection } from '../connection';
 import LocalStore from '../utils/local-store';
 import Sidebar from './Sidebar';
-// import Table from './Table';
+import Tabs from './Tabs';
 import styles from './Content.scss';
 
 interface IContentProps {
@@ -15,6 +15,8 @@ interface IContentProps {
 export default function Content(props: IContentProps) {
   const [schemas, setSchemas] = useState<string[]>([]);
   const [selectedSchema, setSelectedSchema] = useState('public');
+  const [openTables, setOpenTables] = useState<string[]>([]);
+  const [selectedTable, setSelectedTable] = useState<string>();
 
   useEffect(() => {
     async function run() {
@@ -49,15 +51,36 @@ export default function Content(props: IContentProps) {
     setSelectedSchema(schema);
   }
 
+  function onOpenTable(table: string) {
+    setOpenTables([...openTables, table]);
+    setSelectedTable(table);
+  }
+
+  function onCloseTable(table: string) {
+    const tables = openTables.filter(e => e !== table);
+    setOpenTables(tables);
+
+    if (selectedTable === table) {
+      setSelectedTable(tables.length > 0 ? tables[tables.length - 1] : undefined);
+    }
+  }
+
   return (
     <div className={classNames(styles.content, props.className)}>
       <Sidebar
         connection={props.connection}
         schemas={schemas}
         selectedSchema={selectedSchema}
+        selectedTable={selectedTable}
         onSelectSchema={onSelectSchema}
+        onOpenTable={onOpenTable}
       />
-      {/* {selectedTable && <Table connection={connection} tableName={selectedTable} />} */}
+      <Tabs
+        tables={openTables}
+        selectedTable={selectedTable}
+        onSelectTable={(table) => setSelectedTable(table)}
+        onCloseTable={onCloseTable}
+      />
     </div>
   );
 }

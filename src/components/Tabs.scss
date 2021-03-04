@@ -1,0 +1,16 @@
+.tabs {
+  .tab {
+    display: inline-block;
+    padding: 5px 10px;
+    border: 1px solid #eee;
+    cursor: pointer;
+
+    &.selected {
+      font-weight: bold;
+    }
+
+    a {
+      margin: 10px;
+    }
+  }
+}
