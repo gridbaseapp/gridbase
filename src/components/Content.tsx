@@ -4,6 +4,7 @@ import { IConnection } from '../connection';
 import LocalStore from '../utils/local-store';
 import Sidebar from './Sidebar';
 import Tabs from './Tabs';
+import Table from './Table';
 import styles from './Content.scss';
 
 interface IContentProps {
@@ -75,12 +76,23 @@ export default function Content(props: IContentProps) {
         onSelectSchema={onSelectSchema}
         onOpenTable={onOpenTable}
       />
-      <Tabs
-        tables={openTables}
-        selectedTable={selectedTable}
-        onSelectTable={(table) => setSelectedTable(table)}
-        onCloseTable={onCloseTable}
-      />
+      <div className={styles.tabsContent}>
+        <Tabs
+          tables={openTables}
+          selectedTable={selectedTable}
+          onSelectTable={(table) => setSelectedTable(table)}
+          onCloseTable={onCloseTable}
+        />
+        {openTables.map(table => (
+          <Table
+            key={table}
+            className={classNames({ [styles.hidden]: table !== selectedTable })}
+            connection={props.connection}
+            schema={selectedSchema}
+            table={table}
+          />
+        ))}
+      </div>
     </div>
   );
 }
