@@ -5,7 +5,7 @@ html, body {
 }
 
 .app {
-  height: 100%;
+  height: calc(100% - 35px);
 
   .app-content {
     display: flex;

@@ -8,6 +8,7 @@ import Splash from './Splash';
 import Launcher from './Launcher';
 import Dock from './Dock';
 import Content from './Content';
+import TitleBar from './TitleBar';
 import styles from './App.scss';
 
 const SPLASH_SCREEN_TIMOUT = 1;
@@ -117,6 +118,7 @@ export default function App() {
 
     content = (
       <>
+        <TitleBar />
         {showLauncher && <Launcher
           connectionsDetails={connectionsDetails}
           openConnectionsDetails={openConnections.map(e => e.connectionDetails)}

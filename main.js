@@ -7,6 +7,7 @@ Store.initRenderer();
 
 function createWindow () {
   const win = new BrowserWindow({
+    titleBarStyle: 'hiddenInset',
     width: 1200,
     height: 800,
     webPreferences: {
