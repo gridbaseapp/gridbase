@@ -15,6 +15,7 @@ interface ILauncherProps {
 export default function Launcher(props: ILauncherProps) {
   const [showNewConnection, setShowNewConnection] = useState(false);
   const [error, setError] = useState();
+  const [filter, setFilter] = useState('');
 
   function onDeleteConnectionDetails(ev: React.MouseEvent, details: IConnectionDetails) {
     ev.preventDefault();
@@ -41,7 +42,22 @@ export default function Launcher(props: ILauncherProps) {
     props.onClose();
   }
 
-  const list = props.connectionsDetails.map((details) => {
+  function onFilter(ev: React.ChangeEvent<HTMLInputElement>) {
+    setFilter(ev.target.value);
+  }
+
+  function filterConnectionDetails(list: IConnectionDetails[]) {
+    if (filter.length === 0) return list;
+
+    return list.filter(e => {
+      return e.name.includes(filter) ||
+        e.database.includes(filter) ||
+        e.host.includes(filter) ||
+        e.user.includes(filter);
+    });
+  }
+
+  const list = filterConnectionDetails(props.connectionsDetails).map((details) => {
     const open = props.openConnectionsDetails.find(e => e === details);
 
     return (
@@ -68,6 +84,14 @@ export default function Launcher(props: ILauncherProps) {
       />}
 
       {props.openConnectionsDetails.length > 0 && <a href="" onClick={onClose}>Close</a>}
+
+      <input
+        type="text"
+        placeholder="Filter"
+        autoFocus
+        value={filter}
+        onChange={onFilter}
+      />
 
       <div className={styles.connection}>
         <a href="" onClick={onNewConnection}>new connection</a>
