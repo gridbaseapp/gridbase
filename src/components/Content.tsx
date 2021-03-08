@@ -21,7 +21,7 @@ export default function Content(props: IContentProps) {
 
   useEffect(() => {
     async function run() {
-      const previouslySelectedSchema = props
+      const savedSchema = props
         .localStore
         .getSchema(props.connection.connectionDetails.uuid);
 
@@ -35,8 +35,8 @@ export default function Content(props: IContentProps) {
       const schemas = rows.map(e => e.name);
       setSchemas(schemas);
 
-      if (previouslySelectedSchema && schemas.includes(previouslySelectedSchema)) {
-        setSelectedSchema(previouslySelectedSchema);
+      if (savedSchema && schemas.includes(savedSchema)) {
+        setSelectedSchema(savedSchema);
       } else if (schemas.includes('public')) {
         setSelectedSchema('public');
       } else {
