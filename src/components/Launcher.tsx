@@ -46,10 +46,10 @@ export default function Launcher(props: ILauncherProps) {
     setFilter(ev.target.value);
   }
 
-  function filterConnectionDetails(list: IConnectionDetails[]) {
-    if (filter.length === 0) return list;
+  function filterConnectionDetails() {
+    if (filter.length === 0) return props.connectionsDetails;
 
-    return list.filter(e => {
+    return props.connectionsDetails.filter(e => {
       return e.name.includes(filter) ||
         e.database.includes(filter) ||
         e.host.includes(filter) ||
@@ -57,7 +57,7 @@ export default function Launcher(props: ILauncherProps) {
     });
   }
 
-  const list = filterConnectionDetails(props.connectionsDetails).map((details) => {
+  const list = filterConnectionDetails().map((details) => {
     const open = props.openConnectionsDetails.find(e => e === details);
 
     return (

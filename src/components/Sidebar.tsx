@@ -17,17 +17,19 @@ export default function Sidebar(props: ISidebarProps) {
   return (
     <div className={styles.sidebar}>
       <h1>{props.connection.connectionDetails.database}</h1>
-      <SchemaSelector
-        schemas={props.schemas}
-        selectedSchema={props.selectedSchema}
-        onSelectSchema={props.onSelectSchema}
-      />
-      <SidebarTables
-        connection={props.connection}
-        selectedSchema={props.selectedSchema}
-        selectedTable={props.selectedTable}
-        onOpenTable={props.onOpenTable}
-      />
+      <div className={styles.content}>
+        <SchemaSelector
+          schemas={props.schemas}
+          selectedSchema={props.selectedSchema}
+          onSelectSchema={props.onSelectSchema}
+        />
+        <SidebarTables
+          connection={props.connection}
+          selectedSchema={props.selectedSchema}
+          selectedTable={props.selectedTable}
+          onOpenTable={props.onOpenTable}
+        />
+      </div>
     </div>
   );
 }

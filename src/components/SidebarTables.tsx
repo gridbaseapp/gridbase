@@ -12,6 +12,7 @@ interface ISidebarTablesProps {
 
 export default function SidebarTables(props: ISidebarTablesProps) {
   const [tables, setTables] = useState<string[]>([]);
+  const [filter, setFilter] = useState('');
 
   useEffect(() => {
     async function run() {
@@ -34,17 +35,37 @@ export default function SidebarTables(props: ISidebarTablesProps) {
     props.onOpenTable(table);
   }
 
+  function onFilter(ev: React.ChangeEvent<HTMLInputElement>) {
+    setFilter(ev.target.value);
+  }
+
+  function filteredTables() {
+    if (filter.length === 0) return tables;
+    return tables.filter(e => e.includes(filter));
+  }
+
   return (
     <div className={styles.sidebarTables}>
-      {tables.map(table => <a
-        href=""
-        className={classNames({ [styles.selected]: table === props.selectedTable})}
-        key={table}
-        onClick={(ev) => ev.preventDefault()}
-        onDoubleClick={(ev) => onOpenTable(ev, table)}
-      >
-        {table}
-      </a>)}
+      <div className={styles.list}>
+        {filteredTables().map(table => <a
+          href=""
+          className={classNames({ [styles.selected]: table === props.selectedTable})}
+          key={table}
+          onClick={(ev) => ev.preventDefault()}
+          onDoubleClick={(ev) => onOpenTable(ev, table)}
+        >
+          {table}
+        </a>)}
+      </div>
+
+      <div>
+        <input
+          type="text"
+          placeholder="Filter"
+          value={filter}
+          onChange={onFilter}
+        />
+      </div>
     </div>
   );
 }
