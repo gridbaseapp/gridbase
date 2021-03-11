@@ -1,16 +1,29 @@
-.tabs {
-  .tab {
-    display: inline-block;
-    padding: 5px 10px;
-    border: 1px solid #eee;
-    cursor: pointer;
+.tab {
+  display: inline-block;
+  padding: 5px 10px;
+  border: 1px solid #eee;
+  background-color: white;
+  user-select: none;
 
-    &.selected {
-      font-weight: bold;
-    }
+  &:hover {
+    background-color: #eee;
+  }
 
-    a {
-      margin: 10px;
-    }
+  &.selected {
+    font-weight: bold;
+  }
+
+  &.drag {
+    opacity: 0;
+  }
+
+  &.mirror {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  a {
+    margin: 10px;
   }
 }

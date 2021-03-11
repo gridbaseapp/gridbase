@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import classNames from 'classnames';
+import tabable from '../utils/tabable';
 import styles from './Tabs.scss';
 
 interface ITabsProps {
@@ -10,6 +11,14 @@ interface ITabsProps {
 }
 
 export default function Tabs(props: ITabsProps) {
+  const tabsContainer = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (tabsContainer.current) {
+      return tabable(tabsContainer.current, { drag: styles.drag, mirror: styles.mirror });
+    }
+  });
+
   function onCloseTable(ev: React.MouseEvent, table: string) {
     ev.preventDefault();
     ev.stopPropagation();
@@ -18,14 +27,21 @@ export default function Tabs(props: ITabsProps) {
 
   return (
     <div className={styles.tabs}>
-      {props.tables.map(table => <span
-        className={classNames(styles.tab, { [styles.selected]: table === props.selectedTable })}
-        key={table}
-        onClick={() => props.onSelectTable(table)}
-      >
-        {table}
-        <a href="" onClick={(ev) => onCloseTable(ev, table)}>x</a>
-      </span>)}
+      <div ref={tabsContainer}>
+        {props.tables.map(table => <span
+          className={classNames(styles.tab, { [styles.selected]: table === props.selectedTable })}
+          key={table}
+          onMouseDown={() => props.onSelectTable(table)}
+        >
+          {table}
+          <a
+            href=""
+            draggable="false"
+            onMouseDownCapture={(ev) => { ev.stopPropagation(); }}
+            onClick={(ev) => onCloseTable(ev, table)}
+          >x</a>
+        </span>)}
+      </div>
     </div>
   );
 }

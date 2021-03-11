@@ -53,7 +53,9 @@ export default function Content(props: IContentProps) {
   }
 
   function onOpenTable(table: string) {
-    setOpenTables([...openTables, table]);
+    if (!openTables.includes(table)) {
+      setOpenTables([...openTables, table]);
+    }
     setSelectedTable(table);
   }
 
