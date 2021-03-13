@@ -1,5 +1,6 @@
 interface ITab {
   node: HTMLElement;
+  position: number;
   x: number;
   width: number;
 }
@@ -72,7 +73,11 @@ function swapTabs(tabs: ITab[], tab1: ITab, tab2: ITab) {
   });
 }
 
-export default function tabbable(container: HTMLElement, cssClass: ICssClass) {
+export default function tabbable(
+  container: HTMLElement,
+  cssClass: ICssClass,
+  onFinish: (order: number[]) => void,
+) {
   const tabsNodes = Array.from(container.children);
 
   function mousedown(this: HTMLElement, ev: MouseEvent) {
@@ -81,9 +86,9 @@ export default function tabbable(container: HTMLElement, cssClass: ICssClass) {
 
     const offsetX = ev.clientX - dragRect.x;
 
-    const tabs = Array.from(container.children).map(node => {
+    const tabs = Array.from(container.children).map((node, position) => {
       const { x, width } = node.getBoundingClientRect();
-      return { node: <HTMLElement>node, x, width };
+      return { node: <HTMLElement>node, position, x, width };
     });
 
     let mirror: HTMLElement;
@@ -135,6 +140,7 @@ export default function tabbable(container: HTMLElement, cssClass: ICssClass) {
 
       document.removeEventListener('mousemove', mousemove);
       document.removeEventListener('mouseup', mouseup);
+      if (onFinish) onFinish(tabs.map(e => e.position));
     };
 
     document.addEventListener('mousemove', mousemove);

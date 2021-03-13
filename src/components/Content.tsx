@@ -68,6 +68,10 @@ export default function Content(props: IContentProps) {
     }
   }
 
+  function onReorderTables(tables: string[]) {
+    setOpenTables(tables);
+  }
+
   return (
     <div className={classNames(styles.content, props.className)}>
       <Sidebar
@@ -84,6 +88,7 @@ export default function Content(props: IContentProps) {
           selectedTable={selectedTable}
           onSelectTable={(table) => setSelectedTable(table)}
           onCloseTable={onCloseTable}
+          onReorderTables={onReorderTables}
         />
         {openTables.map(table => (
           <Table

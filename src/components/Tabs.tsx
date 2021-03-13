@@ -8,6 +8,7 @@ interface ITabsProps {
   selectedTable: string | undefined;
   onSelectTable(table: string): void;
   onCloseTable(table: string): void;
+  onReorderTables(tables: string[]): void;
 }
 
 export default function Tabs(props: ITabsProps) {
@@ -15,7 +16,13 @@ export default function Tabs(props: ITabsProps) {
 
   useEffect(() => {
     if (tabsContainer.current) {
-      return tabable(tabsContainer.current, { drag: styles.drag, mirror: styles.mirror });
+      return tabable(
+        tabsContainer.current,
+        { drag: styles.drag, mirror: styles.mirror },
+        (order) => {
+          props.onReorderTables(order.map(i => props.tables[i]));
+        }
+      );
     }
   });
 
