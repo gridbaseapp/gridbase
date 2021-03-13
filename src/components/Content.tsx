@@ -16,8 +16,8 @@ interface IContentProps {
 export default function Content(props: IContentProps) {
   const [schemas, setSchemas] = useState<string[]>([]);
   const [selectedSchema, setSelectedSchema] = useState('public');
-  const [openTables, setOpenTables] = useState<string[]>([]);
-  const [selectedTable, setSelectedTable] = useState<string>();
+  const [openEntities, setOpenEntities] = useState<string[]>([]);
+  const [selectedEntity, setSelectedEntity] = useState<string>();
 
   useEffect(() => {
     async function run() {
@@ -52,24 +52,24 @@ export default function Content(props: IContentProps) {
     setSelectedSchema(schema);
   }
 
-  function onOpenTable(table: string) {
-    if (!openTables.includes(table)) {
-      setOpenTables([...openTables, table]);
+  function onOpenEntity(entity: string) {
+    if (!openEntities.includes(entity)) {
+      setOpenEntities([...openEntities, entity]);
     }
-    setSelectedTable(table);
+    setSelectedEntity(entity);
   }
 
-  function onCloseTable(table: string) {
-    const tables = openTables.filter(e => e !== table);
-    setOpenTables(tables);
+  function onCloseEntity(entity: string) {
+    const entities = openEntities.filter(e => e !== entity);
+    setOpenEntities(entities);
 
-    if (selectedTable === table) {
-      setSelectedTable(tables.length > 0 ? tables[tables.length - 1] : undefined);
+    if (selectedEntity === entity) {
+      setSelectedEntity(entity.length > 0 ? entities[entities.length - 1] : undefined);
     }
   }
 
-  function onReorderTables(tables: string[]) {
-    setOpenTables(tables);
+  function onReorderEntities(entity: string[]) {
+    setOpenEntities(entity);
   }
 
   return (
@@ -78,25 +78,25 @@ export default function Content(props: IContentProps) {
         connection={props.connection}
         schemas={schemas}
         selectedSchema={selectedSchema}
-        selectedTable={selectedTable}
+        selectedEntity={selectedEntity}
         onSelectSchema={onSelectSchema}
-        onOpenTable={onOpenTable}
+        onOpenEntity={onOpenEntity}
       />
       <div className={styles.tabsContent}>
         <Tabs
-          tables={openTables}
-          selectedTable={selectedTable}
-          onSelectTable={(table) => setSelectedTable(table)}
-          onCloseTable={onCloseTable}
-          onReorderTables={onReorderTables}
+          entities={openEntities}
+          selectedEntity={selectedEntity}
+          onSelectEntity={(entity) => setSelectedEntity(entity)}
+          onCloseEntity={onCloseEntity}
+          onReorderEntities={onReorderEntities}
         />
-        {openTables.map(table => (
+        {openEntities.map(entity => (
           <Table
-            key={table}
-            className={classNames({ [styles.hidden]: table !== selectedTable })}
+            key={entity}
+            className={classNames({ [styles.hidden]: entity !== selectedEntity })}
             connection={props.connection}
             schema={selectedSchema}
-            table={table}
+            table={entity}
           />
         ))}
       </div>

@@ -4,11 +4,11 @@ import tabable from '../utils/tabable';
 import styles from './Tabs.scss';
 
 interface ITabsProps {
-  tables: string[];
-  selectedTable: string | undefined;
-  onSelectTable(table: string): void;
-  onCloseTable(table: string): void;
-  onReorderTables(tables: string[]): void;
+  entities: string[];
+  selectedEntity: string | undefined;
+  onSelectEntity(entity: string): void;
+  onCloseEntity(entity: string): void;
+  onReorderEntities(entities: string[]): void;
 }
 
 export default function Tabs(props: ITabsProps) {
@@ -20,32 +20,32 @@ export default function Tabs(props: ITabsProps) {
         tabsContainer.current,
         { drag: styles.drag, mirror: styles.mirror },
         (order) => {
-          props.onReorderTables(order.map(i => props.tables[i]));
+          props.onReorderEntities(order.map(i => props.entities[i]));
         }
       );
     }
   });
 
-  function onCloseTable(ev: React.MouseEvent, table: string) {
+  function onCloseEntity(ev: React.MouseEvent, entity: string) {
     ev.preventDefault();
     ev.stopPropagation();
-    props.onCloseTable(table);
+    props.onCloseEntity(entity);
   }
 
   return (
     <div className={styles.tabs}>
       <div ref={tabsContainer}>
-        {props.tables.map(table => <span
-          className={classNames(styles.tab, { [styles.selected]: table === props.selectedTable })}
-          key={table}
-          onMouseDown={() => props.onSelectTable(table)}
+        {props.entities.map(entity => <span
+          className={classNames(styles.tab, { [styles.selected]: entity === props.selectedEntity })}
+          key={entity}
+          onMouseDown={() => props.onSelectEntity(entity)}
         >
-          {table}
+          {entity}
           <a
             href=""
             draggable="false"
             onMouseDownCapture={(ev) => { ev.stopPropagation(); }}
-            onClick={(ev) => onCloseTable(ev, table)}
+            onClick={(ev) => onCloseEntity(ev, entity)}
           >x</a>
         </span>)}
       </div>
