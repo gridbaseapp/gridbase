@@ -24,6 +24,8 @@ export default function Tabs(props: ITabsProps) {
         }
       );
     }
+
+    return undefined;
   });
 
   function onCloseEntity(ev: React.MouseEvent, entity: string) {
