@@ -140,7 +140,12 @@ export default function tabbable(
 
       document.removeEventListener('mousemove', mousemove);
       document.removeEventListener('mouseup', mouseup);
-      if (onFinish) onFinish(tabs.map(e => e.position));
+      if (onFinish) {
+        executeSync(done => {
+          onFinish(tabs.map(e => e.position));
+          done();
+        });
+      }
     };
 
     document.addEventListener('mousemove', mousemove);
