@@ -1,22 +1,7 @@
-interface ITab {
-  node: HTMLElement;
-  position: number;
-  x: number;
-  width: number;
-}
-
 interface ICssClass {
   drag: string;
   mirror: string;
 }
-
-const executeSync = (() => {
-  let pending = Promise.resolve();
-
-  return (callback: (done: () => void) => void) => {
-    pending = pending.then(() => new Promise(resolve => callback(resolve)));
-  }
-})();
 
 function style(node: HTMLElement, styles: any) {
   for (const key in styles) {
@@ -24,137 +9,145 @@ function style(node: HTMLElement, styles: any) {
   }
 }
 
-function swapTabs(tabs: ITab[], tab1: ITab, tab2: ITab) {
-  const idx = tabs.indexOf(tab2);
-  const margin = tab2.x - (tab1.x + tab1.width);
-  const tab1PrevX = tab1.x;
-  const tab2PrevX = tab2.x;
-
-  tab2.x = tab1.x;
-  tab1.x = tab2.x + tab2.width + margin;
-
-  tabs.splice(idx - 1, 2, tab2, tab1);
-
-  const tab1NextX = tab1.x;
-  const tab2NextX = tab2.x;
-
-  executeSync((done) => {
-    setTimeout(() => {
-      style(tab1.node, { transition: 'transform 0.15s linear' });
-      style(tab2.node, { transition: 'transform 0.15s linear' });
-
-      const animation1 = new Promise(resolve => {
-        const transitionend = () => {
-          tab1.node.removeEventListener('transitionend', transitionend);
-          style(tab1.node, { transition: null, transform: null });
-          resolve(null);
-        };
-
-        tab1.node.addEventListener('transitionend', transitionend);
-        style(tab1.node, { transform: `translate3d(${tab1NextX - tab1PrevX}px, 0, 0)` });
-      });
-
-      const animation2 = new Promise(resolve => {
-        const transitionend = () => {
-          tab2.node.removeEventListener('transitionend', transitionend);
-          style(tab2.node, { transition: null, transform: null });
-          resolve(null);
-        };
-
-        tab2.node.addEventListener('transitionend', transitionend);
-        style(tab2.node, { transform: `translate3d(-${tab2PrevX - tab2NextX}px, 0, 0)` });
-      });
-
-      Promise.all([animation1, animation2]).then(() => {
-        tab1.node.before(tab2.node);
-        done();
-      });
-    }, 0);
-  });
-}
-
 export default function tabbable(
   container: HTMLElement,
   cssClass: ICssClass,
-  onFinish: (order: number[]) => void,
+  onReorder: (order: number[]) => void,
 ) {
-  const tabsNodes = Array.from(container.children);
-
   function mousedown(this: HTMLElement, ev: MouseEvent) {
     const containerRect = container.getBoundingClientRect();
-    const dragRect = this.getBoundingClientRect();
+    const containerLeft = containerRect.x;
+    const containerRight = containerLeft + containerRect.width;
 
-    const offsetX = ev.clientX - dragRect.x;
-
-    const tabs = Array.from(container.children).map((node, position) => {
-      const { x, width } = node.getBoundingClientRect();
-      return { node: <HTMLElement>node, position, x, width };
+    const tabs = (<HTMLElement[]>Array.from(container.children)).map((node, position) => {
+      const { x, width, top } = node.getBoundingClientRect();
+      return { node, position, x, width, top };
     });
 
+    const drag = tabs.find(e => e.node === this);
+    if (!drag) return;
+
+    tabs.forEach((tab) => {
+      style(tab.node, { position: 'absolute', left: `${tab.x}px` });
+    });
+
+    const offsetX = ev.clientX - drag.x;
+
     let mirror: HTMLElement;
+    const promises: Promise<void>[] = [];
 
     const mousemove = (ev: MouseEvent) => {
-      const drag = tabs.find(e => e.node === this);
-
-      if (!drag) return;
-
       if (!mirror) {
-        mirror = <HTMLElement>this.cloneNode(true);
+        mirror = <HTMLElement>drag.node.cloneNode(true);
 
         mirror.classList.add(cssClass.mirror);
-        this.classList.add(cssClass.drag);
+        drag.node.classList.add(cssClass.drag);
         document.body.append(mirror);
-
-        style(mirror, { top: `${dragRect.y}px`, left: `${dragRect.x}px` });
       }
 
       const dragIdx = tabs.indexOf(drag);
       const leftTab = tabs[dragIdx - 1];
       const rightTab = tabs[dragIdx + 1];
 
-      let positionLeft = ev.clientX - offsetX;
-      let positionRight = positionLeft + drag.width;
+      let mirrorLeft = ev.clientX - offsetX;
+      let mirrorRight = mirrorLeft + drag.width;
 
-      if (positionLeft <= containerRect.x) {
-        positionLeft = containerRect.x;
+      if (mirrorLeft <= containerLeft) {
+        mirrorLeft = containerLeft;
       }
 
-      if (positionRight >= containerRect.x + containerRect.width) {
-        positionLeft = containerRect.x + containerRect.width - drag.width;
+      if (mirrorRight >= containerRight) {
+        mirrorLeft = containerRight - drag.width;
       }
 
-      style(mirror, { transform: `translate3d(${positionLeft - dragRect.x}px, 0, 0)` });
+      style(mirror, { left: `${mirrorLeft}px`, top: `${drag.top}px` });
 
-      if (leftTab && leftTab.x + (leftTab.width / 2) > positionLeft) {
-        swapTabs(tabs, leftTab, drag);
+      if (leftTab && leftTab.x + (leftTab.width / 2) > mirrorLeft) {
+        const margin = drag.x - (leftTab.x + leftTab.width);
+
+        drag.x = leftTab.x;
+        leftTab.x = drag.x + drag.width + margin;
+
+        tabs.splice(dragIdx - 1, 2, drag, leftTab);
+
+        style(leftTab.node, { transition: 'left 0.2s ease-in-out', left: `${leftTab.x}px` });
+        style(drag.node, { left: `${drag.x}px` });
+
+        const promise = new Promise<void>(resolve => {
+          const transitionend = () => {
+            leftTab.node.removeEventListener('transitionend', transitionend);
+            style(leftTab.node, { transition: null });
+            resolve();
+          };
+          leftTab.node.addEventListener('transitionend', transitionend);
+        });
+
+        promises.push(promise);
       }
 
-      if (rightTab && rightTab.x + (rightTab.width / 2) < positionRight) {
-        swapTabs(tabs, drag, rightTab);
+      if (rightTab && rightTab.x + (rightTab.width / 2) < mirrorRight) {
+        const margin = rightTab.x - (drag.x + drag.width);
+
+        rightTab.x = drag.x;
+        drag.x = rightTab.x + rightTab.width + margin;
+
+        tabs.splice(dragIdx, 2, rightTab, drag);
+
+        style(rightTab.node, { transition: 'left 0.2s ease-in-out', left: `${rightTab.x}px` });
+        style(drag.node, { left: `${drag.x}px` });
+
+        const promise = new Promise<void>(resolve => {
+          const transitionend = () => {
+            rightTab.node.removeEventListener('transitionend', transitionend);
+            style(rightTab.node, { transition: null });
+            resolve();
+          };
+          rightTab.node.addEventListener('transitionend', transitionend);
+        });
+
+        promises.push(promise);
       }
     };
 
     const mouseup = () => {
-      if (mirror) mirror.remove();
-      this.classList.remove(cssClass.drag);
-
       document.removeEventListener('mousemove', mousemove);
       document.removeEventListener('mouseup', mouseup);
-      if (onFinish) {
-        executeSync(done => {
-          onFinish(tabs.map(e => e.position));
-          done();
-        });
+
+      if (mirror) {
+        if (mirror.getBoundingClientRect().x !== drag.x) {
+          style(mirror, { transition: 'left 0.2s ease-in-out', left: `${drag.x}px` });
+
+          const promise = new Promise<void>(resolve => {
+            mirror.addEventListener('transitionend', () => {
+              resolve();
+            });
+          });
+
+          promises.push(promise);
+        }
       }
+
+      Promise.all(promises).then(() => {
+        if (mirror) mirror.remove();
+        this.classList.remove(cssClass.drag);
+
+        tabs.forEach(tab => {
+          style(tab.node, { position: null, left: null });
+        });
+        // @ts-ignore
+        container.replaceChildren(...tabs.map(e => e.node));
+        onReorder(tabs.map(e => e.position));
+      });
     };
 
     document.addEventListener('mousemove', mousemove);
     document.addEventListener('mouseup', mouseup);
   }
 
-  tabsNodes.forEach(tab => (<HTMLElement>tab).addEventListener('mousedown', mousedown));
+  const tabsNodes = <HTMLElement[]>Array.from(container.children);
+  tabsNodes.forEach(tab => tab.addEventListener('mousedown', mousedown));
 
   return function cleanup() {
-    tabsNodes.forEach(tab => (<HTMLElement>tab).removeEventListener('mousedown', mousedown));
+    tabsNodes.forEach(tab => tab.removeEventListener('mousedown', mousedown));
   }
 }
