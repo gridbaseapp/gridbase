@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
+import { FixedSizeGrid } from 'react-window';
 import { IConnection } from '../connection';
+import AutoSizer from './AutoSizer';
 import styles from './Table.scss';
 
 interface IField {
@@ -138,10 +140,10 @@ export default function Table(props: ITableProps) {
 //     });
 //   }
 
-  const body = rows.map((row, i) => {
-    const cols = fields.map((field, j) => {
-      let content = row.getValue(field.name);
-
+//  const body = rows.map((row, i) => {
+//    const cols = fields.map((field, j) => {
+//      let content = row.getValue(field.name);
+//
 //       if (editedCell.x === i && editedCell.y === j) {
 //         content = <input
 //           type="text"
@@ -151,10 +153,10 @@ export default function Table(props: ITableProps) {
 //           onChange={(e) => editRow(e, row, field.name)}
 //         />;
 //       }
-
-      return (
-        <td
-          key={`${row.uid}-${j}`}
+//
+//      return (
+//        <td
+//          key={`${row.uid}-${j}`}
 //           onClick={() => setSelectedColumn(j)}
 //           onDoubleClick={() => setEditedCell({ x: i, y: j })}
 //           className={
@@ -162,29 +164,29 @@ export default function Table(props: ITableProps) {
 //               [styles.selectedCell]: selectedRow === i && selectedColumn === j
 //             })
 //           }
-        >
-          {content}
-        </td>
-      );
-    });
-
-    return (
-      <tr
-        key={row.uid}
-        // onClick={() => setSelectedRow(i)}
-        className={
-          classNames({
-            // [styles.selectedRow]: selectedRow === i,
-            // [styles.editedRow]: row.type === RowType.Edited,
-            // [styles.deletedRow]: row.type === RowType.Deleted,
-            // [styles.newRow]: row.type === RowType.New,
-          })
-        }
-      >
-        {cols}
-      </tr>
-    );
-  });
+//        >
+//          {content}
+//        </td>
+//      );
+//    });
+//
+//    return (
+//      <tr
+//        key={row.uid}
+//        // onClick={() => setSelectedRow(i)}
+//        className={
+//          classNames({
+//            // [styles.selectedRow]: selectedRow === i,
+//            // [styles.editedRow]: row.type === RowType.Edited,
+//            // [styles.deletedRow]: row.type === RowType.Deleted,
+//            // [styles.newRow]: row.type === RowType.New,
+//          })
+//        }
+//      >
+//        {cols}
+//      </tr>
+//    );
+//  });
 
 //   function saveChanges(e) {
 //     e.preventDefault();
@@ -203,16 +205,51 @@ export default function Table(props: ITableProps) {
 //     </div>;
 //   }
 
+  const Cell = ({ columnIndex, rowIndex, style }: { columnIndex: number, rowIndex: number, style: React.CSSProperties}) => {
+    const row = rows[rowIndex];
+    const field = row.fields[columnIndex];
+    const cell = row.values[field.name];
+
+    const cls = classNames({
+      // [styles.selectedRow]: selectedRow === i,
+      // [styles.editedRow]: row.type === RowType.Edited,
+      // [styles.deletedRow]: row.type === RowType.Deleted,
+      // [styles.newRow]: row.type === RowType.New,
+    });
+
+    return (
+      <div style={style} className={cls}>
+        {cell}
+      </div>
+    );
+  };
+
   return (
     <div className={classNames(styles.tableRoot, props.className)}>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            {fields.map(row => <th key={row.num}>{row.name}</th>)}
-          </tr>
-        </thead>
-        <tbody>{body}</tbody>
-      </table>
+      <AutoSizer>
+        {(width, height) =>
+          <FixedSizeGrid
+            width={width}
+            height={height}
+            rowHeight={30}
+            columnWidth={100}
+            rowCount={rows.length}
+            columnCount={fields.length}
+          >
+            {Cell}
+          </FixedSizeGrid>
+        }
+      </AutoSizer>
+
+      {/* <table className={styles.table}> */}
+        {/* <thead> */}
+          {/* <tr> */}
+            {/* {fields.map(row => <th key={row.num}>{row.name}</th>)} */}
+          {/* </tr> */}
+        {/* </thead> */}
+        {/* <tbody>{body}</tbody> */}
+      {/* </table> */}
+
       {/* {changes} */}
       {/* <div className={styles.actions}> */}
         {/* <a href="" onClick={addRow}>add</a> */}
