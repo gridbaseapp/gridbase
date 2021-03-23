@@ -90,7 +90,7 @@ export default function Content(props: IContentProps) {
           onCloseEntity={onCloseEntity}
           onReorderEntities={onReorderEntities}
         />
-        {openEntities.map(entity => (
+        {openEntities.sort().map(entity => (
           <Table
             key={entity}
             className={classNames({ [styles.hidden]: entity !== selectedEntity })}
