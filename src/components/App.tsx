@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import { getPasswordFromKeyStore } from '../utils/key-store';
 import LocalStore from '../utils/local-store';
 import { IConnection, IConnectionDetails } from '../connection';
+import { ServiceProvider } from '../utils/contexts';
 import Splash from './Splash';
 import Launcher from './Launcher';
 import Dock from './Dock';
@@ -107,12 +108,13 @@ export default function App() {
 
     if (openConnections.length > 0) {
       connectionsRender = openConnections.map(
-        e => <Content
+        e => <ServiceProvider
           key={e.connectionDetails.uuid}
           localStore={localStore}
           connection={e}
-          className={classNames({ [styles.hidden]: e !== selectedConnection })}
-        />
+        >
+          <Content className={classNames({ [styles.hidden]: e !== selectedConnection })} />
+        </ServiceProvider>
       );
     }
 

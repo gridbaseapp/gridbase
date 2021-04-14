@@ -1,19 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
-import { IConnection } from '../connection';
-import LocalStore from '../utils/local-store';
 import Sidebar from './Sidebar';
 import Tabs from './Tabs';
 import Table from './Table';
 import styles from './Content.scss';
+import { useServiceContext } from '../utils/contexts';
 
 interface IContentProps {
   className: string;
-  localStore: LocalStore;
-  connection: IConnection;
 }
 
 export default function Content(props: IContentProps) {
+  const { connection, localStore } = useServiceContext();
   const [schemas, setSchemas] = useState<string[]>([]);
   const [selectedSchema, setSelectedSchema] = useState('public');
   const [openEntities, setOpenEntities] = useState<string[]>([]);
@@ -21,11 +19,9 @@ export default function Content(props: IContentProps) {
 
   useEffect(() => {
     async function run() {
-      const savedSchema = props
-        .localStore
-        .getSchema(props.connection.connectionDetails.uuid);
+      const savedSchema = localStore.getSchema(connection.connectionDetails.uuid);
 
-      const { rows } = await props.connection.client.query(`
+      const { rows } = await connection.client.query(`
         SELECT n.nspname AS name
         FROM pg_catalog.pg_namespace n
         WHERE n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
@@ -48,7 +44,7 @@ export default function Content(props: IContentProps) {
   }, []);
 
   function onSelectSchema(schema: string) {
-    props.localStore.setSchema(props.connection.connectionDetails.uuid, schema);
+    localStore.setSchema(connection.connectionDetails.uuid, schema);
     setSelectedSchema(schema);
   }
 
@@ -75,7 +71,6 @@ export default function Content(props: IContentProps) {
   return (
     <div className={classNames(styles.content, props.className)}>
       <Sidebar
-        connection={props.connection}
         schemas={schemas}
         selectedSchema={selectedSchema}
         selectedEntity={selectedEntity}
@@ -94,7 +89,6 @@ export default function Content(props: IContentProps) {
           <Table
             key={entity}
             className={classNames({ [styles.hidden]: entity !== selectedEntity })}
-            connection={props.connection}
             schema={selectedSchema}
             table={entity}
           />

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { FixedSizeGrid } from 'react-window';
-import { IConnection } from '../connection';
 import AutoSizer from './AutoSizer';
 import styles from './Table.scss';
+import { useServiceContext } from '../utils/contexts';
 
 interface IField {
   name: string;
@@ -69,12 +69,12 @@ class Row {
 
 interface ITableProps {
   className?: string;
-  connection: IConnection;
   schema: string;
   table: string;
 }
 
 export default function Table(props: ITableProps) {
+  const { connection } = useServiceContext();
   const [fields, setFields] = useState<IField[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
 
@@ -84,7 +84,7 @@ export default function Table(props: ITableProps) {
 
   useEffect(() => {
     async function queryDB() {
-      const oidRes = await props.connection.client.query(`
+      const oidRes = await connection.client.query(`
         SELECT c.oid
         FROM pg_catalog.pg_class c
         JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
@@ -92,14 +92,14 @@ export default function Table(props: ITableProps) {
       );
 
       const [metadata, res] = await Promise.all([
-        props.connection.client.query(`
+        connection.client.query(`
           SELECT a.attname as name, a.attnum as num, i.indisprimary as primary
           FROM pg_catalog.pg_attribute a
           LEFT JOIN pg_index i ON i.indrelid = a.attrelid AND a.attnum = ANY(i.indkey)
           WHERE a.attrelid = '${oidRes.rows[0].oid}' AND a.attnum > 0 AND NOT a.attisdropped
           ORDER BY a.attnum
         `),
-        props.connection.client.query(`SELECT * FROM "${props.schema}"."${props.table}"`),
+        connection.client.query(`SELECT * FROM "${props.schema}"."${props.table}"`),
       ]);
 
       setFields(metadata.rows);
@@ -219,7 +219,7 @@ export default function Table(props: ITableProps) {
 
     return (
       <div style={style} className={cls}>
-        {cell}
+        {cell.toString()}
       </div>
     );
   };

@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
-import { IConnection } from '../connection';
 import styles from './SidebarViews.scss';
+import { useServiceContext } from '../utils/contexts';
 
 interface ISidebarViewsProps {
-  connection: IConnection;
   selectedSchema: string;
   selectedView: string | undefined;
   onOpenView(view: string): void;
 }
 
 export default function SidebarTables(props: ISidebarViewsProps) {
+  const { connection } = useServiceContext();
   const [views, setViews] = useState<string[]>([]);
   const [filter, setFilter] = useState('');
 
   useEffect(() => {
     async function run() {
-      const { rows } = await props.connection.client.query(`
+      const { rows } = await connection.client.query(`
         SELECT c.relname AS name
         FROM pg_catalog.pg_class c
         LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
