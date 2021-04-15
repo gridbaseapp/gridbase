@@ -4,7 +4,7 @@ import SidebarTables from './SidebarTables';
 import SidebarViews from './SidebarViews';
 import SidebarTabs from './SidebarTabs';
 import styles from './Sidebar.scss';
-import { useServiceContext } from '../utils/contexts';
+import { useServiceContext } from '../../utils/contexts';
 
 interface ISidebarProps {
   schemas: string[];

@@ -3,8 +3,8 @@ import classNames from 'classnames';
 import Sidebar from './Sidebar';
 import Tabs from './Tabs';
 import Table from './Table';
-import styles from './Content.scss';
-import { useServiceContext } from '../utils/contexts';
+import styles from './Service.scss';
+import { useServiceContext } from '../../utils/contexts';
 
 interface IContentProps {
   className: string;

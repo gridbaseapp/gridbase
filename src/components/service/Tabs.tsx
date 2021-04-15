@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import classNames from 'classnames';
-import tabable from '../utils/tabable';
+import tabable from '../../utils/tabable';
 import styles from './Tabs.scss';
 
 interface ITabsProps {

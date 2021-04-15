@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { FixedSizeGrid } from 'react-window';
-import AutoSizer from './AutoSizer';
+import AutoSizer from './../AutoSizer';
 import styles from './Table.scss';
-import { useServiceContext } from '../utils/contexts';
+import { useServiceContext } from '../../utils/contexts';
 
 interface IField {
   name: string;

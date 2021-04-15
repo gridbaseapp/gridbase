@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
 import styles from './SidebarTables.scss';
-import { useServiceContext } from '../utils/contexts';
+import { useServiceContext } from '../../utils/contexts';
 
 interface ISidebarTablesProps {
   selectedSchema: string;

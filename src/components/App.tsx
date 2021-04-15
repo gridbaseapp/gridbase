@@ -8,7 +8,7 @@ import { ServiceProvider } from '../utils/contexts';
 import Splash from './Splash';
 import Launcher from './Launcher';
 import Dock from './Dock';
-import Content from './Content';
+import Service from './service/Service';
 import TitleBar from './TitleBar';
 import styles from './App.scss';
 
@@ -113,7 +113,7 @@ export default function App() {
           localStore={localStore}
           connection={e}
         >
-          <Content className={classNames({ [styles.hidden]: e !== selectedConnection })} />
+          <Service className={classNames({ [styles.hidden]: e !== selectedConnection })} />
         </ServiceProvider>
       );
     }
