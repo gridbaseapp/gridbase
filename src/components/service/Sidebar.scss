@@ -2,14 +2,9 @@
   padding: 10px;
   border-right: 1px solid #ddd;
   background-color: #fbfbfb;
+  overflow: scroll;
 
   h1 {
     margin: 0;
   }
-}
-
-.content {
-  display: flex;
-  flex-direction: column;
-  height: calc(100% - 20px);
 }

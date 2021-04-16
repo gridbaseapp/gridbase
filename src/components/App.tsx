@@ -120,7 +120,6 @@ export default function App() {
 
     content = (
       <>
-        <TitleBar />
         {showLauncher && <Launcher
           connectionsDetails={connectionsDetails}
           openConnectionsDetails={openConnections.map(e => e.connectionDetails)}
@@ -129,7 +128,8 @@ export default function App() {
           onConnect={onConnect}
           onClose={() => setShowLauncher(false)}
         />}
-        {openConnections.length > 0 && selectedConnection && <div className={styles.appContent}>
+        {openConnections.length > 0 && selectedConnection && <>
+          <TitleBar />
           <Dock
             openConnections={openConnections}
             selectedConnection={selectedConnection}
@@ -138,7 +138,7 @@ export default function App() {
             onDisconnect={onDisconnect}
           />
           {connectionsRender}
-        </div>}
+        </>}
       </>
     );
   }

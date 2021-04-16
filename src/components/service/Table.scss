@@ -1,7 +1,6 @@
 .tableRoot {
-  height: calc(100% - 26px);
+  grid-area: content;
   overflow: scroll;
-  min-width: 100%;
 }
 
 .table {

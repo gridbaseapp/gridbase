@@ -69,7 +69,7 @@ export default function Content(props: IContentProps) {
   }
 
   return (
-    <div className={classNames(styles.content, props.className)}>
+    <div className={classNames(styles.service, props.className)}>
       <Sidebar
         schemas={schemas}
         selectedSchema={selectedSchema}
@@ -77,7 +77,7 @@ export default function Content(props: IContentProps) {
         onSelectSchema={onSelectSchema}
         onOpenEntity={onOpenEntity}
       />
-      <div className={styles.tabsContent}>
+      <div className={styles.content}>
         <Tabs
           entities={openEntities}
           selectedEntity={selectedEntity}

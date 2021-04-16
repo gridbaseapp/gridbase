@@ -1,9 +1,17 @@
-.content {
-  display: flex;
+.service {
+  grid-area: content;
+  display: grid;
+  grid-template-columns: 200px auto;
+  grid-template-areas: "sidebar content";
+  overflow: scroll;
 }
 
-.tabs-content {
-  height: 100%;
+.content {
+  grid-area: content;
+  display: grid;
+  grid-template-rows: 30px auto;
+  grid-template-areas: "tabs" "content";
+  overflow: scroll;
 }
 
 .hidden {

@@ -4,13 +4,16 @@ html, body {
   font: 12px sans-serif;
 }
 
-.app {
-  height: calc(100% - 35px);
+* {
+  box-sizing: border-box;
+}
 
-  .app-content {
-    display: flex;
-    height: 100%;
-  }
+.app {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 60px auto;
+  grid-template-rows: 40px auto;
+  grid-template-areas: "header header" "dock content";
 }
 
 .hidden {

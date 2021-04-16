@@ -1,10 +1,10 @@
 .tabs {
-  height: 26px;
+  grid-area: tabs;
 }
 
 .tab {
   display: inline-block;
-  padding: 5px 10px;
+  padding: 7px 10px;
   border: 1px solid #eee;
   user-select: none;
   background-color: #eee;

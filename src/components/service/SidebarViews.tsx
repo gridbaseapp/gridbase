@@ -60,6 +60,7 @@ export default function SidebarTables(props: ISidebarViewsProps) {
 
       <div>
         <input
+          className={styles.filter}
           type="text"
           placeholder="Filter"
           value={filter}

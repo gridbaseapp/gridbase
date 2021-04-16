@@ -1,6 +1,7 @@
 .title-bar {
+  grid-area: header;
   border-bottom: 1px solid #ddd;
-  padding: 10px 10px 10px 100px;
+  padding: 13px 10px 12px 100px;
   -webkit-user-select: none;
   -webkit-app-region: drag;
 }
