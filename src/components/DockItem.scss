@@ -1,0 +1,29 @@
+.dock-item {
+  position: absolute;
+}
+
+.item {
+  display: block;
+  padding: 10px;
+  background-color: #ddd;
+  text-align: center;
+  margin: 5px;
+
+  &:hover {
+    background-color: #ccc;
+  }
+
+  &.selected {
+    border: 1px solid #555;
+  }
+}
+
+.popover {
+  background-color: #eee;
+  border: 1px solid #ddd;
+  padding: 5px;
+
+  div {
+    margin: 5px;
+  }
+}
