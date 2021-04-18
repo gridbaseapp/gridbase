@@ -28,7 +28,7 @@ export default function tabbable(
     if (!drag) return;
 
     tabs.forEach((tab) => {
-      style(tab.node, { position: 'absolute', left: `${tab.x}px` });
+      style(tab.node, { position: 'absolute', left: `${tab.x}px`, width: `${tab.width}px` });
     });
 
     const offsetX = ev.clientX - drag.x;
@@ -132,7 +132,7 @@ export default function tabbable(
         this.classList.remove(cssClass.drag);
 
         tabs.forEach(tab => {
-          style(tab.node, { position: null, left: null });
+          style(tab.node, { position: null, left: null, width: null });
         });
         // @ts-ignore
         container.replaceChildren(...tabs.map(e => e.node));

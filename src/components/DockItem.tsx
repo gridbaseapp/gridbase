@@ -26,7 +26,7 @@ export default function DockItem(props: IdocItemProps) {
     <div>
       <Tippy
         placement="right-start"
-        delay={200}
+        delay={[200, 100]}
         interactive={true}
         interactiveBorder={10}
         render={attrs => (
