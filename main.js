@@ -18,6 +18,8 @@ function createWindow() {
     y: windowRect.y || 0,
     width: windowRect.width || screenSize.width,
     height: windowRect.height || screenSize.height,
+    minWidth: 800,
+    minHeight: 600,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
