@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Tippy from '@tippyjs/react/headless';
 import classNames from 'classnames';
 import tabable from '../../utils/tabable';
@@ -21,6 +21,7 @@ function maxTabs(width: number) {
 
 export default function Tabs(props: ITabsProps) {
   const tabsContainer = useRef<HTMLDivElement>(null);
+  const [isMoreTabsVisible, setMoreTabsVisible] = useState(false);
 
   useEffect(() => {
     if (tabsContainer.current) {
@@ -43,6 +44,16 @@ export default function Tabs(props: ITabsProps) {
     ev.preventDefault();
     ev.stopPropagation();
     props.onCloseEntity(entity);
+  }
+
+  function onSelectMoreTab(entity: string) {
+    props.onSelectEntity(entity);
+    setMoreTabsVisible(false);
+  }
+
+  function onShowMoreTabs(ev: React.MouseEvent) {
+    ev.preventDefault();
+    setMoreTabsVisible(!isMoreTabsVisible);
   }
 
   return (
@@ -82,9 +93,10 @@ export default function Tabs(props: ITabsProps) {
             <div>
               {props.entities.length > maxTabs(width) &&
                 <Tippy
-                  trigger="click"
                   placement="bottom-end"
                   interactive
+                  visible={isMoreTabsVisible}
+                  onClickOutside={() => setMoreTabsVisible(false)}
                   render={attrs => (
                     <div className={styles.moreTabsPopover}>
                       {[...props.entities].slice(maxTabs(width)).map(entity => (
@@ -93,7 +105,7 @@ export default function Tabs(props: ITabsProps) {
                           className={
                             classNames({ [styles.selected]: entity === props.selectedEntity })
                           }
-                          onClick={() => props.onSelectEntity(entity)}
+                          onClick={() => onSelectMoreTab(entity)}
                         >
                           {entity}
                         </a>
@@ -101,7 +113,7 @@ export default function Tabs(props: ITabsProps) {
                     </div>
                   )}
                 >
-                  <a className={styles.newTab}>...</a>
+                  <a className={styles.newTab} onClick={onShowMoreTabs}>...</a>
                 </Tippy>
               }
             </div>
