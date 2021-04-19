@@ -64,10 +64,6 @@ export default function Content(props: IContentProps) {
     }
   }
 
-  function onReorderEntities(entity: string[]) {
-    setOpenEntities(entity);
-  }
-
   return (
     <div className={classNames(styles.service, props.className)}>
       <Sidebar
@@ -83,9 +79,8 @@ export default function Content(props: IContentProps) {
           selectedEntity={selectedEntity}
           onSelectEntity={(entity) => setSelectedEntity(entity)}
           onCloseEntity={onCloseEntity}
-          onReorderEntities={onReorderEntities}
         />
-        {openEntities.sort().map(entity => (
+        {openEntities.map(entity => (
           <Table
             key={entity}
             className={classNames({ [styles.hidden]: entity !== selectedEntity })}

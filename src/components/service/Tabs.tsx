@@ -10,7 +10,6 @@ interface ITabsProps {
   selectedEntity: string | undefined;
   onSelectEntity(entity: string): void;
   onCloseEntity(entity: string): void;
-  onReorderEntities(entities: string[]): void;
 }
 
 const TAB_WIDTH_THRESHOLD = 150;
@@ -25,16 +24,7 @@ export default function Tabs(props: ITabsProps) {
 
   useEffect(() => {
     if (tabsContainer.current) {
-      return tabable(
-        tabsContainer.current,
-        { drag: styles.drag, mirror: styles.mirror },
-        (order) => {
-          const entities = order
-            .map(i => props.entities[i])
-            .concat(props.entities.slice(order.length));
-          props.onReorderEntities(entities);
-        }
-      );
+      return tabable(tabsContainer.current, { drag: styles.drag, mirror: styles.mirror });
     }
 
     return undefined;

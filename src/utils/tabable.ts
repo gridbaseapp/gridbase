@@ -12,7 +12,7 @@ function style(node: HTMLElement, styles: any) {
 export default function tabbable(
   container: HTMLElement,
   cssClass: ICssClass,
-  onReorder: (order: number[]) => void,
+  onReorder?: (order: number[]) => void,
 ) {
   function mousedown(this: HTMLElement, ev: MouseEvent) {
     const containerRect = container.getBoundingClientRect();
@@ -136,7 +136,7 @@ export default function tabbable(
         });
         // @ts-ignore
         container.replaceChildren(...tabs.map(e => e.node));
-        onReorder(tabs.map(e => e.position));
+        if (onReorder) onReorder(tabs.map(e => e.position));
       });
     };
 
