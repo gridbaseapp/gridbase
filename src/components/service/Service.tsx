@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
+import { useSelector } from 'react-redux';
+import { IState } from '../store';
 import Sidebar from './Sidebar';
 import Tabs from './Tabs';
 import Table from './Table';
 import styles from './Service.scss';
-import { useServiceContext } from '../../utils/contexts';
 
 interface IContentProps {
   className: string;
 }
 
 export default function Content(props: IContentProps) {
-  const { connection, localStore } = useServiceContext();
+  const localStore = useSelector((state: IState) => state.localStore);
+  const connection = useSelector((state: IState) => state.connection);
   const [schemas, setSchemas] = useState<string[]>([]);
   const [selectedSchema, setSelectedSchema] = useState('public');
   const [openEntities, setOpenEntities] = useState<string[]>([]);

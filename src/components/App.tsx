@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Client } from 'pg';
 import classNames from 'classnames';
+import { Store } from 'redux';
+import { Provider } from 'react-redux';
 import { getPasswordFromKeyStore } from '../utils/key-store';
 import LocalStore from '../utils/local-store';
 import { IConnection, IConnectionDetails } from '../connection';
-import { ServiceProvider } from '../utils/contexts';
+import { configureStore, IState } from './store';
 import Splash from './Splash';
 import Launcher from './Launcher';
 import Dock from './Dock';
@@ -30,6 +32,7 @@ export default function App() {
   const [connectionsDetails, setConnectionsDetails] = useState<IConnectionDetails[]>([]);
   const [openConnections, setOpenConnections] = useState<IConnection[]>([]);
   const [selectedConnection, setSelectedConnection] = useState<IConnection>();
+  const [stores, setStores] = useState<Store<IState>[]>([]);
   const [showLauncher, setShowLauncher] = useState(true);
 
   useEffect(() => {
@@ -84,6 +87,7 @@ export default function App() {
 
     setOpenConnections([...openConnections, connection]);
     setSelectedConnection(connection);
+    if (localStore) setStores([...stores, configureStore(localStore, connection)]);
     setShowLauncher(false);
   }
 
@@ -92,6 +96,12 @@ export default function App() {
 
     const connections = openConnections.filter(e => e !== connection);
     setOpenConnections(connections);
+
+    const activeStores = stores.filter(e => {
+      const state = e.getState();
+      return state.connection !== connection;
+    });
+    setStores(activeStores);
 
     if (connections.length > 0) {
       setSelectedConnection(connections[0]);
@@ -107,15 +117,18 @@ export default function App() {
     let connectionsRender = null;
 
     if (openConnections.length > 0) {
-      connectionsRender = openConnections.map(
-        e => <ServiceProvider
-          key={e.connectionDetails.uuid}
-          localStore={localStore}
-          connection={e}
-        >
-          <Service className={classNames({ [styles.hidden]: e !== selectedConnection })} />
-        </ServiceProvider>
-      );
+      connectionsRender = stores.map(e => {
+        const state = e.getState();
+        const connection = state.connection;
+
+        return (
+          <Provider store={e} key={connection.connectionDetails.uuid}>
+            <Service
+              className={classNames({ [styles.hidden]: connection !== selectedConnection })}
+            />
+          </Provider>
+        );
+      })
     }
 
     content = (

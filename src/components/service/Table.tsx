@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import classNames from 'classnames';
 import { FixedSizeGrid } from 'react-window';
 import AutoSizer from './../AutoSizer';
 import styles from './Table.scss';
-import { useServiceContext } from '../../utils/contexts';
+import { IState } from '../store';
 
 interface IField {
   name: string;
@@ -74,7 +75,7 @@ interface ITableProps {
 }
 
 export default function Table(props: ITableProps) {
-  const { connection } = useServiceContext();
+  const connection = useSelector((state: IState) => state.connection);
   const [fields, setFields] = useState<IField[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
 

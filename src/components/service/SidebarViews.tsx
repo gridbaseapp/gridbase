@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import classNames from 'classnames';
 import styles from './SidebarViews.scss';
-import { useServiceContext } from '../../utils/contexts';
+import { IState } from '../store';
 
 interface ISidebarViewsProps {
   selectedSchema: string;
@@ -10,7 +11,7 @@ interface ISidebarViewsProps {
 }
 
 export default function SidebarTables(props: ISidebarViewsProps) {
-  const { connection } = useServiceContext();
+  const connection = useSelector((state: IState) => state.connection);
   const [views, setViews] = useState<string[]>([]);
   const [filter, setFilter] = useState('');
 

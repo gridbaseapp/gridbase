@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import SchemaSelector from './SchemaSelector';
 import SidebarTables from './SidebarTables';
 import SidebarViews from './SidebarViews';
 import SidebarTabs from './SidebarTabs';
 import styles from './Sidebar.scss';
-import { useServiceContext } from '../../utils/contexts';
+import { IState } from '../store';
 
 interface ISidebarProps {
   schemas: string[];
@@ -15,7 +16,7 @@ interface ISidebarProps {
 }
 
 export default function Sidebar(props: ISidebarProps) {
-  const { connection } = useServiceContext();
+  const connection = useSelector((state: IState) => state.connection);
   const [selectedTab, setSelectedTab] = useState('tables');
 
   return (
