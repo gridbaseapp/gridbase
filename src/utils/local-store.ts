@@ -21,12 +21,12 @@ export default class LocalStore {
     this.setSecure(KEY_CONNECTIONS, connections);
   }
 
-  getSchema(connectionUUID: string) {
-    return <string>this.store.get(`${connectionUUID}-schema`);
+  getSchemaId(connectionUUID: string) {
+    return <number>this.store.get(`${connectionUUID}-schema-id`);
   }
 
-  setSchema(connectionUUID: string, value: string) {
-    this.store.set(`${connectionUUID}-schema`, value);
+  setSchemaId(connectionUUID: string, value: number) {
+    this.store.set(`${connectionUUID}-schema-id`, value);
   }
 
   getSecure(key: string, defaultValue?: any) {

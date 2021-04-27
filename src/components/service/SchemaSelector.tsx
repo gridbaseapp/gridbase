@@ -1,38 +1,53 @@
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import Tippy from '@tippyjs/react/headless';
 import classNames from 'classnames';
+import { ISchema, IState, selectSchema } from '../store';
 import styles from './SchemaSelector.scss';
 
-interface ISchemaSelectorProps {
-  schemas: string[];
-  selectedSchema: string;
-  onSelectSchema(schema: string): void;
-}
+export default function SchemaSelector() {
+  const dispatch = useDispatch();
 
-export default function SchemaSelector(props: ISchemaSelectorProps) {
-  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const schemas = useSelector((state: IState) => state.schemas);
+  const selectedSchema = useSelector((state: IState) => state.selectedSchema);
+
+  const [isDropdownVisible, setDropdownVisible] = useState(false);
 
   function onToggleDropdown(ev: React.MouseEvent) {
     ev.preventDefault();
-    setDropdownVisible(!dropdownVisible);
+    setDropdownVisible(!isDropdownVisible);
   }
 
-  function onSelectSchema(ev: React.MouseEvent, schema: string) {
+  function onSelectSchema(ev: React.MouseEvent, schema: ISchema) {
     ev.preventDefault();
-    props.onSelectSchema(schema);
+    dispatch(selectSchema(schema));
     setDropdownVisible(false);
   }
 
   return (
     <div className={styles.schemaSelector}>
-      <a href="" onClick={onToggleDropdown}>{props.selectedSchema}</a>
-
-      <div className={classNames(styles.dropdown, { [styles.visible]: dropdownVisible })}>
-        {props.schemas.map(schema => <a href=""
-          key={schema}
-          className={classNames({ [styles.selected]: schema === props.selectedSchema })}
-          onClick={(ev) => onSelectSchema(ev, schema)}
-        >{schema}</a>)}
-      </div>
+      <Tippy
+        placement="bottom"
+        interactive
+        visible={isDropdownVisible}
+        onClickOutside={() => setDropdownVisible(false)}
+        render={attrs => (
+          <div className={styles.dropdown}>
+            {
+              schemas.map(schema => (
+                <a
+                  href=""
+                  key={schema.id}
+                  className={classNames({ [styles.selected]: schema.id === selectedSchema?.id })}
+                  onClick={(ev) => onSelectSchema(ev, schema)}
+                >{schema.name}</a>
+              ))
+            }
+          </div>
+        )}
+      >
+        <a href="" onClick={onToggleDropdown}>{selectedSchema?.name}</a>
+      </Tippy>
     </div>
   );
 }

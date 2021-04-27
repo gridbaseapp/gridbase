@@ -1,13 +1,7 @@
 .schema-selector {
   .dropdown {
-    position: absolute;
-    display: none;
     border: 1px solid #ccc;
     background-color: #fff;
-
-    &.visible {
-      display: block;
-    }
 
     a {
       display: block;

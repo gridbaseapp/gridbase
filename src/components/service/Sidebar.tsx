@@ -7,15 +7,7 @@ import SidebarTabs from './SidebarTabs';
 import styles from './Sidebar.scss';
 import { IState } from '../store';
 
-interface ISidebarProps {
-  schemas: string[];
-  selectedSchema: string;
-  selectedEntity: string | undefined;
-  onSelectSchema(schema: string): void;
-  onOpenEntity(entity: string): void;
-}
-
-export default function Sidebar(props: ISidebarProps) {
+export default function Sidebar() {
   const connection = useSelector((state: IState) => state.connection);
   const [selectedTab, setSelectedTab] = useState('tables');
 
@@ -23,22 +15,18 @@ export default function Sidebar(props: ISidebarProps) {
     <div className={styles.sidebar}>
       <h1>{connection.connectionDetails.database}</h1>
       <div className={styles.content}>
-        <SchemaSelector
-          schemas={props.schemas}
-          selectedSchema={props.selectedSchema}
-          onSelectSchema={props.onSelectSchema}
-        />
+        <SchemaSelector />
         <SidebarTabs selectedTab={selectedTab} onSelectTab={setSelectedTab} />
-        {selectedTab === 'tables' && <SidebarTables
+        {/* {selectedTab === 'tables' && <SidebarTables
           selectedSchema={props.selectedSchema}
           selectedTable={props.selectedEntity}
           onOpenTable={props.onOpenEntity}
-        />}
-        {selectedTab === 'views' && <SidebarViews
+        />} */}
+        {/* {selectedTab === 'views' && <SidebarViews
           selectedSchema={props.selectedSchema}
           selectedView={props.selectedEntity}
           onOpenView={props.onOpenEntity}
-        />}
+        />} */}
       </div>
     </div>
   );
