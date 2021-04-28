@@ -1,16 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import Tippy from '@tippyjs/react/headless';
 import classNames from 'classnames';
 import tabable from '../../utils/tabable';
 import styles from './Tabs.scss';
 import AutoSizer from '../AutoSizer';
-
-interface ITabsProps {
-  entities: string[];
-  selectedEntity: string | undefined;
-  onSelectEntity(entity: string): void;
-  onCloseEntity(entity: string): void;
-}
+import { IEntity, IState, closeEntity } from '../store';
 
 const TAB_WIDTH_THRESHOLD = 150;
 
@@ -18,7 +13,12 @@ function maxTabs(width: number) {
   return Math.ceil(width / TAB_WIDTH_THRESHOLD);
 }
 
-export default function Tabs(props: ITabsProps) {
+export default function Tabs() {
+  const dispatch = useDispatch();
+
+  const entities = useSelector((state: IState) => state.openEntities);
+  const selectedEntity = useSelector((state: IState) => state.selectedEntity);
+
   const tabsContainer = useRef<HTMLDivElement>(null);
   const [isMoreTabsVisible, setMoreTabsVisible] = useState(false);
 
@@ -30,14 +30,14 @@ export default function Tabs(props: ITabsProps) {
     return undefined;
   });
 
-  function onCloseEntity(ev: React.MouseEvent, entity: string) {
+  function onCloseEntity(ev: React.MouseEvent, entity: IEntity) {
     ev.preventDefault();
     ev.stopPropagation();
-    props.onCloseEntity(entity);
+    dispatch(closeEntity(entity));
   }
 
-  function onSelectMoreTab(entity: string) {
-    props.onSelectEntity(entity);
+  function onSelectMoreTab(entity: IEntity) {
+    dispatch({ type: 'selectedEntity/set', payload: entity });
     setMoreTabsVisible(false);
   }
 
@@ -52,23 +52,26 @@ export default function Tabs(props: ITabsProps) {
         {(width, _) =>
           <div className={styles.tabsContent}>
             <div className={styles.tabsContainer} ref={tabsContainer}>
-              {[...props.entities].slice(0, maxTabs(width)).map(entity =>
+              {[...entities].slice(0, maxTabs(width)).map(entity =>
                 <Tippy
-                  key={entity}
+                  key={entity.id}
                   placement="top"
                   delay={[1000, 100]}
                   offset={[0, 5]}
                   render={attrs => (
-                    <div className={styles.tooltip} {...attrs}>{entity}</div>
+                    <div className={styles.tooltip} {...attrs}>{entity.name}</div>
                   )}
                 >
                   <span
                     className={
-                      classNames(styles.tab, { [styles.selected]: entity === props.selectedEntity })
+                      classNames(
+                        styles.tab,
+                        { [styles.selected]: entity.id === selectedEntity?.id },
+                      )
                     }
-                    onMouseDown={() => props.onSelectEntity(entity)}
+                    onMouseDown={() => dispatch({ type: 'selectedEntity/set', payload: entity })}
                   >
-                    <span>{entity}</span>
+                    <span>{entity.name}</span>
                     <a
                       href=""
                       draggable="false"
@@ -81,7 +84,7 @@ export default function Tabs(props: ITabsProps) {
             </div>
 
             <div>
-              {props.entities.length > maxTabs(width) &&
+              {entities.length > maxTabs(width) &&
                 <Tippy
                   placement="bottom-end"
                   interactive
@@ -89,15 +92,15 @@ export default function Tabs(props: ITabsProps) {
                   onClickOutside={() => setMoreTabsVisible(false)}
                   render={attrs => (
                     <div className={styles.moreTabsPopover}>
-                      {[...props.entities].slice(maxTabs(width)).map(entity => (
+                      {[...entities].slice(maxTabs(width)).map(entity => (
                         <a
-                          key={entity}
+                          key={entity.id}
                           className={
-                            classNames({ [styles.selected]: entity === props.selectedEntity })
+                            classNames({ [styles.selected]: entity.id === selectedEntity?.id })
                           }
                           onClick={() => onSelectMoreTab(entity)}
                         >
-                          {entity}
+                          {entity.name}
                         </a>
                       ))}
                     </div>

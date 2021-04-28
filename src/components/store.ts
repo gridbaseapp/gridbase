@@ -4,8 +4,20 @@ import { IConnection } from '../connection';
 import LocalStore from '../utils/local-store';
 
 export interface ISchema {
-  id: number;
+  id: string;
   name: string;
+}
+
+export enum EntityType {
+  Table,
+  View,
+  MaterializeView,
+}
+
+export interface IEntity {
+  id: string;
+  name: string;
+  type: EntityType;
 }
 
 export interface IState {
@@ -13,6 +25,9 @@ export interface IState {
   connection: IConnection;
   schemas: ISchema[];
   selectedSchema: ISchema;
+  entities: IEntity[];
+  openEntities: IEntity[];
+  selectedEntity: IEntity;
 }
 
 function schemasReducer(state = [], action: any) {
@@ -38,10 +53,10 @@ export function loadSchemas() {
     const lastUsedSchemaId = localStore.getSchemaId(connection.connectionDetails.uuid);
 
     const { rows } = await connection.client.query(`
-      SELECT n.oid AS id, n.nspname AS name
-      FROM pg_catalog.pg_namespace n
-      WHERE n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
-      ORDER BY n.nspname;
+      SELECT oid AS id, nspname AS name
+      FROM pg_catalog.pg_namespace
+      WHERE nspname !~ '^pg_' AND nspname <> 'information_schema'
+      ORDER BY nspname;
     `);
 
     dispatch({ type: 'schemas/set', payload: rows });
@@ -60,7 +75,7 @@ export function loadSchemas() {
     }
 
     dispatch({ type: 'selectedSchema/set', payload: selectedSchema });
-  }
+  };
 }
 
 export function selectSchema(schema: ISchema) {
@@ -69,12 +84,94 @@ export function selectSchema(schema: ISchema) {
 
     localStore.setSchemaId(connection.connectionDetails.uuid, schema.id);
     dispatch({ type: 'selectedSchema/set', payload: schema });
+  };
+}
+
+function entitiesReducer(state = [], action: any) {
+  if (action.type === 'entities/set') {
+    return action.payload;
   }
+
+  return state;
+}
+
+function selectedEntityReducer(state = null, action: any) {
+  if (action.type === 'selectedEntity/set') {
+    return action.payload;
+  }
+
+  return state;
+}
+
+function openEntitiesReducer(state: IEntity[] = [], action: any) {
+  if (action.type === 'openEntities/add') {
+    return [...state, action.payload];
+  }
+
+  if (action.type === 'openEntities/remove') {
+    return state.filter(e => e !== action.payload);
+  }
+
+  return state;
+}
+
+export function loadEntities(schema: ISchema) {
+  return async (dispatch: any, getState: any) => {
+    const { connection } = getState();
+
+    const { rows } = await connection.client.query(`
+      SELECT oid AS id, relname AS name,
+        CASE relkind
+          WHEN 'r' THEN ${EntityType.Table}
+          WHEN 'v' THEN ${EntityType.View}
+          WHEN 'm' THEN ${EntityType.MaterializeView}
+        END AS type
+      FROM pg_catalog.pg_class
+      WHERE
+        relnamespace = '${schema.id}'
+        AND relkind IN ('r', 'v', 'm')
+      ORDER BY relname;
+    `);
+
+    dispatch({ type: 'entities/set', payload: rows });
+  };
+}
+
+export function openEntity(entity: IEntity) {
+  return (dispatch: any, getState: any) => {
+    const { openEntities } = getState();
+
+    if (!openEntities.map((e: IEntity) => e.id).includes(entity.id)) {
+      dispatch({ type: 'openEntities/add', payload: entity });
+    }
+
+    dispatch({ type: 'selectedEntity/set', payload: entity });
+  };
+}
+
+export function closeEntity(entity: IEntity) {
+  return (dispatch: any, getState: any) => {
+    const { openEntities, selectedEntity } = getState();
+    const entityIndex = openEntities.map((e: IEntity) => e.id).indexOf(entity.id);
+
+    if (selectedEntity.id === entity.id) {
+      let newEntity = openEntities[entityIndex + 1];
+      if (!newEntity) newEntity = openEntities[entityIndex - 1];
+      if (!newEntity) newEntity = null;
+
+      dispatch({ type: 'selectedEntity/set', payload: newEntity });
+    }
+
+    dispatch({ type: 'openEntities/remove', payload: entity });
+  };
 }
 
 const combinedReducers = combineReducers({
   schemas: schemasReducer,
   selectedSchema: selectedSchemaReducer,
+  entities: entitiesReducer,
+  openEntities: openEntitiesReducer,
+  selectedEntity: selectedEntityReducer,
 });
 
 function rootReducer(state: any, action: any) {

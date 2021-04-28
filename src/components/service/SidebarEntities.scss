@@ -1,5 +1,14 @@
-.sidebar-views {
+.sidebar-entities {
   padding: 10px 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: scroll;
+
+  .list {
+    flex: 1 0;
+    overflow: scroll;
+  }
 
   a {
     display: block;
