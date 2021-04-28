@@ -27,7 +27,7 @@ export default function AutoSizer({ children }: IAutoSizerProps) {
     return () => {
       observer.disconnect();
     };
-  });
+  }, []);
 
   return (
     <div ref={rootElement} style={{ width: '100%', height: '100%' }}>

@@ -1,0 +1,29 @@
+.go-to {
+  width: 500px;
+  max-height: 300px;
+  border: 1px solid #eee;
+  background-color: #fbfbfb;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+
+  .filter {
+    width: 100%;
+    padding: 5px 10px;
+    border: 1px solid #eee;
+    margin-bottom: 10px;
+  }
+
+  .list {
+    overflow: scroll;
+
+    a {
+      display: block;
+      padding: 5px 10px;
+
+      &:hover {
+        background-color: #eee;
+      }
+    }
+  }
+}
