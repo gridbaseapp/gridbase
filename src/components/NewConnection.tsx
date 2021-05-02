@@ -12,7 +12,11 @@ interface INewConnectionProps {
 
 export default function NewConnection(props: INewConnectionProps) {
   const [error, setError] = useState(null);
-  const { errors, handleSubmit, register } = useForm<IConnectionDetails>({ mode: 'onChange' });
+  const {
+    formState: { errors },
+    handleSubmit,
+    register,
+  } = useForm<IConnectionDetails>({ mode: 'onChange' });
 
   async function onSubmit(data: IConnectionDetails) {
     try {
@@ -40,20 +44,18 @@ export default function NewConnection(props: INewConnectionProps) {
         <div>
           <input
             type="text"
-            name="name"
             placeholder="Name"
             autoFocus
-            ref={register}
+            {...register('name')}
           />
         </div>
 
         <div>
           <input
             type="text"
-            name="host"
             placeholder="Host"
             defaultValue="localhost"
-            ref={register({ required: true })}
+            {...register('host', { required: true })}
           />
           {errors.host && 'is required'}
         </div>
@@ -61,10 +63,9 @@ export default function NewConnection(props: INewConnectionProps) {
         <div>
           <input
             type="number"
-            name="port"
             placeholder="Port"
             defaultValue="5432"
-            ref={register({ required: true })}
+            {...register('port', { required: true })}
           />
           {errors.port && 'is required'}
         </div>
@@ -72,9 +73,8 @@ export default function NewConnection(props: INewConnectionProps) {
         <div>
           <input
             type="text"
-            name="database"
             placeholder="Database"
-            ref={register({ required: true })}
+            {...register('database', { required: true })}
           />
           {errors.database && 'is required'}
         </div>
@@ -82,9 +82,8 @@ export default function NewConnection(props: INewConnectionProps) {
         <div>
           <input
             type="text"
-            name="user"
             placeholder="User"
-            ref={register({ required: true })}
+            {...register('user', { required: true })}
           />
           {errors.user && 'is required'}
         </div>
@@ -92,9 +91,8 @@ export default function NewConnection(props: INewConnectionProps) {
         <div>
           <input
             type="password"
-            name="password"
             placeholder="Password"
-            ref={register({ required: true })}
+            {...register('password', { required: true })}
           />
           {errors.password && 'is required'}
         </div>
