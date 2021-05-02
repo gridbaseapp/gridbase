@@ -22,6 +22,7 @@ module.exports = {
             options: {
               modules: {
                 exportLocalsConvention: 'camelCaseOnly',
+                localIdentName: '[path][name]__[local]',
               },
             },
           },
