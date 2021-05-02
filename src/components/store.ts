@@ -112,6 +112,10 @@ function openEntitiesReducer(state: IEntity[] = [], action: any) {
     return state.filter(e => e !== action.payload);
   }
 
+  if (action.type === 'openEntities/reorder') {
+    return action.payload.map((e: number) => state[e]);
+  }
+
   return state;
 }
 
@@ -164,6 +168,10 @@ export function closeEntity(entity: IEntity) {
 
     dispatch({ type: 'openEntities/remove', payload: entity });
   };
+}
+
+export function reorderEntities(order: number[]) {
+  return { type: 'openEntities/reorder', payload: order };
 }
 
 const combinedReducers = combineReducers({
