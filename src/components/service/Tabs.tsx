@@ -35,7 +35,7 @@ export default function Tabs() {
     }
 
     return undefined;
-  });
+  }, []);
 
   function onCloseEntity(ev: React.MouseEvent, entity: IEntity) {
     ev.preventDefault();

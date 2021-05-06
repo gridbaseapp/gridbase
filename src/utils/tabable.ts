@@ -12,20 +12,34 @@ function style(node: HTMLElement, styles: any) {
 export default function tabbable(
   container: HTMLElement,
   cssClass: ICssClass,
-  onReorder?: (order: number[]) => void,
+  onReorder: (order: number[]) => void,
 ) {
-  function mousedown(this: HTMLElement, ev: MouseEvent) {
+  let isMouseEnter = false;
+  let isMouseDown = false;
+
+  function mousedown(ev: MouseEvent) {
+    const children = getChildren();
+    let targetElement: HTMLElement | null = <HTMLElement>ev.target;
+
+    while (targetElement && !children.includes(targetElement)) {
+      targetElement = targetElement.parentElement;
+    }
+
+    if (!targetElement) return;
+
     const containerRect = container.getBoundingClientRect();
     const containerLeft = containerRect.x;
     const containerRight = containerLeft + containerRect.width;
 
-    const tabs = (<HTMLElement[]>Array.from(container.children)).map((node, position) => {
+    const tabs = children.map((node, position) => {
       const { x, width, top } = node.getBoundingClientRect();
       return { node, position, x, width, top };
     });
 
-    const drag = tabs.find(e => e.node === this);
+    const drag = tabs.find(e => e.node === targetElement);
     if (!drag) return;
+
+    isMouseDown = true;
 
     tabs.forEach((tab) => {
       style(tab.node, { position: 'absolute', left: `${tab.x}px`, width: `${tab.width}px` });
@@ -60,7 +74,7 @@ export default function tabbable(
         mirrorLeft = containerRight - drag.width;
       }
 
-      style(mirror, { left: `${mirrorLeft}px`, top: `${drag.top}px` });
+      style(mirror, { left: `${mirrorLeft}px`, top: `${drag.top}px`, pointerEvents: 'none' });
 
       if (leftTab && leftTab.x + (leftTab.width / 2) > mirrorLeft) {
         const margin = drag.x - (leftTab.x + leftTab.width);
@@ -129,7 +143,7 @@ export default function tabbable(
 
       Promise.all(promises).then(() => {
         if (mirror) mirror.remove();
-        this.classList.remove(cssClass.drag);
+        targetElement?.classList.remove(cssClass.drag);
 
         tabs.forEach(tab => {
           style(tab.node, { position: null, left: null, width: null });
@@ -137,17 +151,62 @@ export default function tabbable(
         // @ts-ignore
         container.replaceChildren(...tabs.map(e => e.node));
         if (onReorder) onReorder(tabs.map(e => e.position));
+        unfastenTabs();
       });
-    };
+
+      isMouseDown = false;
+  };
 
     document.addEventListener('mousemove', mousemove);
     document.addEventListener('mouseup', mouseup);
   }
 
-  const tabsNodes = <HTMLElement[]>Array.from(container.children);
-  tabsNodes.forEach(tab => tab.addEventListener('mousedown', mousedown));
+  const mutationObserver = new MutationObserver((mutations) => {
+    unfastenTabs();
+    fastenTabs();
+  });
+
+  function mouseenter() {
+    if (isMouseEnter) return;
+    isMouseEnter = true;
+    mutationObserver.observe(container, { childList: true });
+    fastenTabs();
+  }
+
+  function mouseleave() {
+    isMouseEnter = false;
+    mutationObserver.disconnect();
+    unfastenTabs();
+  }
+
+  function fastenTabs() {
+    const children = getChildren();
+    if (children.length === 0) return;
+
+    const { width } = children[0].getBoundingClientRect();
+    children.forEach(el => style(el, { maxWidth: `${width}px`, flexGrow: 0 }));
+  }
+
+  function unfastenTabs() {
+    if (isMouseEnter) return;
+    if (isMouseDown) return;
+
+    const children = getChildren();
+    children.forEach(el => style(el, { maxWidth: null, flexGrow: null }));
+  }
+
+  function getChildren() {
+    return <HTMLElement[]>Array.from(container.children);
+  }
+
+  container.addEventListener('mousedown', mousedown);
+  container.addEventListener('mouseenter', mouseenter);
+  container.addEventListener('mouseleave', mouseleave);
 
   return function cleanup() {
-    tabsNodes.forEach(tab => tab.removeEventListener('mousedown', mousedown));
+    container.removeEventListener('mousedown', mousedown);
+    container.removeEventListener('mouseenter', mouseenter);
+    container.removeEventListener('mouseleave', mouseleave);
+    mutationObserver.disconnect();
   }
 }

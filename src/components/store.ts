@@ -113,7 +113,9 @@ function openEntitiesReducer(state: IEntity[] = [], action: any) {
   }
 
   if (action.type === 'openEntities/reorder') {
-    return action.payload.map((e: number) => state[e]);
+    return action.payload
+      .map((i: number) => state[i])
+      .concat(state.slice(action.payload.length));
   }
 
   return state;
