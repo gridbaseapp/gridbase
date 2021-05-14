@@ -4,7 +4,7 @@ import SchemaSelector from './SchemaSelector';
 import SidebarEntities from './SidebarEntities';
 import SidebarTabs from './SidebarTabs';
 import styles from './Sidebar.scss';
-import { EntityType, IState } from '../store';
+import { EntityType, IState } from '../state';
 
 export enum SelectedTab {
   Tables,

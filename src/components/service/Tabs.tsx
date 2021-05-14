@@ -6,7 +6,7 @@ import tabable from '../../utils/tabable';
 import styles from './Tabs.scss';
 import AutoSizer from '../AutoSizer';
 import GoTo from './GoTo';
-import { IEntity, IState, closeEntity, reorderEntities } from '../store';
+import { IEntity, IState, closeEntity, reorderOpenEntities } from '../state';
 
 const TAB_WIDTH_THRESHOLD = 150;
 
@@ -30,7 +30,7 @@ export default function Tabs() {
       return tabable(
         tabsContainer.current,
         { drag: styles.drag, mirror: styles.mirror },
-        (order) => dispatch(reorderEntities(order)),
+        (order) => dispatch(reorderOpenEntities(order)),
       )
     }
 

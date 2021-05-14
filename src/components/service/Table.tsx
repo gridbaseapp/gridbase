@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { FixedSizeGrid } from 'react-window';
 import AutoSizer from './../AutoSizer';
 import styles from './Table.scss';
-import { IState } from '../store';
+import { IState } from '../state';
 
 interface IField {
   name: string;

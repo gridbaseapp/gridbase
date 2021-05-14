@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import classNames from 'classnames';
-import { IState, loadSchemas, loadEntities } from '../store';
+import { IState, loadSchemas, loadEntities } from '../state';
 import Sidebar from './Sidebar';
 import Tabs from './Tabs';
 // import Table from './Table';

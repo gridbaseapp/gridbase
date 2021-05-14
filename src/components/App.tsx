@@ -6,7 +6,7 @@ import { Provider } from 'react-redux';
 import { getPasswordFromKeyStore } from '../utils/key-store';
 import LocalStore from '../utils/local-store';
 import { IConnection, IConnectionDetails } from '../connection';
-import { configureStore, IState } from './store';
+import { configureStore, IState } from './state';
 import Splash from './Splash';
 import Launcher from './Launcher';
 import Dock from './Dock';
