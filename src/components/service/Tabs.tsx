@@ -6,7 +6,13 @@ import tabable from '../../utils/tabable';
 import styles from './Tabs.scss';
 import AutoSizer from '../AutoSizer';
 import GoTo from './GoTo';
-import { IEntity, IState, closeEntity, reorderOpenEntities } from '../state';
+import {
+  IEntity,
+  IState,
+  ENTITY_TYPE_HUMAN,
+  closeEntity,
+  reorderOpenEntities,
+} from '../state';
 
 const TAB_WIDTH_THRESHOLD = 150;
 
@@ -90,7 +96,9 @@ export default function Tabs() {
                     delay={[1000, 100]}
                     offset={[0, 5]}
                     render={attrs => (
-                      <div className={styles.tooltip} {...attrs}>{entity.name}</div>
+                      <div className={styles.tooltip} {...attrs}>
+                        [{entity.schema?.name}] [{ENTITY_TYPE_HUMAN[entity.type]}] {entity.name}
+                      </div>
                     )}
                   >
                     <span

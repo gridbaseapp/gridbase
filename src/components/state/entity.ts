@@ -10,6 +10,13 @@ export interface IEntity {
   id: string;
   name: string;
   type: EntityType;
+  schema?: ISchema;
+}
+
+export const ENTITY_TYPE_HUMAN = {
+  0: 'Table',
+  1: 'View',
+  2: 'MaterializeView',
 }
 
 const ENTITIES_SET = 'entities/set';
@@ -91,7 +98,7 @@ export function loadEntities(schema: ISchema) {
       ORDER BY relname;
     `);
 
-    dispatch(setEntities(rows));
+    dispatch(setEntities(rows.map((e: IEntity) => ({...e, schema}))));
   };
 }
 

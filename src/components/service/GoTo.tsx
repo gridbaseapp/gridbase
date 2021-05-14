@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { IState, IEntity, openEntity } from '../state';
+import { IState, IEntity, ENTITY_TYPE_HUMAN, openEntity } from '../state';
 import styles from './GoTo.scss';
 
 interface IGoToProps {
@@ -50,7 +50,7 @@ export default function GoTo({ onEntityClicked }: IGoToProps) {
             key={entity.id}
             onClick={(ev) => onClickEntity(ev, entity)}
           >
-            {entity.type}: {entity.name}
+            [{entity.schema?.name}] [{ENTITY_TYPE_HUMAN[entity.type]}] {entity.name}
           </a>
         ))}
       </div>

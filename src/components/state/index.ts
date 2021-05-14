@@ -12,6 +12,7 @@ import {
 import {
   IEntity,
   EntityType,
+  ENTITY_TYPE_HUMAN,
   entitiesReducer,
   openEntitiesReducer,
   selectedEntityReducer,
@@ -58,6 +59,7 @@ export function configureStore(localStore: LocalStore, connection: IConnection) 
 export {
   IEntity,
   EntityType,
+  ENTITY_TYPE_HUMAN,
   ISchema,
   openEntity,
   closeEntity,
