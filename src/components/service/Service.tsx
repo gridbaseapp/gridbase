@@ -4,16 +4,19 @@ import classNames from 'classnames';
 import { IState, loadSchemas, loadEntities } from '../../state';
 import Sidebar from './Sidebar';
 import Tabs from './Tabs';
-// import Table from './Table';
+import Table from './Table';
 import styles from './Service.scss';
 
 interface IContentProps {
-  className: string;
+  visible: boolean;
 }
 
 export default function Content(props: IContentProps) {
   const dispatch = useDispatch();
+
   const selectedSchema = useSelector((state: IState) => state.selectedSchema);
+  const openEntities = useSelector((state: IState) => state.openEntities);
+  const selectedEntity = useSelector((state: IState) => state.selectedEntity);
 
   useEffect(() => {
     dispatch(loadSchemas());
@@ -24,18 +27,17 @@ export default function Content(props: IContentProps) {
   }, [selectedSchema]);
 
   return (
-    <div className={classNames(styles.service, props.className)}>
+    <div className={classNames(styles.service, { hidden: !props.visible })}>
       <Sidebar />
       <div className={styles.content}>
         <Tabs />
-        {/* {openEntities.map(entity => (
+        {openEntities.map(entity => (
           <Table
-            key={entity}
-            className={classNames({ [styles.hidden]: entity !== selectedEntity })}
-            schema={selectedSchema}
-            table={entity}
+            key={entity.id}
+            visible={entity === selectedEntity}
+            entity={entity}
           />
-        ))} */}
+        ))}
       </div>
     </div>
   );

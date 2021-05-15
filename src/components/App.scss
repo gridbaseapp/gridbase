@@ -16,10 +16,10 @@ html, body {
   grid-template-areas: "header header" "dock content";
 }
 
-.hidden {
-  display: none;
-}
-
 a {
   color: #551a8b;
+}
+
+:global(.hidden) {
+  display: none;
 }

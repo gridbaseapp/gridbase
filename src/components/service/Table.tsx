@@ -1,50 +1,50 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
+// import { useSelector } from 'react-redux';
 import classNames from 'classnames';
-import { FixedSizeGrid } from 'react-window';
-import AutoSizer from './../AutoSizer';
+// import { FixedSizeGrid } from 'react-window';
+// import AutoSizer from './../AutoSizer';
 import styles from './Table.scss';
-import { IState } from '../state';
+import { IEntity } from '../../state';
 
-interface IField {
-  name: string;
-  num: number;
-  primary: boolean;
-}
+// interface IField {
+//   name: string;
+//   num: number;
+//   primary: boolean;
+// }
 
-enum RowType {
-  Initial,
-  New,
-  Edited,
-  Deleted,
-}
+// enum RowType {
+//   Initial,
+//   New,
+//   Edited,
+//   Deleted,
+// }
 
-class Row {
-  tableName: string
-  uid: string
-  type: RowType
-  fields: any
-  values: any
-  changes: any
+// class Row {
+//   tableName: string
+//   uid: string
+//   type: RowType
+//   fields: any
+//   values: any
+//   changes: any
 
-  constructor(tableName: string, fields: IField[], values: any, type = RowType.Initial) {
-    this.tableName = tableName;
-    this.uid = fields.filter(e => e.primary).map(e => values[e.name]).join('-');
-    this.fields = fields;
-    this.values = values;
-    this.changes = {};
-    this.type = type;
-  }
+  // constructor(tableName: string, fields: IField[], values: any, type = RowType.Initial) {
+  //   this.tableName = tableName;
+  //   this.uid = fields.filter(e => e.primary).map(e => values[e.name]).join('-');
+  //   this.fields = fields;
+  //   this.values = values;
+  //   this.changes = {};
+  //   this.type = type;
+  // }
 
-  getValue(fieldName: string) {
-    const val = this.changes[fieldName] || this.values[fieldName];
+  // getValue(fieldName: string) {
+  //   const val = this.changes[fieldName] || this.values[fieldName];
 
-    if (val === null || val === undefined) {
-      return '[NULL]';
-    } else {
-      return '' + val;
-    }
-  }
+  //   if (val === null || val === undefined) {
+  //     return '[NULL]';
+  //   } else {
+  //     return '' + val;
+  //   }
+  // }
 
 //   toChangeSQL() {
 //     const key = this.fields
@@ -66,48 +66,45 @@ class Row {
 //       return `UPDATE ${this.tableName} SET ${changes} WHERE ${key}`;
 //     }
 //   }
-}
+// }
 
 interface ITableProps {
-  className?: string;
-  schema: string;
-  table: string;
+  visible: boolean;
+  entity: IEntity;
 }
 
 export default function Table(props: ITableProps) {
-  const connection = useSelector((state: IState) => state.connection);
-  const [fields, setFields] = useState<IField[]>([]);
-  const [rows, setRows] = useState<Row[]>([]);
+  // const connection = useSelector((state: IState) => state.connection);
+  // const [fields, setFields] = useState<IField[]>([]);
+  // const [rows, setRows] = useState<Row[]>([]);
 
 //   const [selectedRow, setSelectedRow] = useState(-1);
 //   const [selectedColumn, setSelectedColumn] = useState(-1);
 //   const [editedCell, setEditedCell] = useState({ x: -1, y: -1 });
 
   useEffect(() => {
-    async function queryDB() {
-      const oidRes = await connection.client.query(`
-        SELECT c.oid
-        FROM pg_catalog.pg_class c
-        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-        WHERE c.relname = '${props.table}' AND n.nspname = '${props.schema}'`
-      );
+    (async () => {
+  //     const oidRes = await connection.client.query(`
+  //       SELECT c.oid
+  //       FROM pg_catalog.pg_class c
+  //       JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+  //       WHERE c.relname = '${props.table}' AND n.nspname = '${props.schema}'`
+  //     );
 
-      const [metadata, res] = await Promise.all([
-        connection.client.query(`
-          SELECT a.attname as name, a.attnum as num, i.indisprimary as primary
-          FROM pg_catalog.pg_attribute a
-          LEFT JOIN pg_index i ON i.indrelid = a.attrelid AND a.attnum = ANY(i.indkey)
-          WHERE a.attrelid = '${oidRes.rows[0].oid}' AND a.attnum > 0 AND NOT a.attisdropped
-          ORDER BY a.attnum
-        `),
-        connection.client.query(`SELECT * FROM "${props.schema}"."${props.table}"`),
-      ]);
+  //     const [metadata, res] = await Promise.all([
+  //       connection.client.query(`
+  //         SELECT a.attname as name, a.attnum as num, i.indisprimary as primary
+  //         FROM pg_catalog.pg_attribute a
+  //         LEFT JOIN pg_index i ON i.indrelid = a.attrelid AND a.attnum = ANY(i.indkey)
+  //         WHERE a.attrelid = '${oidRes.rows[0].oid}' AND a.attnum > 0 AND NOT a.attisdropped
+  //         ORDER BY a.attnum
+  //       `),
+  //       connection.client.query(`SELECT * FROM "${props.schema}"."${props.table}"`),
+  //     ]);
 
-      setFields(metadata.rows);
-      setRows(res.rows.map(e => new Row(props.table, metadata.rows, e)));
-    };
-
-    queryDB();
+  //     setFields(metadata.rows);
+  //     setRows(res.rows.map(e => new Row(props.table, metadata.rows, e)));
+    })();
   }, []);
 
 //   function addRow(e) {
@@ -206,28 +203,29 @@ export default function Table(props: ITableProps) {
 //     </div>;
 //   }
 
-  const Cell = ({ columnIndex, rowIndex, style }: { columnIndex: number, rowIndex: number, style: React.CSSProperties}) => {
-    const row = rows[rowIndex];
-    const field = row.fields[columnIndex];
-    const cell = row.values[field.name];
+  // const Cell = ({ columnIndex, rowIndex, style }: { columnIndex: number, rowIndex: number, style: React.CSSProperties}) => {
+  //   const row = rows[rowIndex];
+  //   const field = row.fields[columnIndex];
+  //   const cell = row.values[field.name];
 
-    const cls = classNames({
-      // [styles.selectedRow]: selectedRow === i,
-      // [styles.editedRow]: row.type === RowType.Edited,
-      // [styles.deletedRow]: row.type === RowType.Deleted,
-      // [styles.newRow]: row.type === RowType.New,
-    });
+  //   const cls = classNames({
+  //     // [styles.selectedRow]: selectedRow === i,
+  //     // [styles.editedRow]: row.type === RowType.Edited,
+  //     // [styles.deletedRow]: row.type === RowType.Deleted,
+  //     // [styles.newRow]: row.type === RowType.New,
+  //   });
 
-    return (
-      <div style={style} className={cls}>
-        {cell.toString()}
-      </div>
-    );
-  };
+  //   return (
+  //     <div style={style} className={cls}>
+  //       {cell.toString()}
+  //     </div>
+  //   );
+  // };
 
   return (
-    <div className={classNames(styles.tableRoot, props.className)}>
-      <AutoSizer>
+    <div className={classNames(styles.tableRoot, { hidden: !props.visible })}>
+      foobar {Math.random()}
+      {/* <AutoSizer>
         {(width, height) =>
           <FixedSizeGrid
             width={width}
@@ -240,7 +238,7 @@ export default function Table(props: ITableProps) {
             {Cell}
           </FixedSizeGrid>
         }
-      </AutoSizer>
+      </AutoSizer> */}
 
       {/* <table className={styles.table}> */}
         {/* <thead> */}

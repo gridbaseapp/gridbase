@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Client } from 'pg';
-import classNames from 'classnames';
 import { Store } from 'redux';
 import { Provider } from 'react-redux';
 import { getPasswordFromKeyStore } from '../utils/key-store';
@@ -123,9 +122,7 @@ export default function App() {
 
         return (
           <Provider store={e} key={connection.connectionDetails.uuid}>
-            <Service
-              className={classNames({ [styles.hidden]: connection !== selectedConnection })}
-            />
+            <Service visible={connection === selectedConnection} />
           </Provider>
         );
       })
