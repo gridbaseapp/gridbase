@@ -1,7 +1,7 @@
 import { applyMiddleware, createStore, combineReducers } from 'redux';
 import thunk from 'redux-thunk';
-import { IConnection } from '../../connection';
-import LocalStore from '../../utils/local-store';
+import { IConnection } from '../connection';
+import LocalStore from '../utils/local-store';
 import {
   ISchema,
   schemasReducer,

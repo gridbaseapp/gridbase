@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Tippy from '@tippyjs/react/headless';
 import classNames from 'classnames';
-import { ISchema, IState, selectSchema } from '../state';
+import { ISchema, IState, selectSchema } from '../../state';
 import styles from './SchemaSelector.scss';
 
 export default function SchemaSelector() {

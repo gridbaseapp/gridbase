@@ -12,7 +12,7 @@ import {
   ENTITY_TYPE_HUMAN,
   closeEntity,
   reorderOpenEntities,
-} from '../state';
+} from '../../state';
 
 const TAB_WIDTH_THRESHOLD = 150;
 

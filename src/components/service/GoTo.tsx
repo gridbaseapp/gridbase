@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { IState, IEntity, ENTITY_TYPE_HUMAN, openEntity } from '../state';
+import { IState, IEntity, ENTITY_TYPE_HUMAN, openEntity } from '../../state';
 import styles from './GoTo.scss';
 
 interface IGoToProps {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import styles from './SidebarEntities.scss';
-import { EntityType, IEntity, IState, openEntity } from '../state';
+import { EntityType, IEntity, IState, openEntity } from '../../state';
 
 interface ISidebarEntitiesProps {
   entityTypes: EntityType[];
