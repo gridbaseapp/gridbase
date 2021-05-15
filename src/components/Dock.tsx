@@ -1,14 +1,14 @@
 import React from 'react';
-import { IConnection } from '../connection';
+import { Service } from './App';
 import styles from './Dock.scss';
 import DockItem from './DockItem';
 
 interface IDocProps {
-  openConnections: IConnection[];
-  selectedConnection: IConnection;
+  services: Service[];
+  selectedService: Service;
   onShowLauncher(): void;
-  onSelectConnection(connection: IConnection): void
-  onDisconnect(conection: IConnection): void;
+  onSelectService(service: Service): void
+  onCloseService(service: Service): void;
 }
 
 export default function Dock(props: IDocProps) {
@@ -19,13 +19,13 @@ export default function Dock(props: IDocProps) {
 
   return (
     <div className={styles.dock}>
-      {props.openConnections.map(conn =>
+      {props.services.map(service =>
         <DockItem
-          key={conn.connectionDetails.uuid}
-          connection={conn}
-          selected={conn === props.selectedConnection}
-          onSelectConnection={props.onSelectConnection}
-          onDisconnect={props.onDisconnect}
+          key={service.connection.uuid}
+          service={service}
+          selected={service === props.selectedService}
+          onSelectService={props.onSelectService}
+          onCloseService={props.onCloseService}
         />
       )}
       <a className={styles.newConnection} href="" onClick={onShowLauncher}>+</a>

@@ -12,12 +12,12 @@ export enum SelectedTab {
 }
 
 export default function Sidebar() {
-  const connection = useSelector((state: IState) => state.connection);
+  const adapter = useSelector((state: IState) => state.adapter);
   const [selectedTab, setSelectedTab] = useState<SelectedTab>(SelectedTab.Tables);
 
   return (
     <div className={styles.sidebar}>
-      <h1>{connection.connectionDetails.database}</h1>
+      <h1>{adapter.connection.database}</h1>
       <SchemaSelector />
       <SidebarTabs selectedTab={selectedTab} onSelectTab={setSelectedTab} />
       <div className={styles.content}>

@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import NewConnection from './NewConnection';
 import styles from './Launcher.scss'
-import { IConnectionDetails } from '../connection';
+import { IConnection } from '../connection';
 
 interface ILauncherProps {
-  connectionsDetails: IConnectionDetails[];
-  openConnectionsDetails: IConnectionDetails[];
-  onCreateConnectionDetails(details: IConnectionDetails): Promise<void>;
-  onDeleteConnectionDetails(details: IConnectionDetails): void;
-  onConnect(details: IConnectionDetails): Promise<void>;
+  connections: IConnection[];
+  openConnections: IConnection[];
+  onCreateConnection(connection: IConnection): Promise<void>;
+  onDeleteConnection(connection: IConnection): void;
+  onConnect(connection: IConnection): Promise<void>;
   onClose(): void;
 }
 
@@ -17,16 +17,16 @@ export default function Launcher(props: ILauncherProps) {
   const [error, setError] = useState();
   const [filter, setFilter] = useState('');
 
-  function onDeleteConnectionDetails(ev: React.MouseEvent, details: IConnectionDetails) {
+  function onDeleteConnection(ev: React.MouseEvent, connection: IConnection) {
     ev.preventDefault();
-    props.onDeleteConnectionDetails(details);
+    props.onDeleteConnection(connection);
   }
 
-  async function onConnect(ev: React.MouseEvent, details: IConnectionDetails) {
+  async function onConnect(ev: React.MouseEvent, connection: IConnection) {
     ev.preventDefault();
 
     try {
-      await props.onConnect(details);
+      await props.onConnect(connection);
     } catch(err) {
       setError(err.message);
     }
@@ -46,10 +46,10 @@ export default function Launcher(props: ILauncherProps) {
     setFilter(ev.target.value);
   }
 
-  function filterConnectionDetails() {
-    if (filter.length === 0) return props.connectionsDetails;
+  function filterConnections() {
+    if (filter.length === 0) return props.connections;
 
-    return props.connectionsDetails.filter(e => {
+    return props.connections.filter(e => {
       return e.name.includes(filter) ||
         e.database.includes(filter) ||
         e.host.includes(filter) ||
@@ -57,33 +57,39 @@ export default function Launcher(props: ILauncherProps) {
     });
   }
 
-  const list = filterConnectionDetails().map((details) => {
-    const open = props.openConnectionsDetails.find(e => e === details);
+  const list = filterConnections().map((connection) => {
+    const { uuid, name, host, port, database, user } = connection;
+    const open = props.openConnections.find(e => e === connection);
 
     return (
-      <div className={styles.connection} key={details.uuid}>
-        {details.name} / {details.host} / {details.port} / {details.database} / {details.user}
-        {!open && <a
-          href=""
-          onClick={(ev) => onConnect(ev, details)}
-        >Connect</a>}
-        {!open && <a
-          href=""
-          onClick={(ev) => onDeleteConnectionDetails(ev, details)}
-        >Delete</a>}
+      <div className={styles.connection} key={uuid}>
+        {name} / {host} / {port} / {database} / {user}
+
+        {!open && <>
+          <a
+            href=""
+            onClick={(ev) => onConnect(ev, connection)}
+          >Connect</a>
+          <a
+            href=""
+            onClick={(ev) => onDeleteConnection(ev, connection)}
+          >Delete</a>
+        </>}
       </div>
     );
   });
 
   return (
     <div className={styles.launcher}>
-      {(props.connectionsDetails.length === 0 || showNewConnection) && <NewConnection
-        connectionsDetails={props.connectionsDetails}
-        onCreateConnectionDetails={props.onCreateConnectionDetails}
-        onClose={() => setShowNewConnection(false)}
-      />}
+      {(props.connections.length === 0 || showNewConnection) &&
+        <NewConnection
+          connections={props.connections}
+          onCreateConnection={props.onCreateConnection}
+          onClose={() => setShowNewConnection(false)}
+        />
+      }
 
-      {props.openConnectionsDetails.length > 0 && <a href="" onClick={onClose}>Close</a>}
+      {props.openConnections.length > 0 && <a href="" onClick={onClose}>Close</a>}
 
       <input
         type="text"

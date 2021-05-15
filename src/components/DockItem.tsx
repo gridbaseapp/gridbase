@@ -1,25 +1,25 @@
 import React from 'react';
 import Tippy from '@tippyjs/react/headless';
 import classNames from 'classnames';
-import { IConnection } from '../connection';
+import { Service } from './App';
 import styles from './DockItem.scss';
 
-interface IdocItemProps {
-  connection: IConnection;
+interface IDocItemProps {
+  service: Service;
   selected: boolean;
-  onSelectConnection(connection: IConnection): void;
-  onDisconnect(connection: IConnection): void;
+  onSelectService(service: Service): void;
+  onCloseService(service: Service): void;
 }
 
-export default function DockItem(props: IdocItemProps) {
-  function onSelectConnection(ev: React.MouseEvent) {
+export default function DockItem(props: IDocItemProps) {
+  function onSelectService(ev: React.MouseEvent) {
     ev.preventDefault();
-    props.onSelectConnection(props.connection);
+    props.onSelectService(props.service);
   }
 
-  function onDisconnect(ev: React.MouseEvent) {
+  function onCloseService(ev: React.MouseEvent) {
     ev.preventDefault();
-    props.onDisconnect(props.connection);
+    props.onCloseService(props.service);
   }
 
   return (
@@ -31,20 +31,20 @@ export default function DockItem(props: IdocItemProps) {
         interactiveBorder={10}
         render={attrs => (
           <div className={styles.popover} {...attrs}>
-            <div>host: {props.connection.connectionDetails.host}</div>
-            <div>port: {props.connection.connectionDetails.port}</div>
-            <div>database: {props.connection.connectionDetails.database}</div>
-            <div>user: {props.connection.connectionDetails.user}</div>
-            <div><a href="" onClick={onDisconnect}>Disconnect</a></div>
+            <div>host: {props.service.connection.host}</div>
+            <div>port: {props.service.connection.port}</div>
+            <div>database: {props.service.connection.database}</div>
+            <div>user: {props.service.connection.user}</div>
+            <div><a href="" onClick={onCloseService}>Disconnect</a></div>
           </div>
         )}
       >
         <a
           className={classNames(styles.item, { [styles.selected]: props.selected })}
           href=""
-          onClick={onSelectConnection}
+          onClick={onSelectService}
         >
-          {props.connection.connectionDetails.database}
+          {props.service.connection.database}
         </a>
       </Tippy>
     </div>

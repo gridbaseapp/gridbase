@@ -1,6 +1,5 @@
 import { applyMiddleware, createStore, combineReducers } from 'redux';
 import thunk from 'redux-thunk';
-import { IConnection } from '../connection';
 import LocalStore from '../utils/local-store';
 import {
   ISchema,
@@ -21,10 +20,11 @@ import {
   reorderOpenEntities,
   loadEntities,
 } from './entity';
+import { PostgreSQL } from '../adapters/PostgreSQL';
 
 export interface IState {
   localStore: LocalStore;
-  connection: IConnection;
+  adapter: PostgreSQL;
   schemas: ISchema[];
   selectedSchema: ISchema;
   entities: IEntity[];
@@ -44,16 +44,16 @@ function rootReducer(state: any, action: any) {
   const localStore = state.localStore;
   delete state.localStore;
 
-  const connection = state.connection;
-  delete state.connection;
+  const adapter = state.adapter;
+  delete state.adapter;
 
   const reducedState = combinedReducers(state, action);
 
-  return { localStore, connection, ...reducedState };
+  return { localStore, adapter, ...reducedState };
 }
 
-export function configureStore(localStore: LocalStore, connection: IConnection) {
-  return createStore(rootReducer, { localStore, connection }, applyMiddleware(thunk));
+export function configureStore(localStore: LocalStore, adapter: PostgreSQL) {
+  return createStore(rootReducer, { localStore, adapter }, applyMiddleware(thunk));
 }
 
 export {

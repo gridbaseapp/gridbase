@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { v4 as uuid } from 'uuid';
-import { IConnectionDetails, ConnectionTypeEnum } from '../connection';
+import { IConnection, ServiceType } from '../connection';
 import styles from './NewConnection.scss';
 
 interface INewConnectionProps {
-  connectionsDetails: IConnectionDetails[];
-  onCreateConnectionDetails(details: IConnectionDetails): Promise<void>;
+  connections: IConnection[];
+  onCreateConnection(connection: IConnection): Promise<void>;
   onClose(): void;
 }
 
@@ -16,16 +16,16 @@ export default function NewConnection(props: INewConnectionProps) {
     formState: { errors },
     handleSubmit,
     register,
-  } = useForm<IConnectionDetails>({ mode: 'onChange' });
+  } = useForm<IConnection>({ mode: 'onChange' });
 
-  async function onSubmit(data: IConnectionDetails) {
+  async function onSubmit(data: IConnection) {
     try {
       setError(null);
 
       data.uuid = uuid();
-      data.type = ConnectionTypeEnum.PostgreSQL;
+      data.type = ServiceType.PostgreSQL;
 
-      await props.onCreateConnectionDetails(data);
+      await props.onCreateConnection(data);
     } catch (err) {
       setError(err.message);
     }
@@ -38,7 +38,7 @@ export default function NewConnection(props: INewConnectionProps) {
 
   return (
     <div className={styles.newConnection}>
-      {props.connectionsDetails.length > 0 && <a href="" onClick={onClose}>Close</a>}
+      {props.connections.length > 0 && <a href="" onClick={onClose}>Close</a>}
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>

@@ -1,3 +1,4 @@
+import { IState } from '.';
 import { ISchema } from './schema';
 
 export enum EntityType {
@@ -82,22 +83,8 @@ function setSelectedEntity(entity: IEntity) {
 
 export function loadEntities(schema: ISchema) {
   return async (dispatch: any, getState: any) => {
-    const { connection } = getState();
-
-    const { rows } = await connection.client.query(`
-      SELECT oid AS id, relname AS name,
-        CASE relkind
-          WHEN 'r' THEN ${EntityType.Table}
-          WHEN 'v' THEN ${EntityType.View}
-          WHEN 'm' THEN ${EntityType.MaterializeView}
-        END AS type
-      FROM pg_catalog.pg_class
-      WHERE
-        relnamespace = '${schema.id}'
-        AND relkind IN ('r', 'v', 'm')
-      ORDER BY relname;
-    `);
-
+    const { adapter } = <IState>getState();
+    const rows = await adapter.getEntities(schema.id);
     dispatch(setEntities(rows.map((e: IEntity) => ({...e, schema}))));
   };
 }

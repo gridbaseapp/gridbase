@@ -1,3 +1,5 @@
+import { IState } from '.';
+
 export interface ISchema {
   id: string;
   name: string;
@@ -32,30 +34,25 @@ function setSelectedSchema(schema: ISchema) {
 
 export function loadSchemas() {
   return async (dispatch: any, getState: any) => {
-    const { localStore, connection } = getState();
+    const { localStore, adapter } = <IState>getState();
 
-    const lastUsedSchemaId = localStore.getSchemaId(connection.connectionDetails.uuid);
+    const lastUsedSchemaId = localStore.getSchemaId(adapter.connection.uuid);
 
-    const { rows } = await connection.client.query(`
-      SELECT oid AS id, nspname AS name
-      FROM pg_catalog.pg_namespace
-      WHERE nspname !~ '^pg_' AND nspname <> 'information_schema'
-      ORDER BY nspname;
-    `);
+    const schemas = await adapter.getSchemas();
 
-    dispatch(setSchemas(rows));
+    dispatch(setSchemas(schemas));
 
-    const schemaIds = rows.map((e: ISchema) => e.id);
-    const publicSchema = rows.find((e: ISchema) => e.name === 'public');
+    const schemaIds = schemas.map((e: ISchema) => e.id);
+    const publicSchema = schemas.find((e: ISchema) => e.name === 'public');
 
     let selectedSchema = null;
 
     if (lastUsedSchemaId && schemaIds.includes(lastUsedSchemaId)) {
-      selectedSchema = rows.find((e: ISchema) => e.id === lastUsedSchemaId);
+      selectedSchema = schemas.find((e: ISchema) => e.id === lastUsedSchemaId);
     } else if (schemaIds.includes(publicSchema.id)) {
       selectedSchema = publicSchema;
-    } else if (rows.length > 0) {
-      selectedSchema = rows[0];
+    } else if (schemas.length > 0) {
+      selectedSchema = schemas[0];
     }
 
     dispatch(setSelectedSchema(selectedSchema));
@@ -64,9 +61,9 @@ export function loadSchemas() {
 
 export function selectSchema(schema: ISchema) {
   return (dispatch: any, getState: any) => {
-    const { localStore, connection } = getState();
+    const { localStore, adapter } = <IState>getState();
 
-    localStore.setSchemaId(connection.connectionDetails.uuid, schema.id);
+    localStore.setSchemaId(adapter.connection.uuid, schema.id);
     dispatch(setSelectedSchema(schema));
   };
 }

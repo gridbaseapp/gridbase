@@ -1,6 +1,6 @@
 import Store from 'electron-store';
 import { decrypt, encrypt } from './crypto';
-import { IConnectionDetails } from '../connection';
+import { IConnection } from '../connection';
 
 const KEY_CONNECTIONS = 'connections';
 
@@ -13,19 +13,19 @@ export default class LocalStore {
     this.password = password;
   }
 
-  getConnections(): IConnectionDetails[] {
+  getConnections(): IConnection[] {
     return this.getSecure(KEY_CONNECTIONS, []);
   }
 
-  setConnections(connections: IConnectionDetails[]) {
+  setConnections(connections: IConnection[]) {
     this.setSecure(KEY_CONNECTIONS, connections);
   }
 
   getSchemaId(connectionUUID: string) {
-    return <number>this.store.get(`${connectionUUID}-schema-id`);
+    return <string>this.store.get(`${connectionUUID}-schema-id`);
   }
 
-  setSchemaId(connectionUUID: string, value: number) {
+  setSchemaId(connectionUUID: string, value: string) {
     this.store.set(`${connectionUUID}-schema-id`, value);
   }
 

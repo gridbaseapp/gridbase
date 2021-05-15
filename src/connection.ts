@@ -1,21 +1,14 @@
-import { Client } from 'pg';
-
-export enum ConnectionTypeEnum {
+export enum ServiceType {
   PostgreSQL,
 }
 
-export interface IConnectionDetails {
+export interface IConnection {
   uuid: string;
-  type: ConnectionTypeEnum;
+  type: ServiceType;
   name: string;
   host: string;
   port: number;
   database: string;
   user: string;
   password: string;
-}
-
-export interface IConnection {
-  connectionDetails: IConnectionDetails;
-  client: Client;
 }

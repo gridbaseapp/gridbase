@@ -1,37 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { Client } from 'pg';
 import { Store } from 'redux';
 import { Provider } from 'react-redux';
 import { getPasswordFromKeyStore } from '../utils/key-store';
 import LocalStore from '../utils/local-store';
-import { IConnection, IConnectionDetails } from '../connection';
+import { IConnection } from '../connection';
 import { configureStore, IState } from '../state';
 import Splash from './Splash';
 import Launcher from './Launcher';
 import Dock from './Dock';
-import Service from './service/Service';
+import ServiceComponent from './service/Service';
 import TitleBar from './TitleBar';
 import styles from './App.scss';
+import { PostgreSQL } from '../adapters/PostgreSQL';
 
 const SPLASH_SCREEN_TIMOUT = 1;
 
-function findExistingConnectionDetails(conns: IConnectionDetails[], conn: IConnectionDetails) {
-  return conns.find(e => {
-    return e.type === conn.type &&
-           e.host === conn.host &&
-           e.port === conn.port &&
-           e.database === conn.database &&
-           e.user === conn.user &&
-           e.password === conn.password;
+function findExistingConnection(connections: IConnection[], connection: IConnection) {
+  return connections.find(e => {
+    return e.type === connection.type &&
+           e.host === connection.host &&
+           e.port === connection.port &&
+           e.database === connection.database &&
+           e.user === connection.user &&
+           e.password === connection.password;
   });
+}
+
+export class Service {
+  store: Store<IState>;
+
+  constructor(store: Store<IState>) {
+    this.store = store;
+  }
+
+  get adapter() {
+    return this.store.getState().adapter;
+  }
+
+  get connection() {
+    return this.adapter.connection;
+  }
 }
 
 export default function App() {
   const [localStore, setLocalStore] = useState<LocalStore>();
-  const [connectionsDetails, setConnectionsDetails] = useState<IConnectionDetails[]>([]);
-  const [openConnections, setOpenConnections] = useState<IConnection[]>([]);
-  const [selectedConnection, setSelectedConnection] = useState<IConnection>();
-  const [stores, setStores] = useState<Store<IState>[]>([]);
+  const [connections, setConnections] = useState<IConnection[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [selectedService, setSelectedService] = useState<Service>();
   const [showLauncher, setShowLauncher] = useState(true);
 
   useEffect(() => {
@@ -44,68 +59,62 @@ export default function App() {
 
       const store = new LocalStore(pass);
 
-      setConnectionsDetails(store.getConnections());
+      setConnections(store.getConnections());
       setLocalStore(store);
     }
 
     run();
   }, []);
 
-  async function onCreateConnectionDetails(details: IConnectionDetails) {
-    const found = findExistingConnectionDetails(connectionsDetails, details);
+  async function onCreateConnection(connection: IConnection) {
+    const existingConnection = findExistingConnection(connections, connection);
 
-    if (found) {
-      const alreadyOpened = openConnections.find(e => e.connectionDetails === found);
+    if (existingConnection) {
+      const service = services.find(e => e.connection === existingConnection);
 
-      if (alreadyOpened) {
-        setSelectedConnection(alreadyOpened);
+      if (service) {
+        setSelectedService(service);
         setShowLauncher(false);
       } else {
-        await onConnect(found);
+        await onConnect(existingConnection);
       }
     } else {
-      await onConnect(details);
+      await onConnect(connection);
 
-      const updatedConnectionsDetails = [...connectionsDetails, details];
-      setConnectionsDetails(updatedConnectionsDetails);
-      localStore?.setConnections(updatedConnectionsDetails);
+      const updatedConnections = [...connections, connection];
+      setConnections(updatedConnections);
+      localStore?.setConnections(updatedConnections);
     }
   }
 
-  function onDeleteConnectionDetails(details: IConnectionDetails) {
-    const filtered = connectionsDetails.filter(e => e !== details);
-    setConnectionsDetails(filtered);
+  function onDeleteConnection(connection: IConnection) {
+    const filtered = connections.filter(e => e !== connection);
+    setConnections(filtered);
     localStore?.setConnections(filtered);
   }
 
-  async function onConnect(details: IConnectionDetails) {
-    const client = new Client(details);
-    await client.connect();
+  async function onConnect(connection: IConnection) {
+    const adapter = new PostgreSQL(connection);
+    await adapter.connect();
 
-    const connection = { connectionDetails: details, client: client }
-
-    setOpenConnections([...openConnections, connection]);
-    setSelectedConnection(connection);
-    if (localStore) setStores([...stores, configureStore(localStore, connection)]);
-    setShowLauncher(false);
+    if (localStore) {
+      const service = new Service(configureStore(localStore, adapter));
+      setServices([...services, service]);
+      setSelectedService(service);
+      setShowLauncher(false);
+    }
   }
 
-  async function onDisconnect(connection: IConnection) {
-    await connection.client.end();
+  async function onCloseService(service: Service) {
+    await service.adapter.disconnect();
 
-    const connections = openConnections.filter(e => e !== connection);
-    setOpenConnections(connections);
+    const activeServices = services.filter(e => e !== service);
+    setServices(activeServices);
 
-    const activeStores = stores.filter(e => {
-      const state = e.getState();
-      return state.connection !== connection;
-    });
-    setStores(activeStores);
-
-    if (connections.length > 0) {
-      setSelectedConnection(connections[0]);
+    if (activeServices.length > 0) {
+      setSelectedService(services[0]);
     } else {
-      setSelectedConnection(undefined);
+      setSelectedService(undefined);
       setShowLauncher(true);
     }
   }
@@ -113,41 +122,38 @@ export default function App() {
   let content = <Splash />;
 
   if (localStore) {
-    let connectionsRender = null;
+    let servicesRender = null;
 
-    if (openConnections.length > 0) {
-      connectionsRender = stores.map(e => {
-        const state = e.getState();
-        const connection = state.connection;
-
+    if (services.length > 0) {
+      servicesRender = services.map(e => {
         return (
-          <Provider store={e} key={connection.connectionDetails.uuid}>
-            <Service visible={connection === selectedConnection} />
+          <Provider store={e.store} key={e.connection.uuid}>
+            <ServiceComponent visible={e === selectedService} />
           </Provider>
         );
-      })
+      });
     }
 
     content = (
       <>
         {showLauncher && <Launcher
-          connectionsDetails={connectionsDetails}
-          openConnectionsDetails={openConnections.map(e => e.connectionDetails)}
-          onCreateConnectionDetails={onCreateConnectionDetails}
-          onDeleteConnectionDetails={onDeleteConnectionDetails}
+          connections={connections}
+          openConnections={services.map(e => e.connection)}
+          onCreateConnection={onCreateConnection}
+          onDeleteConnection={onDeleteConnection}
           onConnect={onConnect}
           onClose={() => setShowLauncher(false)}
         />}
-        {openConnections.length > 0 && selectedConnection && <>
+        {services.length > 0 && selectedService && <>
           <TitleBar />
           <Dock
-            openConnections={openConnections}
-            selectedConnection={selectedConnection}
+            services={services}
+            selectedService={selectedService}
             onShowLauncher={() => setShowLauncher(true)}
-            onSelectConnection={setSelectedConnection}
-            onDisconnect={onDisconnect}
+            onSelectService={setSelectedService}
+            onCloseService={onCloseService}
           />
-          {connectionsRender}
+          {servicesRender}
         </>}
       </>
     );
