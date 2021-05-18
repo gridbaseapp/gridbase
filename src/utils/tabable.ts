@@ -3,6 +3,8 @@ interface ICssClass {
   mirror: string;
 }
 
+const TRANSITION_DURATION = 200;
+
 function style(node: HTMLElement, styles: any) {
   for (const key in styles) {
     (<any>node.style)[key] = styles[key];
@@ -16,8 +18,11 @@ export default function tabbable(
 ) {
   let isMouseEnter = false;
   let isMouseDown = false;
+  let isPending = false;
 
   function mousedown(ev: MouseEvent) {
+    if (isPending) return;
+
     const children = getChildren();
     let targetElement: HTMLElement | null = <HTMLElement>ev.target;
 
@@ -51,6 +56,8 @@ export default function tabbable(
     const promises: Promise<void>[] = [];
 
     const mousemove = (ev: MouseEvent) => {
+      isPending = true;
+
       if (!mirror) {
         mirror = <HTMLElement>drag.node.cloneNode(true);
 
@@ -84,7 +91,10 @@ export default function tabbable(
 
         tabs.splice(dragIdx - 1, 2, drag, leftTab);
 
-        style(leftTab.node, { transition: 'left 0.2s ease-in-out', left: `${leftTab.x}px` });
+        style(leftTab.node, {
+          transition: `left ${TRANSITION_DURATION}ms ease-in-out`,
+          left: `${leftTab.x}px`,
+        });
         style(drag.node, { left: `${drag.x}px` });
 
         const promise = new Promise<void>(resolve => {
@@ -107,7 +117,10 @@ export default function tabbable(
 
         tabs.splice(dragIdx, 2, rightTab, drag);
 
-        style(rightTab.node, { transition: 'left 0.2s ease-in-out', left: `${rightTab.x}px` });
+        style(rightTab.node, {
+          transition: `left ${TRANSITION_DURATION}ms ease-in-out`,
+          left: `${rightTab.x}px`,
+        });
         style(drag.node, { left: `${drag.x}px` });
 
         const promise = new Promise<void>(resolve => {
@@ -129,7 +142,10 @@ export default function tabbable(
 
       if (mirror) {
         if (mirror.getBoundingClientRect().x !== drag.x) {
-          style(mirror, { transition: 'left 0.2s ease-in-out', left: `${drag.x}px` });
+          style(mirror, {
+            transition: `left ${TRANSITION_DURATION}ms ease-in-out`,
+            left: `${drag.x}px`,
+          });
 
           const promise = new Promise<void>(resolve => {
             mirror.addEventListener('transitionend', () => {
@@ -152,6 +168,7 @@ export default function tabbable(
         container.replaceChildren(...tabs.map(e => e.node));
         if (onReorder) onReorder(tabs.map(e => e.position));
         unfastenTabs();
+        isPending = false;
       });
 
       isMouseDown = false;
