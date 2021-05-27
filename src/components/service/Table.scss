@@ -1,51 +1,57 @@
-.tableRoot {
+.table {
   grid-area: content;
   overflow: scroll;
 }
 
-.table {
-  border-spacing: 0;
-  width: 100%;
-  font-size: 12px;
+.gutter, .column {
+  flex: 0 0 auto;
+  font-size: 11px;
 }
 
-.table th {
+.gutter {
+  position: sticky;
+  left: 0;
+  background-color: #fff;
+}
+
+.columns-row {
+  display: flex;
+  align-items: stretch;
   position: sticky;
   top: 0;
   background-color: #fff;
-  text-align: left;
-  padding: 5px 10px;
-  border-bottom: 1px solid #aaa;
+  z-index: 1;
+  border-bottom: 1px solid #ddd;
+  width: fit-content;
+  min-width: 100%;
+
+  .gutter, .column {
+    border-right: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    padding: 0 5px;
+  }
 }
 
-.table td {
-  border: 1px solid transparent;
-}
+.row {
+  display: flex;
+  min-width: 100%;
 
-.selectedRow {
-  background-color: #eee;
-}
+  &.row--even {
+    background-color: #f5f5f5;
 
-.editedRow {
-  background-color: yellow;
-}
+    .gutter {
+      background-color: #f5f5f5;
+    }
+  }
 
-.deletedRow {
-  background-color: red;
-}
+  .column {
+    padding: 0 5px;
+    display: flex;
+    align-items: center;
+  }
 
-.newRow {
-  background-color: green;
-}
-
-.selectedCell {
-  border: 1px solid #000;
-}
-
-.actions {
-  padding: 5px 10px;
-}
-
-.actions a, .actions span {
-  margin: 10px;
+  .gutter {
+    border-right: 1px solid #ddd;
+  }
 }

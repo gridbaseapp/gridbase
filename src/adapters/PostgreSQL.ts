@@ -23,6 +23,16 @@ const SQL_GET_ENTITIES = `
   ORDER BY relname;
 `;
 
+const SQL_GET_ATTRIBUTES = `
+  SELECT attname AS name, attnum AS position
+  FROM pg_catalog.pg_attribute
+  WHERE
+    attrelid = ':RELATION_ID:'
+    AND attnum > 0
+    AND NOT attisdropped
+  ORDER BY attnum
+`;
+
 export class PostgreSQL {
   connection: IConnection;
   client: Client;
@@ -47,5 +57,14 @@ export class PostgreSQL {
   async getEntities(schemaId: string) {
     const sql = SQL_GET_ENTITIES.replace(':SCHEMA_ID:', schemaId);
     return (await this.client.query(sql)).rows;
+  }
+
+  async getAttributes(relationId: string) {
+    const sql = SQL_GET_ATTRIBUTES.replace(':RELATION_ID:', relationId);
+    return (await this.client.query(sql)).rows;
+  }
+
+  query(sql: string) {
+    return this.client.query(sql);
   }
 }
