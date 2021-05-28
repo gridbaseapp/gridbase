@@ -1,10 +1,12 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import classNames from 'classnames';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
+import tabable from '../../utils/tabable';
 import AutoSizer from './../AutoSizer';
-import styles from './Table.scss';
 import { IEntity, IState } from '../../state';
+import { IColumn } from '../../utils/local-store';
+import styles from './Table.scss';
 
 interface ITableProps {
   visible: boolean;
@@ -16,49 +18,89 @@ interface IInnerListElementProps {
   style: React.CSSProperties;
 }
 
-interface IAttribute {
-  name: string;
-  position: number;
-}
-
 const COLUMNS_ROW_HEIGHT = 30;
 const GUTTER_WIDTH = 30;
-const DEFAULT_COLUMN_WIDTH = 150;
+const DEFAULT_COLUMN_WIDTH = 100;
 const ITEM_HEIGHT = 20;
 
 export default function Table(props: ITableProps) {
   const adapter = useSelector((state: IState) => state.adapter);
-  const [columns, setColumns] = useState<IAttribute[]>([]);
+  const localStore = useSelector((state: IState) => state.localStore);
+  const [columns, setColumns] = useState<IColumn[]>([]);
   const [rows, setRows] = useState<any[]>([]);
 
   useEffect(() => {
     (async () => {
-      const [columns, rows] = await Promise.all([
+      const [attributes, rows] = await Promise.all([
         adapter.getAttributes(props.entity.id),
         adapter.query(`SELECT * FROM "${props.entity.schema?.name}"."${props.entity.name}"`),
       ]);
 
-      setColumns(columns);
+      const columnsSettings = localStore.getColumnsSettings(
+        adapter.connection.uuid,
+        props.entity.id,
+      );
+
+      const cols: IColumn[] = [];
+
+      columnsSettings.forEach(colSet => {
+        const attr = attributes.find(el => el.name === colSet.name);
+        if (attr) cols.push({ ...colSet, width: colSet.width || DEFAULT_COLUMN_WIDTH });
+      });
+
+      attributes.forEach(attr => {
+        if (!columnsSettings.map(el => el.name).includes(attr.name)) {
+          cols.push({ ...attr, width: DEFAULT_COLUMN_WIDTH });
+        }
+      });
+
+      setColumns(cols);
       setRows(rows.rows);
     })();
   }, []);
 
   const InnerListElement = ({ children, style }: IInnerListElementProps) => {
+    const colsContainer = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      if (colsContainer.current) {
+        return tabable({
+          container: colsContainer.current,
+          cssClass: { drag: styles.drag, mirror: styles.mirror },
+          manageTabWidth: false,
+          onReorder: (order) => {
+            const reorderedColumns = order.map(i => columns[i]);
+            setColumns(reorderedColumns);
+            localStore.setColumnsSettings(
+              adapter.connection.uuid,
+              props.entity.id,
+              reorderedColumns,
+            );
+          },
+        })
+      }
+
+      return undefined;
+    }, []);
+
     const height = parseFloat(style.height as string) + COLUMNS_ROW_HEIGHT;
+    const width = columns.reduce((acc, col) => acc + col.width, 0);
 
     return (
       <div style={{ ...style, height }}>
-        <div style={{ height: COLUMNS_ROW_HEIGHT }} className={styles.columnsRow}>
-          <div style={{ width: GUTTER_WIDTH }} className={styles.gutter}></div>
-          {columns.map(column => (
-            <div
-              key={column.name}
-              style={{ width: DEFAULT_COLUMN_WIDTH }}
-              className={styles.column}
-            >
-              {column.name}
-            </div>
-          ))}
+        <div style={{ height: COLUMNS_ROW_HEIGHT }} className={styles.tableHeader}>
+          <div style={{ width: GUTTER_WIDTH }} className={styles.tableHeaderGutter}></div>
+          <div ref={colsContainer} style={{ width }} className={styles.columnsContainer}>
+            {columns.map(column => (
+              <div
+                key={column.name}
+                style={{ width: column.width }}
+                className={styles.tableHeaderColumn}
+              >
+                {column.name}
+              </div>
+            ))}
+          </div>
         </div>
 
         {children}
@@ -68,22 +110,22 @@ export default function Table(props: ITableProps) {
 
   const Row = ({ index, style }: ListChildComponentProps) => {
     const top = parseFloat(style.top as string) + COLUMNS_ROW_HEIGHT;
-    const cls = classNames(styles.row, index % 2 ? styles.rowEven : null);
+    const cls = classNames(styles.tableRow, index % 2 ? styles.tableRowEven : null);
     const row = rows[index];
 
     return (
       <div style={{ ...style, top, width: 'auto' }} className={cls}>
-        <div style={{ width: GUTTER_WIDTH }} className={styles.gutter}></div>
+        <div style={{ width: GUTTER_WIDTH }} className={styles.tableRowGutter}></div>
         {columns.map(column =>
           <div
             key={`${index}-${column.name}`}
-            style={{ width: DEFAULT_COLUMN_WIDTH }}
-            className={styles.column}
+            style={{ width: column.width }}
+            className={styles.tableRowColumn}
           >
-            {row && row[column.name]}
+            {row && row[column.name].toString()}
           </div>
         )}
-        </div>
+      </div>
     );
   };
 

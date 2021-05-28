@@ -33,11 +33,12 @@ export default function Tabs() {
 
   useEffect(() => {
     if (tabsContainer.current) {
-      return tabable(
-        tabsContainer.current,
-        { drag: styles.drag, mirror: styles.mirror },
-        (order) => dispatch(reorderOpenEntities(order)),
-      )
+      return tabable({
+        container: tabsContainer.current,
+        cssClass: { drag: styles.drag, mirror: styles.mirror },
+        onReorder: (order) => dispatch(reorderOpenEntities(order)),
+        fastenElements: true,
+      })
     }
 
     return undefined;

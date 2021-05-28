@@ -11,11 +11,21 @@ function style(node: HTMLElement, styles: any) {
   }
 }
 
-export default function tabbable(
-  container: HTMLElement,
-  cssClass: ICssClass,
+interface ITabableProps {
+  container: HTMLElement;
+  cssClass: ICssClass;
   onReorder: (order: number[]) => void,
-) {
+  fastenElements?: boolean;
+  manageTabWidth?: boolean;
+}
+
+export default function tabbable(props: ITabableProps) {
+  const container = props.container;
+  const cssClass = props.cssClass;
+  const onReorder = props.onReorder;
+  const fastenElements = props.fastenElements;
+  const manageTabWidth = props.manageTabWidth === undefined ? true : props.manageTabWidth;
+
   let isMouseEnter = false;
   let isMouseDown = false;
   let isPending = false;
@@ -38,7 +48,7 @@ export default function tabbable(
 
     const tabs = children.map((node, position) => {
       const { x, width, top } = node.getBoundingClientRect();
-      return { node, position, x, width, top };
+      return { node, position, x: x - containerLeft, width, top };
     });
 
     const drag = tabs.find(e => e.node === targetElement);
@@ -47,10 +57,14 @@ export default function tabbable(
     isMouseDown = true;
 
     tabs.forEach((tab) => {
-      style(tab.node, { position: 'absolute', left: `${tab.x}px`, width: `${tab.width}px` });
+      if (manageTabWidth) {
+        style(tab.node, { position: 'absolute', left: `${tab.x}px`, width: `${tab.width}px` });
+      } else {
+        style(tab.node, { position: 'absolute', left: `${tab.x}px` });
+      }
     });
 
-    const offsetX = ev.clientX - drag.x;
+    const offsetX = ev.clientX - drag.x - containerLeft;
 
     let mirror: HTMLElement;
     const promises: Promise<void>[] = [];
@@ -83,7 +97,7 @@ export default function tabbable(
 
       style(mirror, { left: `${mirrorLeft}px`, top: `${drag.top}px`, pointerEvents: 'none' });
 
-      if (leftTab && leftTab.x + (leftTab.width / 2) > mirrorLeft) {
+      if (leftTab && leftTab.x + containerLeft + (leftTab.width / 2) > mirrorLeft) {
         const margin = drag.x - (leftTab.x + leftTab.width);
 
         drag.x = leftTab.x;
@@ -109,7 +123,7 @@ export default function tabbable(
         promises.push(promise);
       }
 
-      if (rightTab && rightTab.x + (rightTab.width / 2) < mirrorRight) {
+      if (rightTab && rightTab.x + containerLeft + (rightTab.width / 2) < mirrorRight) {
         const margin = rightTab.x - (drag.x + drag.width);
 
         rightTab.x = drag.x;
@@ -141,10 +155,10 @@ export default function tabbable(
       document.removeEventListener('mouseup', mouseup);
 
       if (mirror) {
-        if (mirror.getBoundingClientRect().x !== drag.x) {
+        if (mirror.getBoundingClientRect().x !== drag.x + containerLeft) {
           style(mirror, {
             transition: `left ${TRANSITION_DURATION}ms ease-in-out`,
-            left: `${drag.x}px`,
+            left: `${drag.x + containerLeft}px`,
           });
 
           const promise = new Promise<void>(resolve => {
@@ -162,7 +176,11 @@ export default function tabbable(
         targetElement?.classList.remove(cssClass.drag);
 
         tabs.forEach(tab => {
-          style(tab.node, { position: null, left: null, width: null });
+          if (manageTabWidth) {
+            style(tab.node, { position: null, left: null, width: null });
+          } else {
+            style(tab.node, { position: null, left: null });
+          }
         });
         // @ts-ignore
         container.replaceChildren(...tabs.map(e => e.node));
@@ -217,13 +235,20 @@ export default function tabbable(
   }
 
   container.addEventListener('mousedown', mousedown);
-  container.addEventListener('mouseenter', mouseenter);
-  container.addEventListener('mouseleave', mouseleave);
+
+  if (fastenElements) {
+    container.addEventListener('mouseenter', mouseenter);
+    container.addEventListener('mouseleave', mouseleave);
+  }
 
   return function cleanup() {
     container.removeEventListener('mousedown', mousedown);
-    container.removeEventListener('mouseenter', mouseenter);
-    container.removeEventListener('mouseleave', mouseleave);
+
+    if (fastenElements) {
+      container.removeEventListener('mouseenter', mouseenter);
+      container.removeEventListener('mouseleave', mouseleave);
+    }
+
     mutationObserver.disconnect();
   }
 }

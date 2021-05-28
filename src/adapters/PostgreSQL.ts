@@ -2,6 +2,10 @@ import { Client } from 'pg';
 import { IConnection } from '../connection';
 import { EntityType } from '../state';
 
+interface IAttribute {
+  name: string;
+}
+
 const SQL_GET_SCHEMAS = `
   SELECT oid AS id, nspname AS name
   FROM pg_catalog.pg_namespace
@@ -24,7 +28,7 @@ const SQL_GET_ENTITIES = `
 `;
 
 const SQL_GET_ATTRIBUTES = `
-  SELECT attname AS name, attnum AS position
+  SELECT attname AS name
   FROM pg_catalog.pg_attribute
   WHERE
     attrelid = ':RELATION_ID:'
@@ -59,7 +63,7 @@ export class PostgreSQL {
     return (await this.client.query(sql)).rows;
   }
 
-  async getAttributes(relationId: string) {
+  async getAttributes(relationId: string): Promise<IAttribute[]> {
     const sql = SQL_GET_ATTRIBUTES.replace(':RELATION_ID:', relationId);
     return (await this.client.query(sql)).rows;
   }

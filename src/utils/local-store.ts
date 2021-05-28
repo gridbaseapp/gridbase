@@ -2,6 +2,11 @@ import Store from 'electron-store';
 import { decrypt, encrypt } from './crypto';
 import { IConnection } from '../connection';
 
+export interface IColumn {
+  name: string;
+  width: number;
+}
+
 const KEY_CONNECTIONS = 'connections';
 
 export default class LocalStore {
@@ -27,6 +32,14 @@ export default class LocalStore {
 
   setSchemaId(connectionUUID: string, value: string) {
     this.store.set(`${connectionUUID}-schema-id`, value);
+  }
+
+  getColumnsSettings(connectionUUID: string, entityId: string) {
+    return <IColumn[]>this.store.get(`${connectionUUID}-${entityId}-columns`, []);
+  }
+
+  setColumnsSettings(connectionUUID: string, entityId: string, columns: IColumn[]) {
+    this.store.set(`${connectionUUID}-${entityId}-columns`, columns);
   }
 
   getSecure(key: string, defaultValue?: any) {
