@@ -1,11 +1,13 @@
 import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import classNames from 'classnames';
+import { debounce } from 'lodash';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import tabable from '../../utils/tabable';
 import AutoSizer from './../AutoSizer';
 import { IEntity, IState } from '../../state';
 import { IColumn } from '../../utils/local-store';
+import TableColumn from './TableColumn';
 import styles from './Table.scss';
 
 interface ITableProps {
@@ -59,6 +61,10 @@ export default function Table(props: ITableProps) {
     })();
   }, []);
 
+  const saveColumnSettings = debounce((cols: IColumn[]) => {
+    localStore.setColumnsSettings(adapter.connection.uuid, props.entity.id, cols);
+  }, 500);
+
   const InnerListElement = ({ children, style }: IInnerListElementProps) => {
     const colsContainer = useRef<HTMLDivElement>(null);
 
@@ -66,22 +72,33 @@ export default function Table(props: ITableProps) {
       if (colsContainer.current) {
         return tabable({
           container: colsContainer.current,
-          cssClass: { drag: styles.drag, mirror: styles.mirror },
+          cssClass: { drag: styles.tableHeaderColumnDrag },
           manageTabWidth: false,
           onReorder: (order) => {
             const reorderedColumns = order.map(i => columns[i]);
             setColumns(reorderedColumns);
-            localStore.setColumnsSettings(
-              adapter.connection.uuid,
-              props.entity.id,
-              reorderedColumns,
-            );
+            saveColumnSettings(reorderedColumns);
           },
         })
       }
 
       return undefined;
     }, []);
+
+    const setColumnWidth = (column: IColumn, width: number) => {
+      const newColumns: IColumn[] = [];
+
+      columns.forEach(col => {
+        if (col === column) {
+          newColumns.push({ ...col, width });
+        } else {
+          newColumns.push(col);
+        }
+      });
+
+      setColumns(newColumns);
+      saveColumnSettings(newColumns);
+    }
 
     const height = parseFloat(style.height as string) + COLUMNS_ROW_HEIGHT;
     const width = columns.reduce((acc, col) => acc + col.width, 0);
@@ -91,15 +108,13 @@ export default function Table(props: ITableProps) {
         <div style={{ height: COLUMNS_ROW_HEIGHT }} className={styles.tableHeader}>
           <div style={{ width: GUTTER_WIDTH }} className={styles.tableHeaderGutter}></div>
           <div ref={colsContainer} style={{ width }} className={styles.columnsContainer}>
-            {columns.map(column => (
-              <div
+            {columns.map(column =>
+              <TableColumn
                 key={column.name}
-                style={{ width: column.width }}
-                className={styles.tableHeaderColumn}
-              >
-                {column.name}
-              </div>
-            ))}
+                column={column}
+                onResize={(width) => setColumnWidth(column, width)}
+              />
+            )}
           </div>
         </div>
 

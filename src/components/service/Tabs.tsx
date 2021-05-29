@@ -35,7 +35,7 @@ export default function Tabs() {
     if (tabsContainer.current) {
       return tabable({
         container: tabsContainer.current,
-        cssClass: { drag: styles.drag, mirror: styles.mirror },
+        cssClass: { drag: styles.drag },
         onReorder: (order) => dispatch(reorderOpenEntities(order)),
         fastenElements: true,
       })

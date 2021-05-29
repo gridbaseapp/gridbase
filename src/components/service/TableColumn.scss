@@ -1,0 +1,23 @@
+.table-column {
+  font-size: 11px;
+  user-select: none;
+  background-color: #fff;
+  display: flex;
+}
+
+.content {
+  padding: 8px 5px;
+  white-space: nowrap;
+  display: inline-block;
+  overflow: hidden;
+  width: 100%;
+  text-overflow: ellipsis;
+}
+
+.resizer {
+  cursor: col-resize;
+  background-color: #ddd;
+  width: 3px;
+  border-right: 1px solid #fff;
+  border-left: 1px solid #fff;
+}

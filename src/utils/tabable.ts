@@ -1,6 +1,6 @@
 interface ICssClass {
   drag: string;
-  mirror: string;
+  mirror?: string;
 }
 
 const TRANSITION_DURATION = 200;
@@ -75,7 +75,7 @@ export default function tabbable(props: ITabableProps) {
       if (!mirror) {
         mirror = <HTMLElement>drag.node.cloneNode(true);
 
-        mirror.classList.add(cssClass.mirror);
+        if (cssClass.mirror) mirror.classList.add(cssClass.mirror);
         drag.node.classList.add(cssClass.drag);
         document.body.append(mirror);
       }

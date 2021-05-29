@@ -30,20 +30,8 @@
   z-index: 1;
 }
 
-.table-header-column {
-  font-size: 11px;
-  user-select: none;
-  background-color: #fff;
-  border-right: 1px solid #ddd;
-  padding: 8px 5px;
-
-  &.drag {
-    opacity: 0;
-  }
-
-  &.mirror {
-    position: absolute;
-  }
+.table-header-column-drag {
+  opacity: 0;
 }
 
 .table-row {
