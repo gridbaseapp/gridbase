@@ -8,6 +8,7 @@ import AutoSizer from './../AutoSizer';
 import { IEntity, IState } from '../../state';
 import { IColumn } from '../../utils/local-store';
 import TableColumn from './TableColumn';
+import Pagination from './Padination';
 import styles from './Table.scss';
 
 interface ITableProps {
@@ -25,18 +26,20 @@ const GUTTER_WIDTH = 30;
 const DEFAULT_COLUMN_WIDTH = 100;
 const ITEM_HEIGHT = 20;
 
+const PER_PAGE = 1000;
+
 export default function Table(props: ITableProps) {
+  const listRef = useRef<FixedSizeList>(null);
   const adapter = useSelector((state: IState) => state.adapter);
   const localStore = useSelector((state: IState) => state.localStore);
+  const [page, setPage] = useState<number>(1);
+  const [totalRecords, setTotalRecords] = useState<number>(0);
   const [columns, setColumns] = useState<IColumn[]>([]);
   const [rows, setRows] = useState<any[]>([]);
 
   useEffect(() => {
     (async () => {
-      const [attributes, rows] = await Promise.all([
-        adapter.getAttributes(props.entity.id),
-        adapter.query(`SELECT * FROM "${props.entity.schema?.name}"."${props.entity.name}"`),
-      ]);
+      const attributes = await adapter.getAttributes(props.entity.id);
 
       const columnsSettings = localStore.getColumnsSettings(
         adapter.connection.uuid,
@@ -57,9 +60,26 @@ export default function Table(props: ITableProps) {
       });
 
       setColumns(cols);
-      setRows(rows.rows);
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      const schema = props.entity.schema?.name;
+      const table = props.entity.name;
+
+      const [total, rows] = await Promise.all([
+        adapter.query(`SELECT count(*) FROM "${schema}"."${table}"`),
+        adapter.query(
+          `SELECT * FROM "${schema}"."${table}" LIMIT ${PER_PAGE} OFFSET ${(page - 1) * PER_PAGE}`
+        ),
+      ]);
+
+      setTotalRecords(total.rows[0].count);
+      setRows(rows.rows);
+      if (listRef.current) listRef.current.scrollToItem(0);
+    })();
+  }, [page]);
 
   const saveColumnSettings = debounce((cols: IColumn[]) => {
     localStore.setColumnsSettings(adapter.connection.uuid, props.entity.id, cols);
@@ -146,30 +166,42 @@ export default function Table(props: ITableProps) {
 
   return (
     <div className={classNames(styles.table, { hidden: !props.visible })}>
-      <AutoSizer>
-        {(width, height) => {
-          const rowsToFit = Math.floor(height / ITEM_HEIGHT) + 1;
-          let style = {};
+      <div className={styles.content}>
+        <AutoSizer>
+          {(width, height) => {
+            const rowsToFit = Math.floor(height / ITEM_HEIGHT) + 1;
+            let style = {};
 
-          if (rowsToFit - 2 > rows.length) {
-            style = { overflow: 'auto hidden' };
-          }
+            if (rowsToFit - 2 > rows.length) {
+              style = { overflow: 'auto hidden' };
+            }
 
-          return (
-            <FixedSizeList
-              style={style}
-              width={width}
-              height={height}
-              innerElementType={InnerListElement}
-              itemCount={Math.max(rows.length, rowsToFit)}
-              itemSize={ITEM_HEIGHT}
-              overscanCount={5}
-            >
-              {Row}
-            </FixedSizeList>
-          );
-        }}
-      </AutoSizer>
+            return (
+              <FixedSizeList
+                ref={listRef}
+                style={style}
+                width={width}
+                height={height}
+                innerElementType={InnerListElement}
+                itemCount={Math.max(rows.length, rowsToFit)}
+                itemSize={ITEM_HEIGHT}
+                overscanCount={5}
+              >
+                {Row}
+              </FixedSizeList>
+            );
+          }}
+        </AutoSizer>
+      </div>
+
+      <div className={styles.footer}>
+        <Pagination
+          totalRecords={totalRecords}
+          page={page}
+          perPage={PER_PAGE}
+          onPageChange={setPage}
+        />
+      </div>
     </div>
   );
 }

@@ -2,6 +2,24 @@
   grid-area: content;
   overflow: scroll;
   font-size: 11px;
+  display: grid;
+  grid-template-rows: auto 40px;
+  grid-template-areas: "content" "footer";
+}
+
+.content {
+  grid-area: "content";
+  overflow: scroll;
+}
+
+.footer {
+  grid-area: "footer";
+  border-top: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 10px;
 }
 
 .table-header {

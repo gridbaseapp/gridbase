@@ -7,34 +7,35 @@ interface IAttribute {
 }
 
 const SQL_GET_SCHEMAS = `
-  SELECT oid AS id, nspname AS name
-  FROM pg_catalog.pg_namespace
-  WHERE nspname !~ '^pg_' AND nspname <> 'information_schema'
-  ORDER BY nspname;
+  SELECT "oid" AS "id", "nspname" AS "name"
+  FROM "pg_catalog"."pg_namespace"
+  WHERE "nspname" !~ '^pg_'
+    AND "nspname" <> 'information_schema'
+  ORDER BY "nspname";
 `;
 
 const SQL_GET_ENTITIES = `
-  SELECT oid AS id, relname AS name,
-    CASE relkind
+  SELECT "oid" AS "id", "relname" AS "name",
+    CASE "relkind"
       WHEN 'r' THEN ${EntityType.Table}
       WHEN 'v' THEN ${EntityType.View}
       WHEN 'm' THEN ${EntityType.MaterializeView}
-    END AS type
-  FROM pg_catalog.pg_class
+    END AS "type"
+  FROM "pg_catalog"."pg_class"
   WHERE
-    relnamespace = ':SCHEMA_ID:'
-    AND relkind IN ('r', 'v', 'm')
-  ORDER BY relname;
+    "relnamespace" = ':SCHEMA_ID:'
+    AND "relkind" IN ('r', 'v', 'm')
+  ORDER BY "relname";
 `;
 
 const SQL_GET_ATTRIBUTES = `
-  SELECT attname AS name
-  FROM pg_catalog.pg_attribute
+  SELECT "attname" AS "name"
+  FROM "pg_catalog"."pg_attribute"
   WHERE
-    attrelid = ':RELATION_ID:'
-    AND attnum > 0
-    AND NOT attisdropped
-  ORDER BY attnum
+    "attrelid" = ':RELATION_ID:'
+    AND "attnum" > 0
+    AND NOT "attisdropped"
+  ORDER BY "attnum"
 `;
 
 export class PostgreSQL {
