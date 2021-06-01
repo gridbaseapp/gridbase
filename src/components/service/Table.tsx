@@ -1,13 +1,12 @@
-import React, { ReactElement, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import classNames from 'classnames';
-import { debounce } from 'lodash';
-import { FixedSizeList, ListChildComponentProps } from 'react-window';
-import tabable from '../../utils/tabable';
+import { FixedSizeList } from 'react-window';
 import AutoSizer from './../AutoSizer';
-import { IEntity, IState } from '../../state';
-import { IColumn } from '../../utils/local-store';
-import TableColumn from './TableColumn';
+import { EntityType, IEntity, IState } from '../../state';
+import { ColumnDirection, IColumn } from '../../utils/local-store';
+import TableList from './TableList';
+import TableListItem from './TableListItem';
 import Pagination from './Padination';
 import styles from './Table.scss';
 
@@ -16,23 +15,31 @@ interface ITableProps {
   entity: IEntity;
 }
 
-interface IInnerListElementProps {
-  children: ReactElement;
-  style: React.CSSProperties;
+interface ITableListContext {
+  entity: IEntity;
+  columns: IColumn[];
+  setColumns: (columns: IColumn[]) => void;
 }
 
-const COLUMNS_ROW_HEIGHT = 30;
-const GUTTER_WIDTH = 30;
+export const COLUMNS_ROW_HEIGHT = 30;
+export const GUTTER_WIDTH = 30;
 const DEFAULT_COLUMN_WIDTH = 100;
 const ITEM_HEIGHT = 20;
 
 const PER_PAGE = 1000;
+
+export const TableListContext = React.createContext<ITableListContext>({
+  entity: { id: '-1', name: '', type: EntityType.Table },
+  columns: [],
+  setColumns: () => {},
+});
 
 export default function Table(props: ITableProps) {
   const listRef = useRef<FixedSizeList>(null);
   const adapter = useSelector((state: IState) => state.adapter);
   const localStore = useSelector((state: IState) => state.localStore);
   const [page, setPage] = useState<number>(1);
+  const [order, setOrder] = useState<string | null>(null);
   const [totalRecords, setTotalRecords] = useState<number>(0);
   const [columns, setColumns] = useState<IColumn[]>([]);
   const [rows, setRows] = useState<any[]>([]);
@@ -55,7 +62,11 @@ export default function Table(props: ITableProps) {
 
       attributes.forEach(attr => {
         if (!columnsSettings.map(el => el.name).includes(attr.name)) {
-          cols.push({ ...attr, width: DEFAULT_COLUMN_WIDTH });
+          cols.push({
+            ...attr,
+            width: DEFAULT_COLUMN_WIDTH,
+            order: { direction: ColumnDirection.NONE, position: 0 },
+          });
         }
       });
 
@@ -64,105 +75,38 @@ export default function Table(props: ITableProps) {
   }, []);
 
   useEffect(() => {
+    if (columns.length === 0) return;
+
+    const order = columns
+      .filter(e => e.order.position > 0)
+      .sort((a, b) => a.order.position - b.order.position)
+      .map(e => `"${e.name}" ${e.order.direction}`)
+      .join(', ');
+
+      setOrder(order);
+  }, [columns]);
+
+  useEffect(() => {
+    if (order === null) return;
+
     (async () => {
       const schema = props.entity.schema?.name;
       const table = props.entity.name;
 
+      let sql = `SELECT * FROM "${schema}"."${table}" `;
+      if (order !== '') sql += `ORDER BY ${order} `;
+      sql += `LIMIT ${PER_PAGE} OFFSET ${(page - 1) * PER_PAGE}`;
+
       const [total, rows] = await Promise.all([
         adapter.query(`SELECT count(*) FROM "${schema}"."${table}"`),
-        adapter.query(
-          `SELECT * FROM "${schema}"."${table}" LIMIT ${PER_PAGE} OFFSET ${(page - 1) * PER_PAGE}`
-        ),
+        adapter.query(sql),
       ]);
 
       setTotalRecords(total.rows[0].count);
       setRows(rows.rows);
       if (listRef.current) listRef.current.scrollToItem(0);
     })();
-  }, [page]);
-
-  const saveColumnSettings = debounce((cols: IColumn[]) => {
-    localStore.setColumnsSettings(adapter.connection.uuid, props.entity.id, cols);
-  }, 500);
-
-  const InnerListElement = ({ children, style }: IInnerListElementProps) => {
-    const colsContainer = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-      if (colsContainer.current) {
-        return tabable({
-          container: colsContainer.current,
-          cssClass: { drag: styles.tableHeaderColumnDrag },
-          manageTabWidth: false,
-          onReorder: (order) => {
-            const reorderedColumns = order.map(i => columns[i]);
-            setColumns(reorderedColumns);
-            saveColumnSettings(reorderedColumns);
-          },
-        })
-      }
-
-      return undefined;
-    }, []);
-
-    const setColumnWidth = (column: IColumn, width: number) => {
-      const newColumns: IColumn[] = [];
-
-      columns.forEach(col => {
-        if (col === column) {
-          newColumns.push({ ...col, width });
-        } else {
-          newColumns.push(col);
-        }
-      });
-
-      setColumns(newColumns);
-      saveColumnSettings(newColumns);
-    }
-
-    const height = parseFloat(style.height as string) + COLUMNS_ROW_HEIGHT;
-    const width = columns.reduce((acc, col) => acc + col.width, 0);
-
-    return (
-      <div style={{ ...style, height }}>
-        <div style={{ height: COLUMNS_ROW_HEIGHT }} className={styles.tableHeader}>
-          <div style={{ width: GUTTER_WIDTH }} className={styles.tableHeaderGutter}></div>
-          <div ref={colsContainer} style={{ width }} className={styles.columnsContainer}>
-            {columns.map(column =>
-              <TableColumn
-                key={column.name}
-                column={column}
-                onResize={(width) => setColumnWidth(column, width)}
-              />
-            )}
-          </div>
-        </div>
-
-        {children}
-      </div>
-    );
-  };
-
-  const Row = ({ index, style }: ListChildComponentProps) => {
-    const top = parseFloat(style.top as string) + COLUMNS_ROW_HEIGHT;
-    const cls = classNames(styles.tableRow, index % 2 ? styles.tableRowEven : null);
-    const row = rows[index];
-
-    return (
-      <div style={{ ...style, top, width: 'auto' }} className={cls}>
-        <div style={{ width: GUTTER_WIDTH }} className={styles.tableRowGutter}></div>
-        {columns.map(column =>
-          <div
-            key={`${index}-${column.name}`}
-            style={{ width: column.width }}
-            className={styles.tableRowColumn}
-          >
-            {row && row[column.name].toString()}
-          </div>
-        )}
-      </div>
-    );
-  };
+  }, [page, order]);
 
   return (
     <div className={classNames(styles.table, { hidden: !props.visible })}>
@@ -177,18 +121,21 @@ export default function Table(props: ITableProps) {
             }
 
             return (
-              <FixedSizeList
-                ref={listRef}
-                style={style}
-                width={width}
-                height={height}
-                innerElementType={InnerListElement}
-                itemCount={Math.max(rows.length, rowsToFit)}
-                itemSize={ITEM_HEIGHT}
-                overscanCount={5}
-              >
-                {Row}
-              </FixedSizeList>
+              <TableListContext.Provider value={{ entity: props.entity, columns, setColumns }}>
+                <FixedSizeList
+                  ref={listRef}
+                  style={style}
+                  width={width}
+                  height={height}
+                  innerElementType={TableList}
+                  itemCount={Math.max(rows.length, rowsToFit)}
+                  itemSize={ITEM_HEIGHT}
+                  itemData={{ columns, rows }}
+                  overscanCount={5}
+                >
+                  {TableListItem}
+                </FixedSizeList>
+              </TableListContext.Provider>
             );
           }}
         </AutoSizer>

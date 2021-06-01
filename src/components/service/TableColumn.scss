@@ -3,6 +3,12 @@
   user-select: none;
   background-color: #fff;
   display: flex;
+
+  &:hover {
+    .reorder {
+      display: inline;
+    }
+  }
 }
 
 .content {
@@ -14,10 +20,21 @@
   text-overflow: ellipsis;
 }
 
+.reorder {
+  padding: 7px 5px;
+  text-decoration: none;
+  color: #000;
+}
+
+.reorder--none {
+  display: none;
+}
+
 .resizer {
   cursor: col-resize;
-  background-color: #ddd;
+  background-color: transparent;
   width: 3px;
-  border-right: 1px solid #fff;
-  border-left: 1px solid #fff;
+  border-left: 1px solid #ddd;
+  margin-right: -2px;
+  z-index: 1;
 }

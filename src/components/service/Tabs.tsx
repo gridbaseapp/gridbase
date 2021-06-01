@@ -38,7 +38,7 @@ export default function Tabs() {
         cssClass: { drag: styles.drag },
         onReorder: (order) => dispatch(reorderOpenEntities(order)),
         fastenElements: true,
-      })
+      });
     }
 
     return undefined;

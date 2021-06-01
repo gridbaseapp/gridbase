@@ -1,0 +1,29 @@
+.table-list-header {
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  width: fit-content;
+  min-width: 100%;
+
+  .columns-container {
+    position: relative;
+    display: flex;
+    background-color: #ccc;
+  }
+}
+
+.table-list-header-gutter {
+  font-size: 11px;
+  position: sticky;
+  left: 0;
+  background-color: #fff;
+  border-right: 1px solid #ddd;
+  z-index: 1;
+}
+
+.table-list-header-column-drag {
+  opacity: 0;
+}

@@ -95,7 +95,7 @@ export default function tabbable(props: ITabableProps) {
         mirrorLeft = containerRight - drag.width;
       }
 
-      style(mirror, { left: `${mirrorLeft}px`, top: `${drag.top}px`, pointerEvents: 'none' });
+      style(mirror, { left: `${mirrorLeft}px`, top: `${drag.top}px` });
 
       if (leftTab && leftTab.x + containerLeft + (leftTab.width / 2) > mirrorLeft) {
         const margin = drag.x - (leftTab.x + leftTab.width);
@@ -174,6 +174,8 @@ export default function tabbable(props: ITabableProps) {
       Promise.all(promises).then(() => {
         if (mirror) mirror.remove();
         targetElement?.classList.remove(cssClass.drag);
+        let isReordered = false;
+        let prevValue = 0;
 
         tabs.forEach(tab => {
           if (manageTabWidth) {
@@ -181,11 +183,14 @@ export default function tabbable(props: ITabableProps) {
           } else {
             style(tab.node, { position: null, left: null });
           }
+
+          if (prevValue > tab.position) isReordered = true;
+          prevValue = tab.position;
         });
-        // @ts-ignore
-        container.replaceChildren(...tabs.map(e => e.node));
-        if (onReorder) onReorder(tabs.map(e => e.position));
-        unfastenTabs();
+
+        if (isReordered) onReorder(tabs.map(e => e.position));
+
+        if (fastenElements) unfastenTabs();
         isPending = false;
       });
 

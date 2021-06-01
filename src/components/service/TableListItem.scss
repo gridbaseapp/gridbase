@@ -1,0 +1,23 @@
+.table-list-item {
+  display: flex;
+  min-width: 100%;
+
+  &.table-list-item--even {
+    background-color: #f5f5f5;
+
+    .table-list-item-gutter {
+      background-color: #f5f5f5;
+    }
+  }
+}
+
+.table-list-item-gutter {
+  position: sticky;
+  left: 0;
+  background-color: #fff;
+  border-right: 1px solid #ddd;
+}
+
+.table-list-item-column {
+  padding: 4px 5px;
+}

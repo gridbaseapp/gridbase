@@ -2,9 +2,21 @@ import Store from 'electron-store';
 import { decrypt, encrypt } from './crypto';
 import { IConnection } from '../connection';
 
+export enum ColumnDirection {
+  NONE = 'NONE',
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
+
+interface IColumnOrder {
+  direction: ColumnDirection;
+  position: number;
+}
+
 export interface IColumn {
   name: string;
   width: number;
+  order: IColumnOrder;
 }
 
 const KEY_CONNECTIONS = 'connections';
