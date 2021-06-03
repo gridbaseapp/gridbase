@@ -86,14 +86,16 @@ export default function TableList({ children, style }: IInnerListElementProps) {
   }
 
   const height = parseFloat(String(style.height)) + COLUMNS_ROW_HEIGHT;
-  const width = columns.reduce((acc, col) => acc + col.width, 0);
+  const width = columns
+    .filter(column => column.visible)
+    .reduce((acc, col) => acc + col.width, 0);
 
   return (
     <div style={{ ...style, height }}>
       <div style={{ height: COLUMNS_ROW_HEIGHT }} className={styles.tableListHeader}>
         <div style={{ width: GUTTER_WIDTH }} className={styles.tableListHeaderGutter}></div>
         <div ref={containerRef} style={{ width }} className={styles.columnsContainer}>
-          {columns.map(column =>
+          {columns.filter(column => column.visible).map(column =>
             <TableColumn
               key={column.name}
               column={column}

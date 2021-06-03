@@ -12,7 +12,7 @@ html, body {
   height: 100%;
   display: grid;
   grid-template-columns: 60px auto;
-  grid-template-rows: 40px auto;
+  grid-template-rows: 30px auto;
   grid-template-areas: "header header" "dock content";
 }
 

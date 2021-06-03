@@ -14,7 +14,7 @@ export default function TableListItem({ data, index, style }: ListChildComponent
   return (
     <div style={{ ...style, top, width: 'auto' }} className={cls}>
       <div style={{ width: GUTTER_WIDTH }} className={styles.tableListItemGutter}></div>
-      {columns.map(column =>
+      {columns.filter(column => column.visible).map(column =>
         <div
           key={`${index}-${column.name}`}
           style={{ width: column.width }}

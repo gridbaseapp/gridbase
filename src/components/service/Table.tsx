@@ -8,6 +8,7 @@ import { ColumnDirection, IColumn } from '../../utils/local-store';
 import TableList from './TableList';
 import TableListItem from './TableListItem';
 import Pagination from './Padination';
+import ColumnsConfigurationModal from './ColumnsConfigurationModal';
 import styles from './Table.scss';
 
 interface ITableProps {
@@ -43,6 +44,10 @@ export default function Table(props: ITableProps) {
   const [totalRecords, setTotalRecords] = useState<number>(0);
   const [columns, setColumns] = useState<IColumn[]>([]);
   const [rows, setRows] = useState<any[]>([]);
+  const [
+    isColumnsConfigurationModalVisible,
+    setColumnsConfigurationModalVisible
+  ] = useState<boolean>(false);
 
   useEffect(() => {
     (async () => {
@@ -57,13 +62,14 @@ export default function Table(props: ITableProps) {
 
       columnsSettings.forEach(colSet => {
         const attr = attributes.find(el => el.name === colSet.name);
-        if (attr) cols.push({ ...colSet, width: colSet.width || DEFAULT_COLUMN_WIDTH });
+        if (attr) cols.push(colSet);
       });
 
       attributes.forEach(attr => {
         if (!columnsSettings.map(el => el.name).includes(attr.name)) {
           cols.push({
             ...attr,
+            visible: true,
             width: DEFAULT_COLUMN_WIDTH,
             order: { direction: ColumnDirection.NONE, position: 0 },
           });
@@ -108,6 +114,12 @@ export default function Table(props: ITableProps) {
     })();
   }, [page, order]);
 
+  const applyColumnsConfigurationChanges = (cols: IColumn[]) => {
+    setColumns(cols);
+    setColumnsConfigurationModalVisible(false);
+    localStore.setColumnsSettings(adapter.connection.uuid, props.entity.id, cols);
+  }
+
   return (
     <div className={classNames(styles.table, { hidden: !props.visible })}>
       <div className={styles.content}>
@@ -148,7 +160,23 @@ export default function Table(props: ITableProps) {
           perPage={PER_PAGE}
           onPageChange={setPage}
         />
+        <a
+          href=""
+          onClick={(ev) => {ev.preventDefault(); setColumnsConfigurationModalVisible(true);}}
+        >col config</a>
+        <a
+          href=""
+          onClick={(ev) => {ev.preventDefault(); setColumnsConfigurationModalVisible(true);}}
+        >sort config</a>
       </div>
+
+      {isColumnsConfigurationModalVisible &&
+        <ColumnsConfigurationModal
+          columns={columns}
+          onClose={() => setColumnsConfigurationModalVisible(false)}
+          onApply={applyColumnsConfigurationChanges}
+        />
+      }
     </div>
   );
 }

@@ -15,6 +15,7 @@ interface IColumnOrder {
 
 export interface IColumn {
   name: string;
+  visible: boolean;
   width: number;
   order: IColumnOrder;
 }

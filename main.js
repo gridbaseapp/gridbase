@@ -13,7 +13,7 @@ function createWindow() {
   const windowRect = store.get(WINDOW_RECT_STORE_KEY, {});
 
   const win = new BrowserWindow({
-    titleBarStyle: 'hiddenInset',
+    titleBarStyle: 'hidden',
     x: windowRect.x || 0,
     y: windowRect.y || 0,
     width: windowRect.width || screenSize.width,
