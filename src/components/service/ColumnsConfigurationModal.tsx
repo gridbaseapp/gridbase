@@ -18,7 +18,7 @@ import {
 } from '@dnd-kit/modifiers';
 import { CSS } from '@dnd-kit/utilities';
 import classNames from 'classnames';
-import { IColumn } from '../../utils/local-store';
+import { ColumnDirection, IColumn } from '../../utils/local-store';
 import styles from './ColumnsConfigurationModal.scss';
 
 interface IConfigColumn extends IColumn {
@@ -166,8 +166,22 @@ export default function ColumnsConfigurationModal(props: IColumnsConfigurationMo
     ev.preventDefault();
 
     const newColumns = columns.map(col => {
-      return { ...col, position: undefined };
-    })
+      if (!col.visible) {
+        return {
+          ...col,
+          order: { ...col.order, direction: ColumnDirection.NONE, position: 0 },
+          position: undefined,
+        };
+      } else {
+        return { ...col, position: undefined };
+      }
+    });
+
+    newColumns
+      .map(e => e.order)
+      .filter(e => e.position > 0)
+      .sort((a, b) => a.position - b.position)
+      .forEach((e, i) => e.position = i + 1);
 
     props.onApply(newColumns);
   }

@@ -131,6 +131,7 @@ export default function ColumnsSortModal(props: IColumnsSortModalProps) {
 
     [...props.columns]
       .sort((a, b) => a.order.position - b.order.position)
+      .filter(e => e.visible)
       .forEach(col => {
         const isEnabled = col.order.position > 0;
 
