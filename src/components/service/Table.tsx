@@ -9,6 +9,7 @@ import TableList from './TableList';
 import TableListItem from './TableListItem';
 import Pagination from './Padination';
 import ColumnsConfigurationModal from './ColumnsConfigurationModal';
+import ColumnsSortModal from './ColumnsSortModal';
 import styles from './Table.scss';
 
 interface ITableProps {
@@ -47,6 +48,10 @@ export default function Table(props: ITableProps) {
   const [
     isColumnsConfigurationModalVisible,
     setColumnsConfigurationModalVisible
+  ] = useState<boolean>(false);
+  const [
+    isColumnsSortModalVisible,
+    setColumnsSortModalVisible
   ] = useState<boolean>(false);
 
   useEffect(() => {
@@ -120,6 +125,12 @@ export default function Table(props: ITableProps) {
     localStore.setColumnsSettings(adapter.connection.uuid, props.entity.id, cols);
   }
 
+  const applyColumnsSortChanges = (cols: IColumn[]) => {
+    setColumns(cols);
+    setColumnsSortModalVisible(false);
+    localStore.setColumnsSettings(adapter.connection.uuid, props.entity.id, cols);
+  }
+
   return (
     <div className={classNames(styles.table, { hidden: !props.visible })}>
       <div className={styles.content}>
@@ -163,11 +174,17 @@ export default function Table(props: ITableProps) {
         <a
           href=""
           onClick={(ev) => {ev.preventDefault(); setColumnsConfigurationModalVisible(true);}}
-        >col config</a>
+        >
+          {columns.find(e => !e.visible) && <span>*</span>}
+          col config
+        </a>
         <a
           href=""
-          onClick={(ev) => {ev.preventDefault(); setColumnsConfigurationModalVisible(true);}}
-        >sort config</a>
+          onClick={(ev) => {ev.preventDefault(); setColumnsSortModalVisible(true);}}
+        >
+          {columns.find(e => e.order.position > 0) && <span>*</span>}
+          sort config
+        </a>
       </div>
 
       {isColumnsConfigurationModalVisible &&
@@ -175,6 +192,14 @@ export default function Table(props: ITableProps) {
           columns={columns}
           onClose={() => setColumnsConfigurationModalVisible(false)}
           onApply={applyColumnsConfigurationChanges}
+        />
+      }
+
+      {isColumnsSortModalVisible &&
+        <ColumnsSortModal
+          columns={columns}
+          onClose={() => setColumnsSortModalVisible(false)}
+          onApply={applyColumnsSortChanges}
         />
       }
     </div>
