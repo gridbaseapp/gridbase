@@ -19,7 +19,7 @@ interface ITableProps {
 interface ITableListContext {
   entity: IEntity;
   columns: IColumn[];
-  setColumns: (columns: IColumn[]) => void;
+  setColumns: React.Dispatch<React.SetStateAction<IColumn[]>>
 }
 
 export const COLUMNS_ROW_HEIGHT = 30;

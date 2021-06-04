@@ -3,6 +3,11 @@
   user-select: none;
   background-color: #fff;
   display: flex;
+  outline: none;
+
+  &.dragging {
+    opacity: 0;
+  }
 
   &:hover {
     .reorder {

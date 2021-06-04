@@ -1,4 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { forwardRef, useEffect, useRef } from 'react';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import classNames from 'classnames';
 import { IColumn } from "../../utils/local-store";
 import resizable from '../../utils/resizable';
@@ -8,8 +12,12 @@ import styles from './TableColumn.scss';
 interface ITableColumnProps {
   column: IColumn;
   showOrderNumber: boolean;
-  onResize: (width: number) => void;
-  onReorder: (direction: ColumnDirection) => void;
+  className?: string;
+  onResize?: (width: number) => void;
+  onReorder?: (direction: ColumnDirection) => void;
+  listeners?: any;
+  attributes?: any;
+  style?: any;
 }
 
 const DIRECTION_TRANSITIONING = {
@@ -18,25 +26,36 @@ const DIRECTION_TRANSITIONING = {
   [ColumnDirection.DESC]: ColumnDirection.NONE,
 }
 
-export default React.memo(function TableColumn(props: ITableColumnProps) {
-  const container = useRef<HTMLDivElement>(null);
+export const TableColumn = forwardRef<HTMLDivElement, ITableColumnProps>((props, ref) => {
+  const {
+    column,
+    listeners,
+    attributes,
+    className,
+    style,
+    showOrderNumber,
+    onReorder,
+    onResize,
+    ...rest
+  } = props;
+
+  const target = useRef<HTMLDivElement | null>(null);
   const trigger = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (container.current && trigger.current) {
-      return resizable(container.current, trigger.current, props.onResize);
+    if (target.current && trigger.current && onResize) {
+      return resizable(target.current, trigger.current, onResize);
     }
 
     return undefined;
   });
 
-  const onMouseDownCapture = (ev: React.MouseEvent) => {
-    ev.stopPropagation();
-  }
-
-  const onReorder = (ev: React.MouseEvent) => {
+  const handleReorder = (ev: React.MouseEvent) => {
     ev.preventDefault();
-    props.onReorder(DIRECTION_TRANSITIONING[props.column.order.direction]);
+
+    if (onReorder) {
+      onReorder(DIRECTION_TRANSITIONING[props.column.order.direction]);
+    }
   }
 
   const cls = classNames(
@@ -46,9 +65,20 @@ export default React.memo(function TableColumn(props: ITableColumnProps) {
 
   return (
     <div
-      ref={container}
-      style={{ width: props.column.width }}
-      className={styles.tableColumn}
+      ref={node => {
+        target.current = node;
+
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          ref.current = node;
+        }
+      }}
+      style={{ ...style, width: props.column.width }}
+      className={classNames(styles.tableColumn, className)}
+      {...listeners}
+      {...attributes}
+      {...rest}
     >
       <span className={styles.content}>{props.column.name}</span>
 
@@ -56,10 +86,10 @@ export default React.memo(function TableColumn(props: ITableColumnProps) {
         href=""
         draggable="false"
         className={cls}
-        onClick={onReorder}
-        onMouseDownCapture={onMouseDownCapture}
+        onClick={handleReorder}
+        onPointerDown={ev => ev.stopPropagation()}
       >
-        {props.column.order.position > 0 && props.showOrderNumber &&
+        {props.column.order.position > 0 && showOrderNumber &&
           <span>{props.column.order.position}</span>
         }
         {props.column.order.direction === ColumnDirection.NONE && <span>&#8597;</span>}
@@ -67,7 +97,45 @@ export default React.memo(function TableColumn(props: ITableColumnProps) {
         {props.column.order.direction === ColumnDirection.DESC && <span>&uarr;</span>}
       </a>
 
-      <span ref={trigger} className={styles.resizer}></span>
+      <span
+        ref={trigger}
+        className={styles.resizer}
+        onPointerDown={ev => ev.stopPropagation()}
+      ></span>
     </div>
   );
-})
+});
+
+export function SortableTableColumn(props: ITableColumnProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: props.column.name });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: transition || undefined,
+  };
+
+  const css = classNames({
+    [styles.dragging]: isDragging,
+  });
+
+  return (
+    <TableColumn
+      ref={setNodeRef}
+      style={style}
+      attributes={attributes}
+      listeners={listeners}
+      className={css}
+      column={props.column}
+      showOrderNumber={props.showOrderNumber}
+      onReorder={props.onReorder}
+      onResize={props.onResize}
+    />
+  );
+}
