@@ -159,6 +159,9 @@ export default function Tabs() {
   const [isGoToVisible, setGoToVisible] = useState(false);
 
   const [width, setWidth] = useState(0);
+  const [maxNumberOfTabs, setMaxNumberOfTabs] = useState(0);
+  const [tabWidth, setTabWidth] = useState(0);
+  const [isTabResizingPrevented, setTabResizingPrevented] = useState(false);
 
   useEffect(() => {
     if (!resizableRef.current) return;
@@ -177,6 +180,18 @@ export default function Tabs() {
       observer.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    const maxNumberOfTabs = Math.floor(width / MIN_TAB_WIDTH);
+    const maxTabWidth = width / Math.min(DEFAULT_NUMBERS_OF_TABS, maxNumberOfTabs);
+    const tabWidth = Math.min(
+      width / Math.min(entities.length, maxNumberOfTabs),
+      maxTabWidth,
+    ) || 0;
+
+    setMaxNumberOfTabs(maxNumberOfTabs);
+    if (!isTabResizingPrevented) setTabWidth(tabWidth);
+  }, [entities, width, isTabResizingPrevented]);
 
   function onCloseEntity(entity: IEntity) {
     dispatch(closeEntity(entity));
@@ -223,13 +238,6 @@ export default function Tabs() {
     }
   }
 
-  const maxNumberOfTabs = Math.floor(width / MIN_TAB_WIDTH);
-  const maxTabWidth = width / Math.min(DEFAULT_NUMBERS_OF_TABS, maxNumberOfTabs);
-  const tabWidth = Math.min(
-    width / Math.min(entities.length, maxNumberOfTabs),
-    maxTabWidth,
-  ) || 0;
-
   const mainTabs = [...entities].slice(0, maxNumberOfTabs);
   const extraTabs = [...entities].slice(maxNumberOfTabs - 1);
 
@@ -243,7 +251,12 @@ export default function Tabs() {
       visible={isGoToVisible}
       onClickOutside={() => setGoToVisible(false)}
     >
-      <div className={styles.tabs} onClick={() => setGoToVisible(false)}>
+      <div
+        className={styles.tabs}
+        onClick={() => setGoToVisible(false)}
+        onPointerEnter={() => setTabResizingPrevented(true)}
+        onPointerLeave={() => setTabResizingPrevented(false)}
+      >
         <div ref={resizableRef} className={styles.tabsContent}>
           <DndContext
             autoScroll={false}
