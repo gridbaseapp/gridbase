@@ -8,6 +8,7 @@ import {
   DragStartEvent,
   DragOverlay,
   closestCenter,
+  LayoutMeasuringStrategy,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -121,6 +122,7 @@ export default function TableList({ children, style }: IInnerListElementProps) {
         <div style={{ width: GUTTER_WIDTH }} className={styles.tableListHeaderGutter}></div>
         <div ref={containerRef} style={{ width }} className={styles.columnsContainer}>
           <DndContext
+            layoutMeasuring={{ strategy: LayoutMeasuringStrategy.Always }}
             collisionDetection={closestCenter}
             modifiers={[restrictToHorizontalAxis, restrictToParentElement]}
             autoScroll={{ threshold: { x: 0.2, y: 0 } }}

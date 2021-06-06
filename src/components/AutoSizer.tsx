@@ -6,7 +6,7 @@ interface ISize {
 }
 
 interface IAutoSizerProps {
-  children: (width: number, height: number) => React.ReactElement;
+  children: (width: number, height: number) => React.ReactElement | null;
 }
 
 export default function AutoSizer({ children }: IAutoSizerProps) {

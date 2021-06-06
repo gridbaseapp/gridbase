@@ -5,6 +5,7 @@ import {
   DragStartEvent,
   DragOverlay,
   closestCenter,
+  LayoutMeasuringStrategy,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -204,13 +205,15 @@ export default function ColumnsConfigurationModal(props: IColumnsConfigurationMo
         <div className={styles.content}>
           <div className={styles.scrollableContainer}>
             <DndContext
+              autoScroll={false}
+              layoutMeasuring={{ strategy: LayoutMeasuringStrategy.Always }}
               collisionDetection={closestCenter}
               modifiers={[restrictToVerticalAxis, restrictToParentElement]}
               onDragEnd={handleDragEnd}
               onDragStart={handleDragStart}
             >
               <SortableContext
-                items={columns.map(e => e.name)}
+                items={columns.filter(el => el.visible).map(e => e.name)}
                 strategy={verticalListSortingStrategy}
               >
                 {columns.filter(el => el.visible).map(column =>

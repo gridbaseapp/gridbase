@@ -17,7 +17,7 @@ import {
   selectedEntityReducer,
   openEntity,
   closeEntity,
-  reorderOpenEntities,
+  setOpenEntities,
   loadEntities,
 } from './entity';
 import { PostgreSQL } from '../adapters/PostgreSQL';
@@ -63,7 +63,7 @@ export {
   ISchema,
   openEntity,
   closeEntity,
-  reorderOpenEntities,
+  setOpenEntities,
   loadEntities,
   selectSchema,
   loadSchemas,

@@ -24,7 +24,7 @@ const ENTITIES_SET = 'entities/set';
 const SELECTED_ENTITY_SET = 'selectedEntity/set';
 const OPEN_ENTITIES_ADD = 'openEntities/add';
 const OPEN_ENTITIES_REMOVE = 'openEntities/remove';
-const OPEN_ENTITIES_REORDER = 'openEntities/reorder';
+const OPEN_ENTITIES_SET = 'openEntities/set';
 
 export function entitiesReducer(state = [], action: any) {
   if (action.type === ENTITIES_SET) {
@@ -51,10 +51,8 @@ export function openEntitiesReducer(state: IEntity[] = [], action: any) {
     return state.filter(e => e !== action.payload);
   }
 
-  if (action.type === OPEN_ENTITIES_REORDER) {
-    return action.payload
-      .map((i: number) => state[i])
-      .concat(state.slice(action.payload.length));
+  if (action.type === OPEN_ENTITIES_SET) {
+    return action.payload;
   }
 
   return state;
@@ -72,8 +70,8 @@ function removeOpenEntity(entity: IEntity) {
   return { type: OPEN_ENTITIES_REMOVE, payload: entity };
 }
 
-export function reorderOpenEntities(order: number[]) {
-  return { type: OPEN_ENTITIES_REORDER, payload: order };
+export function setOpenEntities(entities: IEntity[]) {
+  return { type: OPEN_ENTITIES_SET, payload: entities };
 }
 
 
