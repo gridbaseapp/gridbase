@@ -3,10 +3,11 @@ import { ListChildComponentProps } from 'react-window';
 import classNames from 'classnames';
 import { COLUMNS_ROW_HEIGHT, GUTTER_WIDTH } from './Table';
 import { IColumn } from '../../utils/local-store';
+import { Row } from './Table';
 import styles from './TableListItem.scss';
 
 export default function TableListItem({ data, index, style }: ListChildComponentProps) {
-  const { columns, rows } = data as { columns: IColumn[], rows: any[] };
+  const { columns, rows } = data as { columns: IColumn[], rows: Row[] };
   const top = parseFloat(String(style.top)) + COLUMNS_ROW_HEIGHT;
   const cls = classNames(styles.tableListItem, index % 2 ? styles.tableListItemEven : null);
   const row = rows[index];
@@ -20,7 +21,7 @@ export default function TableListItem({ data, index, style }: ListChildComponent
           style={{ width: column.width }}
           className={styles.tableListItemColumn}
         >
-          {row && row[column.name].toString()}
+          {row && row.getValue(column.name)}
         </div>
       )}
     </div>

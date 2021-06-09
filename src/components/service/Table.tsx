@@ -23,6 +23,18 @@ interface ITableListContext {
   setColumns: React.Dispatch<React.SetStateAction<IColumn[]>>
 }
 
+export class Row {
+  row: any;
+
+  constructor(row: any) {
+    this.row = row;
+  }
+
+  getValue(column: string) {
+    return this.row[column].toString();
+  }
+}
+
 export const COLUMNS_ROW_HEIGHT = 30;
 export const GUTTER_WIDTH = 30;
 const DEFAULT_COLUMN_WIDTH = 100;
@@ -44,7 +56,8 @@ export default function Table(props: ITableProps) {
   const [order, setOrder] = useState<string | null>(null);
   const [totalRecords, setTotalRecords] = useState<number>(0);
   const [columns, setColumns] = useState<IColumn[]>([]);
-  const [rows, setRows] = useState<any[]>([]);
+  // const [rows, setRows] = useState<any[]>([]);
+  const [rows, setRows] = useState<Row[]>([]);
   const [
     isColumnsConfigurationModalVisible,
     setColumnsConfigurationModalVisible
@@ -114,7 +127,7 @@ export default function Table(props: ITableProps) {
       ]);
 
       setTotalRecords(total.rows[0].count);
-      setRows(rows.rows);
+      setRows(rows.rows.map(e => new Row(e)));
       if (listRef.current) listRef.current.scrollToItem(0);
     })();
   }, [page, order]);
