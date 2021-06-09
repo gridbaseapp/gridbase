@@ -53,7 +53,7 @@ export default function NewConnection(props: INewConnectionProps) {
         <div>
           <input
             type="text"
-            placeholder="Host"
+            placeholder="Host Name / IP Address"
             defaultValue="localhost"
             {...register('host', { required: true })}
           />
