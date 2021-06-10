@@ -34,7 +34,7 @@ export default function TableList({ children, style }: IInnerListElementProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const adapter = useSelector((state: IState) => state.adapter);
   const localStore = useSelector((state: IState) => state.localStore);
-  const { entity, columns, setColumns } = useContext(TableListContext);
+  const { entity, columns, setColumns, onSelectColumn } = useContext(TableListContext);
   const [activeColumn, setActiveColumn] = useState<IColumn | null>(null);
 
   const saveColumnSettings = debounce((cols: IColumn[]) => {
@@ -140,6 +140,7 @@ export default function TableList({ children, style }: IInnerListElementProps) {
                   showOrderNumber={Math.max(...columns.map(e => e.order.position)) > 1}
                   onResize={(width) => setColumnWidth(column, width)}
                   onReorder={(direction) => setColumnOrder(column, direction)}
+                  onSelectColumn={onSelectColumn}
                 />
               )}
             </SortableContext>

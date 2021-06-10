@@ -15,6 +15,7 @@ interface ITableColumnProps {
   className?: string;
   onResize?: (width: number) => void;
   onReorder?: (direction: ColumnDirection) => void;
+  onSelectColumn?: (column: string) => void;
   listeners?: any;
   attributes?: any;
   style?: any;
@@ -36,6 +37,7 @@ export const TableColumn = forwardRef<HTMLDivElement, ITableColumnProps>((props,
     showOrderNumber,
     onReorder,
     onResize,
+    onSelectColumn,
     ...rest
   } = props;
 
@@ -80,7 +82,12 @@ export const TableColumn = forwardRef<HTMLDivElement, ITableColumnProps>((props,
       {...attributes}
       {...rest}
     >
-      <span className={styles.content}>{props.column.name}</span>
+      <span
+        className={styles.content}
+        onPointerDown={() => onSelectColumn && onSelectColumn(column.name)}
+      >
+        {props.column.name}
+      </span>
 
       <a
         href=""
@@ -136,6 +143,7 @@ export function SortableTableColumn(props: ITableColumnProps) {
       showOrderNumber={props.showOrderNumber}
       onReorder={props.onReorder}
       onResize={props.onResize}
+      onSelectColumn={props.onSelectColumn}
     />
   );
 }

@@ -21,17 +21,28 @@ interface ITableListContext {
   entity: IEntity;
   columns: IColumn[];
   setColumns: React.Dispatch<React.SetStateAction<IColumn[]>>
+  onSelectColumn: (column: string) => void;
 }
 
 export class Row {
   row: any;
+  selectedColumns: string[];
 
   constructor(row: any) {
     this.row = row;
+    this.selectedColumns = [];
   }
 
   getValue(column: string) {
     return this.row[column].toString();
+  }
+
+  select(column: string) {
+    this.selectedColumns.push(column);
+  }
+
+  isSelected(column: string) {
+    return this.selectedColumns.includes(column);
   }
 }
 
@@ -46,6 +57,7 @@ export const TableListContext = React.createContext<ITableListContext>({
   entity: { id: '-1', name: '', type: EntityType.Table },
   columns: [],
   setColumns: () => {},
+  onSelectColumn: () => {},
 });
 
 export default function Table(props: ITableProps) {
@@ -56,7 +68,6 @@ export default function Table(props: ITableProps) {
   const [order, setOrder] = useState<string | null>(null);
   const [totalRecords, setTotalRecords] = useState<number>(0);
   const [columns, setColumns] = useState<IColumn[]>([]);
-  // const [rows, setRows] = useState<any[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
   const [
     isColumnsConfigurationModalVisible,
@@ -144,6 +155,20 @@ export default function Table(props: ITableProps) {
     localStore.setColumnsSettings(adapter.connection.uuid, props.entity.id, cols);
   }
 
+  const onSelectRow = (row: Row) => {
+    rows.forEach(r => r.selectedColumns = []);
+    row.select('__gutter');
+    columns.forEach(col => col.visible && row.select(col.name));
+    setRows(rows.map(e => e));
+  }
+
+  const onSelectColumn = (column: string) => {
+    console.log('------')
+    rows.forEach(r => r.selectedColumns = []);
+    rows.forEach(r => r.select(column));
+    setRows(rows.map(e => e));
+  }
+
   return (
     <div className={classNames(styles.table, { hidden: !props.visible })}>
       <div className={styles.content}>
@@ -157,7 +182,14 @@ export default function Table(props: ITableProps) {
             }
 
             return (
-              <TableListContext.Provider value={{ entity: props.entity, columns, setColumns }}>
+              <TableListContext.Provider
+                value={{
+                  entity: props.entity,
+                  columns,
+                  setColumns,
+                  onSelectColumn,
+                }}
+              >
                 <FixedSizeList
                   ref={listRef}
                   style={style}
@@ -166,7 +198,7 @@ export default function Table(props: ITableProps) {
                   innerElementType={TableList}
                   itemCount={Math.max(rows.length, rowsToFit)}
                   itemSize={ITEM_HEIGHT}
-                  itemData={{ columns, rows }}
+                  itemData={{ columns, rows, onSelectRow }}
                   overscanCount={5}
                 >
                   {TableListItem}
