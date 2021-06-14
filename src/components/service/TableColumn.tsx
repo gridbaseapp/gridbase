@@ -84,7 +84,7 @@ export const TableColumn = forwardRef<HTMLDivElement, ITableColumnProps>((props,
     >
       <span
         className={styles.content}
-        onPointerDown={() => onSelectColumn && onSelectColumn(column.name)}
+        onClick={() => onSelectColumn && onSelectColumn(column.name)}
       >
         {props.column.name}
       </span>

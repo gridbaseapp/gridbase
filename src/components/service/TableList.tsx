@@ -9,6 +9,9 @@ import {
   DragOverlay,
   closestCenter,
   LayoutMeasuringStrategy,
+  PointerSensor,
+  useSensor,
+  useSensors,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -36,6 +39,10 @@ export default function TableList({ children, style }: IInnerListElementProps) {
   const localStore = useSelector((state: IState) => state.localStore);
   const { entity, columns, setColumns, onSelectColumn } = useContext(TableListContext);
   const [activeColumn, setActiveColumn] = useState<IColumn | null>(null);
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: { distance: 1 },
+  });
+  const sensors = useSensors(pointerSensor);
 
   const saveColumnSettings = debounce((cols: IColumn[]) => {
     localStore.setColumnsSettings(adapter.connection.uuid, entity.id, cols);
@@ -125,6 +132,7 @@ export default function TableList({ children, style }: IInnerListElementProps) {
             layoutMeasuring={{ strategy: LayoutMeasuringStrategy.Always }}
             collisionDetection={closestCenter}
             modifiers={[restrictToHorizontalAxis, restrictToParentElement]}
+            sensors={sensors}
             autoScroll={{ threshold: { x: 0.2, y: 0 } }}
             onDragEnd={handleDragEnd}
             onDragStart={handleDragStart}
@@ -149,7 +157,6 @@ export default function TableList({ children, style }: IInnerListElementProps) {
                 {activeColumn && <TableColumn
                   column={activeColumn}
                   showOrderNumber={Math.max(...columns.map(e => e.order.position)) > 1}
-                  className={styles.overlayItem}
                 />}
               </DragOverlay>, document.body)}
           </DndContext>
