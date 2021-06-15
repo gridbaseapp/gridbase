@@ -1,7 +1,7 @@
-import React, { ReactElement, useContext, useState, useRef } from 'react';
+import React, { ReactElement, useContext, useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useSelector } from 'react-redux';
-import { debounce } from 'lodash';
+import { debounce, throttle } from 'lodash';
 import {
   DndContext,
   DragEndEvent,
@@ -27,6 +27,7 @@ import { ColumnDirection, IColumn } from '../../utils/local-store';
 import { COLUMNS_ROW_HEIGHT, GUTTER_WIDTH, TableListContext } from './Table';
 import { SortableTableColumn, TableColumn } from './TableColumn';
 import styles from './TableList.scss';
+import selectable from '../../utils/selectable';
 
 interface IInnerListElementProps {
   children: ReactElement;
@@ -34,15 +35,49 @@ interface IInnerListElementProps {
 }
 
 export default function TableList({ children, style }: IInnerListElementProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const adapter = useSelector((state: IState) => state.adapter);
   const localStore = useSelector((state: IState) => state.localStore);
-  const { entity, columns, setColumns, onSelectColumn } = useContext(TableListContext);
+  const {
+    entity,
+    columns,
+    setColumns,
+    onSelectColumn,
+    onSelectRegion,
+    outerContainer,
+  } = useContext(TableListContext);
   const [activeColumn, setActiveColumn] = useState<IColumn | null>(null);
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: { distance: 1 },
   });
   const sensors = useSensors(pointerSensor);
+
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [rect, setRect] = useState({ top: 0, left: 0, width: 0, height: 0 });
+
+  useEffect(() => {
+    if (contentRef.current && outerContainer.current) {
+      const throttledOnSelectRegion = throttle((top, left, bottom, right) => {
+        onSelectRegion(top, left, bottom, right);
+      }, 50);
+
+      return selectable(
+        contentRef.current,
+        outerContainer.current,
+        (rect) => {
+          setRect(rect);
+          throttledOnSelectRegion(
+            rect.top,
+            rect.left,
+            rect.top + rect.height,
+            rect.left + rect.width,
+          );
+        },
+        () => setRect({ top: 0, left: 0, width: 0, height: 0 }),
+      );
+    }
+
+    return undefined;
+  }, [onSelectRegion]);
 
   const saveColumnSettings = debounce((cols: IColumn[]) => {
     localStore.setColumnsSettings(adapter.connection.uuid, entity.id, cols);
@@ -124,10 +159,10 @@ export default function TableList({ children, style }: IInnerListElementProps) {
     .reduce((acc, col) => acc + col.width, 0);
 
   return (
-    <div style={{ ...style, height }}>
+    <div ref={contentRef} style={{ ...style, height, width: width + GUTTER_WIDTH }}>
       <div style={{ height: COLUMNS_ROW_HEIGHT }} className={styles.tableListHeader}>
         <div style={{ width: GUTTER_WIDTH }} className={styles.tableListHeaderGutter}></div>
-        <div ref={containerRef} style={{ width }} className={styles.columnsContainer}>
+        <div style={{ width }} className={styles.columnsContainer}>
           <DndContext
             layoutMeasuring={{ strategy: LayoutMeasuringStrategy.Always }}
             collisionDetection={closestCenter}
@@ -163,7 +198,19 @@ export default function TableList({ children, style }: IInnerListElementProps) {
         </div>
       </div>
 
-      {children}
+      <div
+        className={styles.tableListSelection}
+        style={{
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        }}
+      ></div>
+
+      <div className={styles.tableListContent}>
+        {children}
+      </div>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import classNames from 'classnames';
 import { FixedSizeList } from 'react-window';
@@ -20,8 +20,10 @@ interface ITableProps {
 interface ITableListContext {
   entity: IEntity;
   columns: IColumn[];
+  outerContainer: React.MutableRefObject<any | null>;
   setColumns: React.Dispatch<React.SetStateAction<IColumn[]>>
   onSelectColumn: (column: string) => void;
+  onSelectRegion: (left: number, top: number, right: number, bottom: number) => void;
 }
 
 export class Row {
@@ -56,11 +58,14 @@ const PER_PAGE = 1000;
 export const TableListContext = React.createContext<ITableListContext>({
   entity: { id: '-1', name: '', type: EntityType.Table },
   columns: [],
+  outerContainer: { current: null },
   setColumns: () => {},
   onSelectColumn: () => {},
+  onSelectRegion: () => {},
 });
 
 export default function Table(props: ITableProps) {
+  const outerRef = useRef(null);
   const listRef = useRef<FixedSizeList>(null);
   const adapter = useSelector((state: IState) => state.adapter);
   const localStore = useSelector((state: IState) => state.localStore);
@@ -163,11 +168,42 @@ export default function Table(props: ITableProps) {
   }
 
   const onSelectColumn = (column: string) => {
-    console.log('------')
     rows.forEach(r => r.selectedColumns = []);
     rows.forEach(r => r.select(column));
     setRows(rows.map(e => e));
   }
+
+  const onSelectRegion = useCallback((top: number, left: number, bottom: number, right: number) => {
+    const startRow = Math.floor((top - COLUMNS_ROW_HEIGHT) / ITEM_HEIGHT);
+    const endRow = Math.floor((bottom - COLUMNS_ROW_HEIGHT) / ITEM_HEIGHT) + 1;
+
+    let colNames: string[] = [];
+
+    let colLeft = GUTTER_WIDTH;
+
+    if (left < colLeft) {
+      colNames = [
+        '__gutter',
+        ...columns.filter(col => col.visible).map(col => col.name),
+      ];
+    } else {
+      columns
+        .filter(col => col.visible)
+        .forEach(col => {
+          const colRight = colLeft + col.width;
+          if (colRight > left && colLeft < right) colNames.push(col.name);
+          colLeft += col.width;
+        });
+    }
+
+    rows.forEach(r => r.selectedColumns = []);
+
+    for (let i = startRow; i < endRow; i++) {
+      if(rows[i]) rows[i].selectedColumns = colNames;
+    }
+
+    setRows(rows.map(e => e));
+  }, [columns, rows]);
 
   return (
     <div className={classNames(styles.table, { hidden: !props.visible })}>
@@ -178,7 +214,7 @@ export default function Table(props: ITableProps) {
             let style = {};
 
             if (rowsToFit - 2 > rows.length) {
-              style = { overflow: 'auto hidden' };
+              style = { overflow: 'hidden' };
             }
 
             return (
@@ -188,10 +224,13 @@ export default function Table(props: ITableProps) {
                   columns,
                   setColumns,
                   onSelectColumn,
+                  onSelectRegion,
+                  outerContainer: outerRef,
                 }}
               >
                 <FixedSizeList
                   ref={listRef}
+                  outerRef={outerRef}
                   style={style}
                   width={width}
                   height={height}
