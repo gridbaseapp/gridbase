@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { throttle } from 'lodash';
 import classNames from 'classnames';
 import { FixedSizeList } from 'react-window';
-import AutoSizer from './../AutoSizer';
 import { EntityType, IEntity, IState } from '../../state';
 import { ColumnDirection, IColumn } from '../../utils/local-store';
 import TableList from './TableList';
@@ -72,6 +72,7 @@ export const TableListContext = React.createContext<ITableListContext>({
 export default function Table(props: ITableProps) {
   const outerRef = useRef(null);
   const listRef = useRef<FixedSizeList>(null);
+  const tableContentRef = useRef<HTMLDivElement>(null);
   const adapter = useSelector((state: IState) => state.adapter);
   const localStore = useSelector((state: IState) => state.localStore);
   const [page, setPage] = useState<number>(1);
@@ -88,11 +89,31 @@ export default function Table(props: ITableProps) {
     setColumnsSortModalVisible
   ] = useState<boolean>(false);
 
+  const [contentRect, setContentRect] = useState({ width: 0, height: 0 });
+
   const selectedRows = useRef<ISelection[]>([]);
   const lastSelectedRow = useRef<Row | null>(null);
 
   const selectedColumns = useRef<ISelection[]>([]);
   const lastSelectedColumn = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!tableContentRef.current) return;
+
+    const onResize = throttle(entries => {
+      const rect = entries[0].contentRect;
+      setContentRect({ width: rect.width, height: rect.height });
+    }, 25);
+
+    // @ts-ignore
+    const observer = new ResizeObserver(onResize);
+
+    observer.observe(tableContentRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -319,47 +340,41 @@ export default function Table(props: ITableProps) {
     setRows(rows.map(e => e));
   }, [columns, rows]);
 
+  const rowsToFit = Math.floor(contentRect.height / ITEM_HEIGHT) + 1;
+  let style = {};
+
+  if (rowsToFit - 2 > rows.length) {
+    style = { overflow: 'auto hidden' };
+  }
+
   return (
     <div className={classNames(styles.table, { hidden: !props.visible })}>
-      <div className={styles.content}>
-        <AutoSizer>
-          {(width, height) => {
-            const rowsToFit = Math.floor(height / ITEM_HEIGHT) + 1;
-            let style = {};
-
-            if (rowsToFit - 2 > rows.length) {
-              style = { overflow: 'hidden' };
-            }
-
-            return (
-              <TableListContext.Provider
-                value={{
-                  entity: props.entity,
-                  columns,
-                  setColumns,
-                  onSelectColumn,
-                  onSelectRegion,
-                  outerContainer: outerRef,
-                }}
-              >
-                <FixedSizeList
-                  ref={listRef}
-                  outerRef={outerRef}
-                  style={style}
-                  width={width}
-                  height={height}
-                  innerElementType={TableList}
-                  itemCount={Math.max(rows.length, rowsToFit)}
-                  itemSize={ITEM_HEIGHT}
-                  itemData={{ columns, rows, onSelectRow }}
-                  overscanCount={5}
-                >
-                  {TableListItem}
-                </FixedSizeList>
-              </TableListContext.Provider>
-            );
+      <div ref={tableContentRef} className={styles.content}>
+        <TableListContext.Provider
+          value={{
+            entity: props.entity,
+            columns,
+            setColumns,
+            onSelectColumn,
+            onSelectRegion,
+            outerContainer: outerRef,
           }}
-        </AutoSizer>
+        >
+          <FixedSizeList
+            ref={listRef}
+            outerRef={outerRef}
+            style={style}
+            width={contentRect.width}
+            height={contentRect.height}
+            innerElementType={TableList}
+            itemCount={Math.max(rows.length, rowsToFit)}
+            itemSize={ITEM_HEIGHT}
+            itemData={{ columns, rows, onSelectRow }}
+            overscanCount={5}
+          >
+            {TableListItem}
+          </FixedSizeList>
+        </TableListContext.Provider>
       </div>
 
       <div className={styles.footer}>
