@@ -261,7 +261,6 @@ export default function ColumnsSortModal(props: IColumnsSortModalProps) {
         <div className={styles.content}>
           <div className={styles.scrollableContainer}>
             <DndContext
-              autoScroll={false}
               layoutMeasuring={{ strategy: LayoutMeasuringStrategy.Always }}
               collisionDetection={closestCenter}
               modifiers={[restrictToVerticalAxis, restrictToParentElement]}

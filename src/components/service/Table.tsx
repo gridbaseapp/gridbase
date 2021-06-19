@@ -22,8 +22,13 @@ interface ITableListContext {
   columns: IColumn[];
   outerContainer: React.MutableRefObject<any | null>;
   setColumns: React.Dispatch<React.SetStateAction<IColumn[]>>
-  onSelectColumn: (column: string) => void;
+  onSelectColumn: (column: string, mode: string) => void;
   onSelectRegion: (left: number, top: number, right: number, bottom: number) => void;
+}
+
+interface ISelection {
+  index: number;
+  type: string;
 }
 
 export class Row {
@@ -83,6 +88,12 @@ export default function Table(props: ITableProps) {
     setColumnsSortModalVisible
   ] = useState<boolean>(false);
 
+  const selectedRows = useRef<ISelection[]>([]);
+  const lastSelectedRow = useRef<Row | null>(null);
+
+  const selectedColumns = useRef<ISelection[]>([]);
+  const lastSelectedColumn = useRef<string | null>(null);
+
   useEffect(() => {
     (async () => {
       const attributes = await adapter.getAttributes(props.entity.id);
@@ -115,6 +126,12 @@ export default function Table(props: ITableProps) {
   }, []);
 
   useEffect(() => {
+    selectedRows.current = [];
+    selectedColumns.current = [];
+
+    rows.forEach(r => r.selectedColumns = []);
+    setRows(rows.map(e => e));
+
     if (columns.length === 0) return;
 
     const order = columns
@@ -127,6 +144,9 @@ export default function Table(props: ITableProps) {
   }, [columns]);
 
   useEffect(() => {
+    selectedRows.current = [];
+    selectedColumns.current = [];
+
     if (order === null) return;
 
     (async () => {
@@ -160,20 +180,114 @@ export default function Table(props: ITableProps) {
     localStore.setColumnsSettings(adapter.connection.uuid, props.entity.id, cols);
   }
 
-  const onSelectRow = (row: Row) => {
+  const onSelectRow = (row: Row, mode: string) => {
+    selectedColumns.current = [];
+
+    const index = rows.indexOf(row);
+
+    if (index < 0) return;
+
+    if (mode === 'select') {
+      selectedRows.current = [{ index, type: 'select' }];
+    }
+
+    if (mode === 'add') {
+      const existing = selectedRows.current.find(e => e.index === index);
+      if (existing) {
+        selectedRows.current.splice(selectedRows.current.indexOf(existing), 1);
+      } else {
+        selectedRows.current.push({ index, type: 'add' });
+      }
+
+      selectedRows.current.forEach(e => e.type = 'add');
+    }
+
+    if (mode === 'range') {
+      let startIndex = 0;
+      let endIndex = index;
+
+      if (lastSelectedRow.current) startIndex = rows.indexOf(lastSelectedRow.current);
+      if (startIndex > endIndex) [startIndex, endIndex] = [endIndex, startIndex];
+
+      selectedRows.current = selectedRows.current.filter(e => e.type !== 'range');
+
+      for (let i = startIndex; i <= endIndex; i++) {
+        const existing = selectedRows.current.find(e => e.index === i);
+        if (existing) {
+          existing.type = 'range';
+        } else {
+          selectedRows.current.push({ index: i, type: 'range' });
+        }
+      }
+    } else {
+      lastSelectedRow.current = row;
+    }
+
     rows.forEach(r => r.selectedColumns = []);
-    row.select('__gutter');
-    columns.forEach(col => col.visible && row.select(col.name));
+
+    selectedRows.current.forEach(selection => {
+      const r = rows[selection.index];
+      r.select('__gutter');
+      columns.forEach(col => col.visible && r.select(col.name));
+    });
+
     setRows(rows.map(e => e));
   }
 
-  const onSelectColumn = (column: string) => {
-    rows.forEach(r => r.selectedColumns = []);
-    rows.forEach(r => r.select(column));
+  const onSelectColumn = (column: string, mode: string) => {
+    selectedRows.current = [];
+
+    const index = columns.findIndex(e => e.name === column);
+
+    if (index < 0) return;
+
+    if (mode === 'select') {
+      selectedColumns.current = [{ index, type: 'select' }];
+    }
+
+    if (mode === 'add') {
+      const existing = selectedColumns.current.find(e => e.index === index);
+      if (existing) {
+        selectedColumns.current.splice(selectedColumns.current.indexOf(existing), 1);
+      } else {
+        selectedColumns.current.push({ index, type: 'add' });
+      }
+
+      selectedColumns.current.forEach(e => e.type = 'add');
+    }
+
+    if (mode === 'range') {
+      let startIndex = 0;
+      let endIndex = index;
+
+      if (lastSelectedColumn.current) {
+        startIndex = columns.findIndex(e => e.name === lastSelectedColumn.current);
+      }
+      if (startIndex > endIndex) [startIndex, endIndex] = [endIndex, startIndex];
+
+      selectedColumns.current = selectedColumns.current.filter(e => e.type !== 'range');
+
+      for (let i = startIndex; i <= endIndex; i++) {
+        const existing = selectedColumns.current.find(e => e.index === i);
+        if (existing) {
+          existing.type = 'range';
+        } else {
+          selectedColumns.current.push({ index: i, type: 'range' });
+        }
+      }
+    } else {
+      lastSelectedColumn.current = column;
+    }
+
+    const columnNames = selectedColumns.current.map(e => columns[e.index].name);
+    rows.forEach(r => r.selectedColumns = columnNames);
     setRows(rows.map(e => e));
   }
 
   const onSelectRegion = useCallback((top: number, left: number, bottom: number, right: number) => {
+    selectedRows.current = [];
+    selectedColumns.current = [];
+
     const startRow = Math.floor((top - COLUMNS_ROW_HEIGHT) / ITEM_HEIGHT);
     const endRow = Math.floor((bottom - COLUMNS_ROW_HEIGHT) / ITEM_HEIGHT) + 1;
 

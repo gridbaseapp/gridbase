@@ -15,7 +15,7 @@ interface ITableColumnProps {
   className?: string;
   onResize?: (width: number) => void;
   onReorder?: (direction: ColumnDirection) => void;
-  onSelectColumn?: (column: string) => void;
+  onSelectColumn?: (column: string, mode: string) => void;
   listeners?: any;
   attributes?: any;
   style?: any;
@@ -60,6 +60,15 @@ export const TableColumn = forwardRef<HTMLDivElement, ITableColumnProps>((props,
     }
   }
 
+  const handleSelect = (ev: React.MouseEvent) => {
+    if (onSelectColumn) {
+      let mode = 'select';
+      if (ev.metaKey) mode = 'add';
+      if (ev.shiftKey) mode = 'range';
+      onSelectColumn(column.name, mode);
+    }
+  }
+
   const cls = classNames(
     styles.reorder,
     { [styles.reorderNone]: props.column.order.direction === ColumnDirection.NONE },
@@ -84,7 +93,7 @@ export const TableColumn = forwardRef<HTMLDivElement, ITableColumnProps>((props,
     >
       <span
         className={styles.content}
-        onClick={() => onSelectColumn && onSelectColumn(column.name)}
+        onClick={handleSelect}
       >
         {props.column.name}
       </span>

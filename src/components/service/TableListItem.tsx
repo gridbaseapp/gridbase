@@ -9,7 +9,7 @@ import styles from './TableListItem.scss';
 interface DataProps {
   columns: IColumn[];
   rows: Row[];
-  onSelectRow: (row: Row) => void;
+  onSelectRow: (row: Row, mode: string) => void;
 };
 
 export default function TableListItem({ data, index, style }: ListChildComponentProps) {
@@ -18,11 +18,18 @@ export default function TableListItem({ data, index, style }: ListChildComponent
   const cls = classNames(styles.tableListItem, index % 2 ? styles.tableListItemEven : null);
   const row = rows[index];
 
+  const onClick = (ev: React.MouseEvent) => {
+    let mode = 'select';
+    if (ev.metaKey) mode = 'add';
+    if (ev.shiftKey) mode = 'range';
+    onSelectRow(row, mode);
+  }
+
   return (
     <div
       style={{ ...style, top, width: 'auto' }}
       className={cls}
-      onClick={() => onSelectRow(row)}
+      onClick={onClick}
     >
       <div
         style={{ width: GUTTER_WIDTH }}
