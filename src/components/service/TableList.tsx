@@ -159,7 +159,7 @@ export default function TableList({ children, style }: IInnerListElementProps) {
     .reduce((acc, col) => acc + col.width, 0);
 
   return (
-    <div ref={contentRef} style={{ ...style, height, width: width + GUTTER_WIDTH }}>
+    <div ref={contentRef} style={{ ...style, height, width: width + GUTTER_WIDTH, minWidth: '100%' }}>
       <div style={{ height: COLUMNS_ROW_HEIGHT }} className={styles.tableListHeader}>
         <div style={{ width: GUTTER_WIDTH }} className={styles.tableListHeaderGutter}></div>
         <div style={{ width }} className={styles.columnsContainer}>

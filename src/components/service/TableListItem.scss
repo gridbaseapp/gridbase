@@ -30,6 +30,12 @@
   padding: 4px 5px;
 }
 
+.table-list-item-column-remaining {
+  font-size: 0;
+  flex: 1;
+  padding: 0;
+}
+
 .selected {
   background-color: blue;
   color: #fff;

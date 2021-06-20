@@ -25,6 +25,9 @@ export default function TableListItem({ data, index, style }: ListChildComponent
     onSelectRow(row, mode);
   }
 
+  const columnsLength = columns.filter(e => e.visible).length;
+  const allColumnsSelected = row && columnsLength === row.selectedColumns.length - 1;
+
   return (
     <div
       style={{ ...style, top, width: 'auto' }}
@@ -54,6 +57,17 @@ export default function TableListItem({ data, index, style }: ListChildComponent
           {row && row.getValue(column.name)}
         </div>
       )}
+
+      <div
+        className={
+          classNames(
+            styles.tableListItemColumn,
+            styles.tableListItemColumnRemaining,
+            { [styles.selected]: allColumnsSelected },
+          )
+        }
+      ></div>
+
     </div>
   );
 }
