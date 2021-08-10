@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Store } from 'redux';
 import { Provider } from 'react-redux';
+import hotkeys from '../utils/hotkeys';
 import { getPasswordFromKeyStore } from '../utils/key-store';
 import LocalStore from '../utils/local-store';
 import { IConnection } from '../connection';
@@ -66,6 +67,36 @@ export default function App() {
     run();
   }, []);
 
+  useEffect(() => {
+    const switchSerive = (i: number) => {
+      const service = services[i];
+      if (service) setSelectedService(service);
+    };
+
+    hotkeys.bind('App', {
+      'mod+n': () => {
+        setShowLauncher(true);
+      },
+      'mod+1': () => switchSerive(0),
+      'mod+2': () => switchSerive(1),
+      'mod+3': () => switchSerive(2),
+      'mod+4': () => switchSerive(3),
+      'mod+5': () => switchSerive(4),
+      'mod+6': () => switchSerive(5),
+      'mod+7': () => switchSerive(6),
+      'mod+8': () => switchSerive(7),
+      'mod+9': () => switchSerive(8),
+      'mod+0': () => switchSerive(9),
+      'mod+.': () => {
+        if (selectedService) onCloseService(selectedService);
+      },
+    });
+  }, [services, selectedService]);
+
+  useEffect(() => {
+    if (localStore && connections.length > 0) onCreateConnection(connections[0]);
+  }, [localStore, connections]);
+
   async function onCreateConnection(connection: IConnection) {
     const existingConnection = findExistingConnection(connections, connection);
 
@@ -112,7 +143,7 @@ export default function App() {
     setServices(activeServices);
 
     if (activeServices.length > 0) {
-      setSelectedService(services[0]);
+      setSelectedService(activeServices[0]);
     } else {
       setSelectedService(undefined);
       setShowLauncher(true);

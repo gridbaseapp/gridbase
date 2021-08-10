@@ -11,9 +11,11 @@ import Pagination from './Padination';
 import ColumnsConfigurationModal from './ColumnsConfigurationModal';
 import ColumnsSortModal from './ColumnsSortModal';
 import styles from './Table.scss';
+import hotkeys from '../../utils/hotkeys';
 
 interface ITableProps {
   visible: boolean;
+  hasFocus: boolean;
   entity: IEntity;
 }
 
@@ -188,6 +190,45 @@ export default function Table(props: ITableProps) {
       if (listRef.current) listRef.current.scrollToItem(0);
     })();
   }, [page, order]);
+
+  useEffect(() => {
+    const context = `service.${adapter.connection.uuid}.Table.${props.entity.name}`;
+
+    if (props.visible && props.hasFocus) {
+      hotkeys.bind(context, {
+        'up': () => {
+          if (rows.length === 0) return;
+
+          let idx = 0;
+          if (selectedRows.current) {
+            idx = selectedRows.current[0].index;
+          }
+
+          idx -= 1;
+
+          if (idx === -1) idx = rows.length - 1;
+          onSelectRow(rows[idx], 'select');
+        },
+        'down': () => {
+          if (rows.length === 0) return;
+
+          let idx = 0;
+          if (selectedRows.current) {
+            idx = selectedRows.current[0].index;
+          }
+
+          idx += 1;
+
+          if (idx >= rows.length) idx = 0;
+          onSelectRow(rows[idx], 'select');
+        },
+      });
+    } else {
+      hotkeys.unbind(context);
+    }
+
+    return () => hotkeys.unbind(context);
+  }, [props.visible, props.hasFocus, rows, selectedRows]);
 
   const applyColumnsConfigurationChanges = (cols: IColumn[]) => {
     setColumns(cols);

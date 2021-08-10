@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import NewConnection from './NewConnection';
 import styles from './Launcher.scss'
 import { IConnection } from '../connection';
+import hotkeys from '../utils/hotkeys';
 
 interface ILauncherProps {
   connections: IConnection[];
@@ -16,6 +17,25 @@ export default function Launcher(props: ILauncherProps) {
   const [showNewConnection, setShowNewConnection] = useState(false);
   const [error, setError] = useState();
   const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    const contexts = hotkeys.getContexts();
+    hotkeys.pause(contexts);
+
+    hotkeys.bind('Launcher', {
+      'esc': () => {
+        if (props.openConnections.length > 0) props.onClose();
+      },
+      'mod+n': () => {
+        setShowNewConnection(true);
+      },
+    });
+
+    return () => {
+      hotkeys.unbind('Launcher');
+      hotkeys.unpause(contexts);
+    };
+  }, []);
 
   function onDeleteConnection(ev: React.MouseEvent, connection: IConnection) {
     ev.preventDefault();

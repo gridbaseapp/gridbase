@@ -11,22 +11,31 @@ export enum SelectedTab {
   Views,
 }
 
-export default function Sidebar() {
+interface ISidebarProps {
+  hasFocus: boolean;
+  onFocus: () => void;
+}
+
+export default function Sidebar(props: ISidebarProps) {
   const adapter = useSelector((state: IState) => state.adapter);
   const [selectedTab, setSelectedTab] = useState<SelectedTab>(SelectedTab.Tables);
 
   return (
-    <div className={styles.sidebar}>
+    <div className={styles.sidebar}  onClick={props.onFocus}>
       <h1>{adapter.connection.database}</h1>
       <SchemaSelector />
       <SidebarTabs selectedTab={selectedTab} onSelectTab={setSelectedTab} />
       <div className={styles.content}>
-        {selectedTab === SelectedTab.Tables && <SidebarEntities
+        <SidebarEntities
           entityTypes={[EntityType.Table]}
-        />}
-        {selectedTab === SelectedTab.Views && <SidebarEntities
+          visible={selectedTab === SelectedTab.Tables}
+          hasFocus={props.hasFocus}
+        />
+        <SidebarEntities
           entityTypes={[EntityType.View, EntityType.MaterializeView]}
-        />}
+          visible={selectedTab === SelectedTab.Views}
+          hasFocus={props.hasFocus}
+        />
       </div>
     </div>
   );

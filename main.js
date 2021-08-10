@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen } = require('electron');
+const { app, BrowserWindow, screen, Menu } = require('electron');
 const Store = require('electron-store');
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = false;
@@ -34,6 +34,37 @@ function createWindow() {
   });
 
   win.loadFile('index.html');
+
+  const menu = [
+    {
+      label: 'dbadmin',
+      submenu: [
+        {
+          label: 'Quit dbadmin',
+          role: 'quit',
+        },
+      ],
+    },
+    {
+      label: 'View',
+      submenu: [
+        {
+          label: 'Reload',
+          role: 'reload',
+        },
+        {
+          label: 'Force Reload',
+          role: 'forceReload',
+        },
+        {
+          label: 'Toggle Developer Tools',
+          role: 'toggleDevTools',
+        },
+      ],
+    }
+  ];
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
 }
 
 app.whenReady().then(createWindow);

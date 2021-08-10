@@ -12,14 +12,30 @@
 
   a {
     display: block;
-    padding: 5px 0;
+    padding: 5px 5px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 
     &:hover {
       background-color: #eee;
     }
 
+    &.active {
+      background-color: #ddd;
+    }
+
     &.selected {
       font-weight: bold;
+    }
+  }
+
+  &.has-focus {
+    a {
+      &.active {
+        background-color: #00f;
+        color: #fff;
+      }
     }
   }
 }

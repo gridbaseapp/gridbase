@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from "react-hook-form";
 import { v4 as uuid } from 'uuid';
 import { IConnection, ServiceType } from '../connection';
 import styles from './NewConnection.scss';
+import hotkeys from '../utils/hotkeys';
 
 interface INewConnectionProps {
   connections: IConnection[];
@@ -17,6 +18,21 @@ export default function NewConnection(props: INewConnectionProps) {
     handleSubmit,
     register,
   } = useForm<IConnection>({ mode: 'onChange' });
+
+  useEffect(() => {
+    hotkeys.pause(['Launcher']);
+
+    hotkeys.bind('NewConnection', {
+      'esc': () => {
+        props.onClose && props.onClose();
+      },
+    });
+
+    return () => {
+      hotkeys.unbind('NewConnection');
+      hotkeys.unpause(['Launcher']);
+    };
+  }, []);
 
   async function onSubmit(data: IConnection) {
     try {

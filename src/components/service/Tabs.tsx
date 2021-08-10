@@ -31,6 +31,7 @@ import {
   closeEntity,
   setOpenEntities,
 } from '../../state';
+import hotkeys from '../../utils/hotkeys';
 
 const MIN_TAB_WIDTH = 150;
 const DEFAULT_NUMBERS_OF_TABS = 4;
@@ -150,6 +151,8 @@ export default function Tabs() {
   const resizableRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
 
+  const connectionUUID = useSelector((state: IState) => state.adapter.connection.uuid);
+
   const entities = useSelector((state: IState) => state.openEntities);
   const selectedEntity = useSelector((state: IState) => state.selectedEntity);
 
@@ -192,6 +195,37 @@ export default function Tabs() {
     setMaxNumberOfTabs(maxNumberOfTabs);
     if (!isTabResizingPrevented) setTabWidth(tabWidth);
   }, [entities, width, isTabResizingPrevented]);
+
+  useEffect(() => {
+    const context = `service.${connectionUUID}.Tabs`;
+
+    hotkeys.bind(context, {
+      'mod+shift+[': () => {
+        if (entities.length === 0) return;
+
+        let idx = entities.indexOf(selectedEntity);
+        idx -= 1;
+        if (idx === -1) idx = entities.length - 1;
+        dispatch({ type: 'selectedEntity/set', payload: entities[idx] });
+      },
+      'mod+shift+]': () => {
+        if (entities.length === 0) return;
+
+        let idx = entities.indexOf(selectedEntity);
+        idx += 1;
+        if (idx >= entities.length) idx = 0;
+        dispatch({ type: 'selectedEntity/set', payload: entities[idx] });
+      },
+      'mod+w': () => {
+        dispatch(closeEntity(selectedEntity));
+      },
+      'mod+t': () => {
+        setGoToVisible(true);
+      },
+    });
+
+    return () => hotkeys.unbind(context);
+  }, [entities, selectedEntity]);
 
   function onCloseEntity(entity: IEntity) {
     dispatch(closeEntity(entity));
@@ -275,7 +309,7 @@ export default function Tabs() {
                   key={String(entity.id)}
                   entity={entity}
                   tabWidth={tabWidth}
-                  selected={selectedEntity.id === entity.id}
+                  selected={selectedEntity?.id === entity.id}
                   onClose={onCloseEntity}
                   onSelect={onSelectEntity}
                 />
