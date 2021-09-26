@@ -49,10 +49,6 @@ function createWindow() {
       label: 'View',
       submenu: [
         {
-          label: 'Reload',
-          role: 'reload',
-        },
-        {
           label: 'Force Reload',
           role: 'forceReload',
         },

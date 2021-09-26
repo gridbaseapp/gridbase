@@ -1,0 +1,23 @@
+.schema-selector-dropdown {
+  border: 1px solid #ccc;
+  background-color: #fff;
+
+  a.schema {
+    display: block;
+    padding: 5px 10px;
+
+    &:hover, &.focus {
+      background-color: #eee;
+    }
+
+    &.selected {
+      background-color: #ddd;
+    }
+  }
+
+  a.expand-schemas {
+    display: block;
+    padding: 10px 10px 5px 10px;
+    font-size: 10px;
+  }
+}

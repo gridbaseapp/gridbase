@@ -1,0 +1,20 @@
+.tabs {
+  grid-area: tabs;
+  border-bottom: 1px solid #eee;
+  overflow: hidden;
+  display: flex;
+}
+
+.tabs-content {
+  overflow: hidden;
+  flex: 1 1 auto;
+  display: flex;
+}
+
+.new-tab {
+  padding: 6px 10px;
+  border: 1px solid #eee;
+  border-top: 0;
+  border-bottom: 0;
+  cursor: pointer;
+}

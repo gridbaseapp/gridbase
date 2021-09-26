@@ -1,0 +1,18 @@
+.hidden-tabs-dropdown {
+  background-color: #fff;
+  border: 1px solid #eee;
+  padding: 10px 20px;
+  min-width: 100px;
+  max-height: 500px;
+  overflow: scroll;
+
+  a {
+    display: block;
+    margin: 5px 0;
+    cursor: pointer;
+
+    &.active {
+      font-weight: bold;
+    }
+  }
+}

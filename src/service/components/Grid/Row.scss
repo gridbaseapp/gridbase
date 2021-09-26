@@ -1,0 +1,30 @@
+.row {
+  display: flex;
+  min-width: 100%;
+
+  &.row--even {
+    background-color: #f5f5f5;
+
+    .gutter {
+      background-color: #f5f5f5;
+    }
+  }
+}
+
+.gutter {
+  position: sticky;
+  left: 0;
+  background-color: #fff;
+  border-right: 1px solid #ddd;
+}
+
+.cell {
+  padding: 4px 5px;
+
+  .truncate {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}

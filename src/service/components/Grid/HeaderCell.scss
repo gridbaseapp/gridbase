@@ -1,0 +1,40 @@
+.header-cell {
+  font-size: 11px;
+  background-color: #fff;
+  display: flex;
+
+  &.dragging {
+    opacity: 0;
+  }
+
+  &:hover {
+    .order--hoverable {
+      display: inline;
+    }
+  }
+}
+
+.title {
+  padding: 8px 5px;
+  white-space: nowrap;
+  display: inline-block;
+  overflow: hidden;
+  width: 100%;
+  text-overflow: ellipsis;
+}
+
+.order {
+  padding: 10px 5px 5px 5px;
+  text-decoration: none;
+  color: #000;
+}
+
+.order--hoverable {
+  display: none;
+}
+
+.resizer {
+  cursor: col-resize;
+  width: 3px;
+  border-right: 1px solid #ddd;
+}
