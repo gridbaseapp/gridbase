@@ -56,7 +56,7 @@ export function SidebarEntities({ entityTypes }: Props) {
 
   useFocus(name);
 
-  useHotkey(scopes, 'mod+f', () => {
+  useHotkey(scopes, 'cmd+f', () => {
     filterElementRef.current?.focus();
   });
 
@@ -74,10 +74,18 @@ export function SidebarEntities({ entityTypes }: Props) {
     setFocusedEntityIndex(idx);
   }, [filteredEntities]);
 
+  useHotkey(scopes, 'cmd+down', () => {
+    setFocusedEntityIndex(filteredEntities.length - 1);
+  }, [filteredEntities]);
+
   useHotkey(scopes, 'up', () => {
     let idx = focusedEntityIndex - 1;
     if (idx < -1) idx = filteredEntities.length - 1;
     setFocusedEntityIndex(idx);
+  }, [filteredEntities]);
+
+  useHotkey(scopes, 'cmd+up', () => {
+    setFocusedEntityIndex(0);
   }, [filteredEntities]);
 
   useHotkey(scopes, 'enter', () => {

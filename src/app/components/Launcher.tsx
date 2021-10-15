@@ -57,11 +57,11 @@ export function Launcher({
     if (services.length > 0) onClose();
   });
 
-  useHotkey(scope, 'mod+n', () => {
+  useHotkey(scope, 'cmd+n', () => {
     setNewConnectionVisible(true);
   });
 
-  useHotkey(scope, 'mod+f', () => {
+  useHotkey(scope, 'cmd+f', () => {
     filterInputRef.current?.focus();
   });
 

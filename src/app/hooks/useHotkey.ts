@@ -1,6 +1,5 @@
-import { useRef, useEffect } from 'react';
-import Mousetrap from 'mousetrap';
-import 'mousetrap/plugins/global-bind/mousetrap-global-bind';
+import { useEffect } from 'react';
+import hotkeys from 'hotkeys-js';
 import { useAppContext } from './useAppContext';
 
 interface Options {
@@ -13,7 +12,9 @@ const ALPHABET = [
   'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D',
   'F', 'G', 'H', 'J', 'K', 'L', 'Z', 'X', 'C', 'V', 'B', 'N', 'M',
   '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
-];
+].join(', ');
+
+hotkeys.filter = () => true;
 
 export function useHotkey(
   scopeOrScopes: string | string[],
@@ -22,13 +23,17 @@ export function useHotkey(
   deps: any[] = [],
   options: Options = { global: true },
 ) {
-  const scopes = Array.isArray(scopeOrScopes) ? scopeOrScopes : [scopeOrScopes];
-
   const { focus, exclusiveFocus } = useAppContext();
-  const mousetrap = useRef(new Mousetrap());
 
   useEffect(() => {
     let hasFocus = false;
+
+    const scopes = Array.isArray(scopeOrScopes) ? scopeOrScopes : [scopeOrScopes];
+    let keys = Array.isArray(keyCombination) ? keyCombination.join(', ') : keyCombination;
+
+    if (keyCombination === 'alphabet') {
+      keys = ALPHABET;
+    }
 
     if (exclusiveFocus.length > 0) {
       hasFocus = exclusiveFocus[0] === scopes[0];
@@ -36,23 +41,26 @@ export function useHotkey(
       hasFocus = scopes.every(e => focus.includes(e));
     }
 
+    const wrapperHandler = (ev: KeyboardEvent) => {
+      const target = ev.target as HTMLElement | null;
+
+      if (!options.global && target) {
+        const isEditable = target.isContentEditable;
+        const isInput = /(INPUT|TEXTAREA|SELECT)/.test(target.tagName);
+        const isReadOnly = (target as HTMLInputElement).readOnly;
+
+        if (isEditable || (isInput && !isReadOnly)) return;
+      }
+
+      handler(ev);
+    }
+
     function unbind() {
-      mousetrap.current.reset();
+      hotkeys.unbind(keys, wrapperHandler);
     }
 
     if (hasFocus) {
-      mousetrap.current.reset();
-
-      if (keyCombination === 'alphabet') {
-        keyCombination = ALPHABET;
-      }
-
-      if (options.global) {
-        // @ts-expect-error
-        mousetrap.current.bindGlobal(keyCombination, handler);
-      } else {
-        mousetrap.current.bind(keyCombination, handler);
-      }
+      hotkeys(keys, wrapperHandler);
     } else {
       unbind();
     }

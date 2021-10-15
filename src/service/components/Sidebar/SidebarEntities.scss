@@ -39,6 +39,11 @@
   width: 100%;
 }
 
-:global(.focus) .sidebar-entities a.focus {
+.sidebar-entities a.focus {
   background-color: #ddd;
+}
+
+:global(.focus) .sidebar-entities a.focus {
+  background-color: blue;
+  color: #fff;
 }

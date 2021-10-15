@@ -29,16 +29,16 @@ function AppContent({ initialConnections }: Props) {
 
   useFocus(scope);
 
-  useHotkey(scope, 'mod+n', () => {
+  useHotkey(scope, 'cmd+n', () => {
     setLauncherVisible(true);
   });
 
-  useHotkey(scope, 'mod+.', () => {
+  useHotkey(scope, 'cmd+.', () => {
     if (activeService) handleDisconnect(activeService);
   }, [activeService]);
 
   for (let i = 1; i < 10; i++) {
-    useHotkey(scope, `mod+${i}`, () => {
+    useHotkey(scope, `cmd+${i}`, () => {
       const service = services[i - 1];
       if (service) setActiveService(service);
     }, [services]);

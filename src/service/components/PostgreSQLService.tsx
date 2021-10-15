@@ -96,19 +96,19 @@ export function PostgreSQLService({ isVisible }: Props) {
 
   useFocus(scope, isVisible);
 
-  useHotkey(scope, 'mod+t', () => {
+  useHotkey(scope, 'cmd+t', () => {
     setGoToVisible(true);
   });
 
-  useHotkey([scope, `Sidebar-${connection.uuid}`], 'mod+r', () => {
+  useHotkey([scope, `Sidebar-${connection.uuid}`], 'cmd+r', () => {
     loadEntities();
   }, [activeSchema]);
 
-  useHotkey(scope, 'mod+w', () => {
+  useHotkey(scope, 'cmd+w', () => {
     if (activeEntity) closeEntity(activeEntity);
   }, [activeEntity, openEntities]);
 
-  useHotkey(scope, 'mod+shift+e', () => {
+  useHotkey(scope, 'cmd+shift+e', () => {
     if (openEntities.length === 0) {
       setFocusedSection('sidebar');
     } else {
@@ -116,7 +116,7 @@ export function PostgreSQLService({ isVisible }: Props) {
     }
   });
 
-  useHotkey(scope, 'mod+shift+[', () => {
+  useHotkey(scope, 'cmd+shift+[', () => {
     if (!activeEntity) return;
     if (openEntities.length === 0) return;
 
@@ -126,7 +126,7 @@ export function PostgreSQLService({ isVisible }: Props) {
     setActiveEntity(openEntities[idx]);
   }, [activeEntity, openEntities]);
 
-  useHotkey(scope, 'mod+shift+]', () => {
+  useHotkey(scope, 'cmd+shift+]', () => {
     if (!activeEntity) return;
     if (openEntities.length === 0) return;
 
