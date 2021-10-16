@@ -15,9 +15,6 @@ const ORDER_TRANSITION = {
 
 interface SortableHeaderCellProps {
   column: Column;
-//   showOrderNumber: boolean;
-//   onReorder?: (direction: ColumnDirection) => void;
-//   onSelectColumn?: (column: string, mode: string) => void;
 }
 
 export function SortableHeaderCell(props: SortableHeaderCellProps) {
@@ -87,15 +84,6 @@ export const HeaderCell = forwardRef<HTMLDivElement, HeaderCellProps>(({
     }
   }
 
-//   const handleSelect = (ev: React.MouseEvent) => {
-//     if (onSelectColumn) {
-//       let mode = 'select';
-//       if (ev.metaKey) mode = 'add';
-//       if (ev.shiftKey) mode = 'range';
-//       onSelectColumn(column.name, mode);
-//     }
-//   }
-
   const css = classNames(
     styles.headerCell,
     {
@@ -127,14 +115,6 @@ export const HeaderCell = forwardRef<HTMLDivElement, HeaderCellProps>(({
       <span className={styles.title}>
         {column.name}
       </span>
-
-      {/*
-      //       <span
-      //         onClick={handleSelect}
-      //       >
-      //         {props.column.name}
-      //       </span>
-      */}
 
       <a
         href=""

@@ -1,53 +1,53 @@
-import React from 'react';
+import React, { forwardRef, useRef } from 'react';
 import { Header } from './Header';
 import styles from './GridElement.scss';
-import { GUTTER_WIDTH, HEADER_HEIGHT } from './constants';
+import { GUTTER_WIDTH, HEADER_HEIGHT, ROW_HEIGHT } from './constants';
 import { useGridContext } from '../../hooks';
+import { useMouseSelectable } from '../../../app/hooks';
 
 interface Props {
   children: React.ReactNode;
   style: React.CSSProperties;
 }
 
-export function GridElement({ children, style }: Props) {
-//   const {
-//     entity,
-//     columns,
-//     setColumns,
-//     onSelectColumn,
-//     onSelectRegion,
-//     outerContainer,
-//   } = useContext(TableListContext);
+export const GridElement = forwardRef<HTMLDivElement, Props>(({ children, style }, ref) => {
+  const { columns, rows, onSelectRows } = useGridContext();
 
-//   const contentRef = useRef<HTMLDivElement>(null);
-//   const [rect, setRect] = useState({ top: 0, left: 0, width: 0, height: 0 });
+  const initialSelectionIndex = useRef(-1);
 
-//   useEffect(() => {
-//     if (contentRef.current && outerContainer.current) {
-//       const throttledOnSelectRegion = throttle((top, left, bottom, right) => {
-//         onSelectRegion(top, left, bottom, right);
-//       }, 50);
+  const handleMouseDown = useMouseSelectable({
+    onSelect(rect) {
+      const startIndex = Math.max(
+        0,
+        Math.floor((rect.top - HEADER_HEIGHT) / ROW_HEIGHT),
+      );
 
-//       return selectable(
-//         contentRef.current,
-//         outerContainer.current,
-//         (rect) => {
-//           setRect(rect);
-//           throttledOnSelectRegion(
-//             rect.top,
-//             rect.left,
-//             rect.top + rect.height,
-//             rect.left + rect.width,
-//           );
-//         },
-//         () => setRect({ top: 0, left: 0, width: 0, height: 0 }),
-//       );
-//     }
+      const endIndex = Math.min(
+        rows.length - 1,
+        Math.floor((rect.bottom - HEADER_HEIGHT) / ROW_HEIGHT),
+      );
 
-//     return undefined;
-//   }, [onSelectRegion]);
+      if (initialSelectionIndex.current === -1) {
+        initialSelectionIndex.current = startIndex;
+      }
 
-  const { columns } = useGridContext();
+      let from = 0;
+      let to = 0;
+
+      if (startIndex >= initialSelectionIndex.current) {
+        from = startIndex;
+        to = endIndex;
+      } else {
+        from = endIndex;
+        to = startIndex;
+      }
+
+      onSelectRows(from, to, 'select');
+    },
+    onEnd() {
+      initialSelectionIndex.current = -1;
+    }
+  });
 
   const height = parseFloat(String(style.height)) + HEADER_HEIGHT;
   const width = GUTTER_WIDTH + columns
@@ -55,23 +55,16 @@ export function GridElement({ children, style }: Props) {
     .reduce((acc, e) => acc + e.width, 0);
 
   return (
-    // <div ref={contentRef}>
-    <div style={{ ...style, height, width, minWidth: '100%' }}>
+    <div
+      ref={ref}
+      onMouseDown={handleMouseDown}
+      style={{ ...style, height, width, minWidth: '100%' }}
+    >
       <Header />
-
-      {/* <div
-        className={styles.tableListSelection}
-        style={{
-          top: rect.top,
-          left: rect.left,
-          width: rect.width,
-          height: rect.height,
-        }}
-      ></div> */}
 
       <div className={styles.body}>
         {children}
       </div>
     </div>
   );
-};
+});

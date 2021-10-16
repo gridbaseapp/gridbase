@@ -2,10 +2,6 @@ import { Client } from 'pg';
 import { Connection } from '../app/types';
 import { Schema, EntityType, Entity } from './types';
 
-// interface IAttribute {
-//   name: string;
-// }
-
 const SQL_GET_SCHEMAS = `
   SELECT
     "oid" AS "id",

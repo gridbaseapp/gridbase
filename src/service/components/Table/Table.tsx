@@ -1,42 +1,15 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { debounce, isEqual } from 'lodash';
 import classNames from 'classnames';
 import { useDidUpdateEffect, useElementSize, useFocus, useHotkey } from '../../../app/hooks';
 import { useServiceContext, useServiceStash } from '../../hooks';
-import { Column, Entity, SortOrder } from '../../types';
+import { Column, Entity, SortOrder, Row, SelectionModifier } from '../../types';
 import { mergeColumnsWithAttributes } from './utils';
 import { Pagination } from './Pagination';
 import { ColumnsSettingsModal } from './ColumnsSettingsModal';
 import { SortSettingsModal } from './SortSettingsModal';
-import { Grid } from '../Grid';
+import { Grid, GridRef } from '../Grid';
 import styles from './Table.scss';
-
-// interface ISelection {
-//   index: number;
-//   type: string;
-// }
-
-// export class Row {
-//   row: any;
-//   selectedColumns: string[];
-
-//   constructor(row: any) {
-//     this.row = row;
-//     this.selectedColumns = [];
-//   }
-
-//   getValue(column: string) {
-//     return this.row[column].toString();
-//   }
-
-//   select(column: string) {
-//     this.selectedColumns.push(column);
-//   }
-
-//   isSelected(column: string) {
-//     return this.selectedColumns.includes(column);
-//   }
-// }
 
 const PER_PAGE = 1000;
 const MIN_COLUMN_WIDTH = 50;
@@ -52,19 +25,15 @@ interface Props {
 export function Table({ entity, isVisible, hasFocus }: Props) {
   const [contentRef, contentSize] = useElementSize();
 
-//   const outerRef = useRef(null);
-//   const listRef = useRef<FixedSizeList>(null);
-//   const selectedRows = useRef<ISelection[]>([]);
-//   const lastSelectedRow = useRef<Row | null>(null);
-//   const selectedColumns = useRef<ISelection[]>([]);
-//   const lastSelectedColumn = useRef<string | null>(null);
-
   const { adapter, connection } = useServiceContext();
 
   const [
     loadColumnsFromStash,
     saveColumnsToStash,
   ] = useServiceStash<Column[]>(`columns.${entity.id}`, []);
+
+  const gridRef = useRef<GridRef>(null);
+  const rangeSelectionInitialIndex = useRef<number>(-1);
 
   const [
     isColumnsSettingsModalVisible,
@@ -78,7 +47,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
 
   const [loadingStatus, setLoadingStatus] = useState<LoadingStatus>('loading');
   const [columns, setColumns] = useState<Column[]>([]);
-  const [rows, setRows] = useState<any[]>([]);
+  const [rows, setRows] = useState<Row[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
 
@@ -122,7 +91,9 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
       adapter.query(SQLRows),
     ]);
 
-    return [resultTotal.rows[0].count, resultRows.rows] as const;
+    const rows = resultRows.rows.map(e => new Row(e));
+
+    return [resultTotal.rows[0].count, rows] as const;
   }
 
   useEffect(() => {
@@ -153,7 +124,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
 
   useFocus(name, hasFocus);
 
-  useHotkey(scopes, 'mod+r', async () => {
+  useHotkey(scopes, 'cmd+r', async () => {
     setLoadingStatus('reloading');
 
     const cols = await loadColumns();
@@ -164,171 +135,163 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
     setRows(rows);
 
     setLoadingStatus('success');
-}, [page]);
+  }, [page]);
 
-//   useEffect(() => {
-//     selectedRows.current = [];
-//     selectedColumns.current = [];
+  useHotkey(scopes, 'up', () => {
+    rangeSelectionInitialIndex.current = -1;
 
-//     if (order === null) return;
+    const idx = rows.findIndex(e => e.isActive);
+    rows.forEach(e => e.isSelected = false);
 
-//     (async () => {
-//       const schema = props.entity.schema?.name;
-//       const table = props.entity.name;
+    if (idx === -1) {
+      rows[rows.length - 1].isActive = true;
+      gridRef.current?.scrollToItem(rows.length - 1);
+    } else if (idx === 0) {
+      rows[idx].isActive = false;
+    } else {
+      rows[idx].isActive = false;
+      rows[idx - 1].isActive = true;
+      gridRef.current?.scrollToItem(idx - 1);
+    }
 
-//       let sql = `SELECT * FROM "${schema}"."${table}" `;
-//       if (order !== '') sql += `ORDER BY ${order} `;
-//       sql += `LIMIT ${PER_PAGE} OFFSET ${(page - 1) * PER_PAGE}`;
+    setRows([...rows]);
+  }, [rows]);
 
-//       const [total, rows] = await Promise.all([
-//         adapter.query(`SELECT count(*) FROM "${schema}"."${table}"`),
-//         adapter.query(sql),
-//       ]);
+  useHotkey(scopes, 'cmd+up', () => {
+    rangeSelectionInitialIndex.current = -1;
 
-//       setTotalRecords(total.rows[0].count);
-//       setRows(rows.rows.map(e => new Row(e)));
-//       if (listRef.current) listRef.current.scrollToItem(0);
-//     })();
-//   }, [page, order]);
+    const idx = rows.findIndex(e => e.isActive);
+    rows.forEach(e => e.isSelected = false);
 
-//   const onSelectRow = (row: Row, mode: string) => {
-//     selectedColumns.current = [];
+    if (idx !== -1) {
+      rows[idx].isActive = false;
+    }
 
-//     const index = rows.indexOf(row);
+    rows[0].isActive = true;
+    gridRef.current?.scrollToItem(0);
 
-//     if (index < 0) return;
+    setRows([...rows]);
+  }, [rows]);
 
-//     if (mode === 'select') {
-//       selectedRows.current = [{ index, type: 'select' }];
-//     }
+  useHotkey(scopes, 'shift+up', () => {
+    const idx = rows.findIndex(e => e.isActive);
 
-//     if (mode === 'add') {
-//       const existing = selectedRows.current.find(e => e.index === index);
-//       if (existing) {
-//         selectedRows.current.splice(selectedRows.current.indexOf(existing), 1);
-//       } else {
-//         selectedRows.current.push({ index, type: 'add' });
-//       }
+    if (idx === -1) {
+      rows[rows.length - 1].isActive = true;
+      gridRef.current?.scrollToItem(rows.length - 1);
+    } else if (idx > 0) {
+      rows[idx].isSelected = !rows[idx - 1].isSelected;
+      rows[idx - 1].isActive = true;
+      gridRef.current?.scrollToItem(idx - 1);
+    }
 
-//       selectedRows.current.forEach(e => e.type = 'add');
-//     }
+    setRows([...rows]);
+  }, [rows]);
 
-//     if (mode === 'range') {
-//       let startIndex = 0;
-//       let endIndex = index;
+  useHotkey(scopes, 'cmd+shift+up', () => {
+    const idx = rows.findIndex(e => e.isActive);
+    rangeSelectionInitialIndex.current = idx;
 
-//       if (lastSelectedRow.current) startIndex = rows.indexOf(lastSelectedRow.current);
-//       if (startIndex > endIndex) [startIndex, endIndex] = [endIndex, startIndex];
+    rows.forEach((e, i) => e.isSelected = i <= idx);
 
-//       selectedRows.current = selectedRows.current.filter(e => e.type !== 'range');
+    rows[0].isActive = true;
+    gridRef.current?.scrollToItem(0);
 
-//       for (let i = startIndex; i <= endIndex; i++) {
-//         const existing = selectedRows.current.find(e => e.index === i);
-//         if (existing) {
-//           existing.type = 'range';
-//         } else {
-//           selectedRows.current.push({ index: i, type: 'range' });
-//         }
-//       }
-//     } else {
-//       lastSelectedRow.current = row;
-//     }
+    setRows([...rows]);
+  }, [rows]);
 
-//     rows.forEach(r => r.selectedColumns = []);
+  useHotkey(scopes, 'down', () => {
+    rangeSelectionInitialIndex.current = -1;
 
-//     selectedRows.current.forEach(selection => {
-//       const r = rows[selection.index];
-//       r.select('__gutter');
-//       columns.forEach(col => col.visible && r.select(col.name));
-//     });
+    const idx = rows.findIndex(e => e.isActive);
+    rows.forEach(e => e.isSelected = false);
 
-//     setRows(rows.map(e => e));
-//   }
+    if (idx === -1) {
+      rows[0].isActive = true;
+      gridRef.current?.scrollToItem(0);
+    } else if (idx === rows.length - 1) {
+      rows[idx].isActive = false;
+    } else {
+      rows[idx].isActive = false;
+      rows[idx + 1].isActive = true;
+      gridRef.current?.scrollToItem(idx + 1);
+    }
 
-//   const onSelectColumn = (column: string, mode: string) => {
-//     selectedRows.current = [];
+    setRows([...rows]);
+  }, [rows]);
 
-//     const index = columns.findIndex(e => e.name === column);
+  useHotkey(scopes, 'cmd+down', () => {
+    rangeSelectionInitialIndex.current = -1;
 
-//     if (index < 0) return;
+    const idx = rows.findIndex(e => e.isActive);
+    rows.forEach(e => e.isSelected = false);
 
-//     if (mode === 'select') {
-//       selectedColumns.current = [{ index, type: 'select' }];
-//     }
+    if (idx !== -1) {
+      rows[idx].isActive = false;
+    }
 
-//     if (mode === 'add') {
-//       const existing = selectedColumns.current.find(e => e.index === index);
-//       if (existing) {
-//         selectedColumns.current.splice(selectedColumns.current.indexOf(existing), 1);
-//       } else {
-//         selectedColumns.current.push({ index, type: 'add' });
-//       }
+    rows[rows.length - 1].isActive = true;
+    gridRef.current?.scrollToItem(rows.length - 1);
 
-//       selectedColumns.current.forEach(e => e.type = 'add');
-//     }
+    setRows([...rows]);
+  }, [rows]);
 
-//     if (mode === 'range') {
-//       let startIndex = 0;
-//       let endIndex = index;
+  useHotkey(scopes, 'shift+down', () => {
+    const idx = rows.findIndex(e => e.isActive);
 
-//       if (lastSelectedColumn.current) {
-//         startIndex = columns.findIndex(e => e.name === lastSelectedColumn.current);
-//       }
-//       if (startIndex > endIndex) [startIndex, endIndex] = [endIndex, startIndex];
+    if (idx === -1) {
+      rows[0].isActive = true;
+      gridRef.current?.scrollToItem(0);
+    } else if (idx < rows.length - 1) {
+      rows[idx].isSelected = !rows[idx + 1].isSelected;
+      rows[idx + 1].isActive = true;
+      gridRef.current?.scrollToItem(idx + 1);
+    }
 
-//       selectedColumns.current = selectedColumns.current.filter(e => e.type !== 'range');
+    setRows([...rows]);
+  }, [rows]);
 
-//       for (let i = startIndex; i <= endIndex; i++) {
-//         const existing = selectedColumns.current.find(e => e.index === i);
-//         if (existing) {
-//           existing.type = 'range';
-//         } else {
-//           selectedColumns.current.push({ index: i, type: 'range' });
-//         }
-//       }
-//     } else {
-//       lastSelectedColumn.current = column;
-//     }
+  useHotkey(scopes, 'cmd+shift+down', () => {
+    const idx = rows.findIndex(e => e.isActive);
+    rangeSelectionInitialIndex.current = idx;
 
-//     const columnNames = selectedColumns.current.map(e => columns[e.index].name);
-//     rows.forEach(r => r.selectedColumns = columnNames);
-//     setRows(rows.map(e => e));
-//   }
+    rows.forEach((e, i) => e.isSelected = i >= idx);
 
-//   const onSelectRegion = useCallback((top: number, left: number, bottom: number, right: number) => {
-//     selectedRows.current = [];
-//     selectedColumns.current = [];
+    rows[rows.length - 1].isActive = true;
+    gridRef.current?.scrollToItem(rows.length - 1);
 
-//     const startRow = Math.floor((top - COLUMNS_ROW_HEIGHT) / ITEM_HEIGHT);
-//     const endRow = Math.floor((bottom - COLUMNS_ROW_HEIGHT) / ITEM_HEIGHT) + 1;
+    setRows([...rows]);
+  }, [rows]);
 
-//     let colNames: string[] = [];
+  useHotkey(scopes, 'cmd+a', () => {
+    rangeSelectionInitialIndex.current = -1;
 
-//     let colLeft = GUTTER_WIDTH;
+    rows.forEach(e => e.isSelected = true);
+    rows[rows.length - 1].isActive = true;
 
-//     if (left < colLeft) {
-//       colNames = [
-//         '__gutter',
-//         ...columns.filter(col => col.visible).map(col => col.name),
-//       ];
-//     } else {
-//       columns
-//         .filter(col => col.visible)
-//         .forEach(col => {
-//           const colRight = colLeft + col.width;
-//           if (colRight > left && colLeft < right) colNames.push(col.name);
-//           colLeft += col.width;
-//         });
-//     }
+    setRows([...rows]);
+  }, [rows]);
 
-//     rows.forEach(r => r.selectedColumns = []);
+  useHotkey(scopes, 'esc', () => {
+    rangeSelectionInitialIndex.current = -1;
 
-//     for (let i = startRow; i < endRow; i++) {
-//       if(rows[i]) rows[i].selectedColumns = colNames;
-//     }
+    rows.forEach(e => e.isSelected = false);
+    const idx = rows.findIndex(e => e.isActive);
 
-//     setRows(rows.map(e => e));
-//   }, [columns, rows]);
+    if (idx !== -1) {
+      rows[idx].isActive = false;
+    }
+
+    setRows([...rows]);
+  }, [rows]);
+
+  // prevent scroll
+  useHotkey(scopes, [
+    'up', 'down', 'cmd+up', 'cmd+down',
+    'alt+up', 'alt+down', 'space',
+  ], (ev) => {
+    ev.preventDefault();
+  }, []);
 
   function handleResizeColumn(column: Column, width: number) {
     if (width < MIN_COLUMN_WIDTH) width = MIN_COLUMN_WIDTH;
@@ -439,14 +402,94 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
     }
   }
 
+  function handleSelectRows(
+    startIndex: number,
+    endIndex: number,
+    modifier: SelectionModifier,
+  ) {
+    if (modifier === 'select') {
+      rangeSelectionInitialIndex.current = -1;
+
+      let from = 0;
+      let to = 0;
+
+      if (startIndex <= endIndex) {
+        from = startIndex;
+        to = endIndex;
+      } else {
+        from = endIndex;
+        to = startIndex;
+      }
+
+      rows.forEach((e, i) => e.isSelected = i >= from && i <= to);
+      rows[endIndex].isActive = true;
+    } else if (modifier === 'append') {
+      rangeSelectionInitialIndex.current = -1;
+
+      if (rows[startIndex].isSelected) {
+        rows[endIndex].isSelected = false;
+        const active = rows.find(e => e.isActive);
+
+        if (!active) {
+          const lastSelected = [...rows].reverse().find(e => e.isSelected);
+          if (lastSelected) lastSelected.isActive = true;
+        }
+      } else {
+        rows.forEach(e => {
+          if (e.isActive) e.isSelected = true;
+        });
+        rows[endIndex].isActive = true;
+      }
+    } else if (modifier === 'range') {
+      let activeIdx = rows.findIndex(e => e.isActive);
+      if (activeIdx === -1) activeIdx = 0;
+
+      if (rangeSelectionInitialIndex.current === -1) {
+        rangeSelectionInitialIndex.current = activeIdx;
+      }
+
+      let from = 0;
+      let to = 0;
+
+      if (startIndex >= activeIdx) {
+        from = activeIdx;
+        to = startIndex;
+      } else {
+        from = startIndex;
+        to = activeIdx;
+      }
+
+      for (let i = from; i <= to ;i++) {
+        rows[i].isSelected = false;
+      }
+
+      if (startIndex >= rangeSelectionInitialIndex.current) {
+        from = rangeSelectionInitialIndex.current;
+        to = startIndex;
+      } else {
+        from = startIndex;
+        to = rangeSelectionInitialIndex.current;
+      }
+
+      for (let i = from; i <= to ;i++) {
+        rows[i].isSelected = true;
+      }
+
+      rows[startIndex].isActive = true;
+    }
+
+    setRows([...rows]);
+  }
+
   return (
-    <div className={classNames(styles.table, { hidden: !isVisible })}>
+    <div className={classNames(styles.table, { hidden: !isVisible, focus: hasFocus })}>
       {loadingStatus === 'loading' && <div className={styles.splash}>Loading...</div>}
 
       {loadingStatus !== 'loading' && (
         <>
           <div ref={contentRef} className={styles.content}>
             <Grid
+              ref={gridRef}
               width={contentSize.width}
               height={contentSize.height}
               columns={columns}
@@ -454,6 +497,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
               onResizeColumn={handleResizeColumn}
               onReorderColumn={handleReorderColumn}
               onSortColumns={setColumns}
+              onSelectRows={handleSelectRows}
             />
           </div>
 

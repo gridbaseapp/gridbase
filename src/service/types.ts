@@ -37,6 +37,40 @@ export interface Column {
   sort: Sort;
 }
 
+export class Row {
+  private _isActive: boolean = false;
+  private _isSelected: boolean = false;
+  private readonly cells: any;
+
+  constructor(cells: any) {
+    this.cells = cells;
+  }
+
+  getValue(field: string) {
+    return this.cells[field].toString();
+  }
+
+  get isActive() {
+    return this._isActive;
+  }
+
+  set isActive(val: boolean) {
+    this._isSelected = val;
+    this._isActive = val;
+  }
+
+  get isSelected() {
+    return this._isSelected;
+  }
+
+  set isSelected(val: boolean) {
+    this._isActive = false;
+    this._isSelected = val;
+  }
+}
+
+export type SelectionModifier = 'select' | 'append' | 'range';
+
 export interface ServiceContextDescriptor {
   connection: Connection;
   adapter: PostgreSQLAdapter;
@@ -58,7 +92,9 @@ export interface ServiceContextDescriptor {
 
 export interface GridContextDescriptor {
   columns: Column[];
+  rows: Row[];
   onResizeColumn(column: Column, width: number): void;
   onReorderColumn(column: Column, order: SortOrder): void;
   onSortColumns(columns: Column[]): void;
+  onSelectRows(startIndex: number, endIndex: number, modifier: SelectionModifier): void;
 }

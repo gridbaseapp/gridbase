@@ -13,6 +13,11 @@ interface IsScrollable {
   isScrollableY: boolean;
 }
 
+interface Args {
+  onSelect(rect: SelectionRect): void;
+  onEnd(): void;
+}
+
 const SCROLL_TRIGGER_MARGIN = 50;
 const SCROLL_MOVEMENT_SPEED_FACTOR = 0.1;
 
@@ -41,7 +46,7 @@ function findScrollableAncestor(element: HTMLElement | null): IsScrollable | nul
   return findScrollableAncestor(element.parentElement);
 }
 
-export function useMouseSelectable(onSelect: (rect: SelectionRect) => void) {
+export function useMouseSelectable({ onSelect, onEnd }: Args) {
   return useCallback((ev: React.MouseEvent<HTMLElement>) => {
     const containerElement = ev.currentTarget;
     const scrollAncestor = findScrollableAncestor(containerElement);
@@ -133,6 +138,8 @@ export function useMouseSelectable(onSelect: (rect: SelectionRect) => void) {
     };
 
     function onMouseUp() {
+      onEnd();
+
       if (interval) clearInterval(interval);
 
       document.removeEventListener('mousemove', onMouseMove);

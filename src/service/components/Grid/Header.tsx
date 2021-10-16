@@ -6,6 +6,9 @@ import {
   DragStartEvent,
   DragEndEvent,
   closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
 } from '@dnd-kit/core';
 import {
   restrictToHorizontalAxis,
@@ -27,10 +30,10 @@ export function Header() {
 
   const [focusedColumn, setFocusedColumn] = useState<Column | null>(null);
 
-//   const pointerSensor = useSensor(PointerSensor, {
-//     activationConstraint: { distance: 1 },
-//   });
-//   const sensors = useSensors(pointerSensor);
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: { distance: 1 },
+  });
+  const sensors = useSensors(pointerSensor);
 
   function handleDragStart({ active }: DragStartEvent) {
     const column = columns.find(el => el.name === active.id);
@@ -53,13 +56,13 @@ export function Header() {
   const visibleColumns = columns.filter(e => e.isVisible);
 
   return (
-    <div className={styles.header} style={{ height: HEADER_HEIGHT }}>
+    <div className={styles.header} style={{ height: HEADER_HEIGHT }} onMouseDown={ev => ev.stopPropagation()}>
       <div style={{ width: GUTTER_WIDTH }} className={styles.gutter}></div>
       <div className={styles.columns}>
         <DndContext
           collisionDetection={closestCenter}
           modifiers={[restrictToHorizontalAxis, restrictToParentElement]}
-          // sensors={sensors}
+          sensors={sensors}
           autoScroll={{ threshold: { x: 0.1, y: 0 } }}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
@@ -72,7 +75,6 @@ export function Header() {
               <SortableHeaderCell
                 key={column.name}
                 column={column}
-                // onSelectColumn={onSelectColumn}
               />
             ))}
           </SortableContext>
