@@ -41,4 +41,9 @@ module.exports = {
     new webpack.ExternalsPlugin('commonjs', ['keytar']),
   ],
   devtool: 'eval-cheap-source-map',
+  devServer: {
+    client: {
+      overlay: false,
+    },
+  },
 };

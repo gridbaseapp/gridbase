@@ -47,7 +47,7 @@ export function NewConnection({ isCloseable, onClose, onCreate }: Props) {
       await onCreate({...data, uuid: uuid(), type: 'PostgreSQL'});
     } catch (error) {
       setStatus('error');
-      setError(error.message);
+      setError((error as Error).message);
     }
   }
 

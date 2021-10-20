@@ -39,7 +39,7 @@ export function ConnectionDetails({
       await onConnect(connection);
     } catch (error) {
       setStatus('error');
-      setError(error.message);
+      setError((error as Error).message);
     }
   }
 

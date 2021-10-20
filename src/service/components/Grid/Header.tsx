@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
+  MeasuringStrategy,
 } from '@dnd-kit/core';
 import {
   restrictToHorizontalAxis,
@@ -60,6 +61,7 @@ export function Header() {
       <div style={{ width: GUTTER_WIDTH }} className={styles.gutter}></div>
       <div className={styles.columns}>
         <DndContext
+          measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
           collisionDetection={closestCenter}
           modifiers={[restrictToHorizontalAxis, restrictToParentElement]}
           sensors={sensors}

@@ -5,6 +5,7 @@ import {
   DragStartEvent,
   DragEndEvent,
   DragOverlay,
+  MeasuringStrategy,
   closestCenter,
 } from '@dnd-kit/core';
 import {
@@ -118,6 +119,7 @@ export function Tabs({ setGoToTriggerTargetRef, onShowGoTo }: Props) {
     >
       <div ref={tabsContentRef} className={styles.tabsContent}>
         <DndContext
+          measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
           autoScroll={false}
           collisionDetection={closestCenter}
           modifiers={[restrictToHorizontalAxis, restrictToParentElement]}
