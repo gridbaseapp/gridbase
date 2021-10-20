@@ -33,8 +33,8 @@ export function ColumnsSettingsModal({
   onApply,
 }: Props) {
   const [items, setItems] = useState<ColumnSettings[]>(() => {
-    return columns.map(({ name, isVisible }, position) => {
-      return { name, isVisible, position };
+    return columns.map(({ name, isVisible, width }, position) => {
+      return { name, isVisible, width, position };
     });
   });
 
@@ -92,6 +92,7 @@ export function ColumnsSettingsModal({
         newColumns.push({
           ...column,
           isVisible: e.isVisible,
+          width: e.width,
           sort: { position, order },
         });
       }
@@ -141,6 +142,7 @@ export function ColumnsSettingsModal({
           <span></span>
           <span>Visible</span>
           <span>Column</span>
+          <span>Width</span>
           <span>Position</span>
         </div>
 

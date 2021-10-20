@@ -1,8 +1,9 @@
-import React, { forwardRef} from 'react';
+import React, { forwardRef, useState } from 'react';
 import classNames from 'classnames';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ColumnSettings } from './types';
+import { COLUMN_MIN_WIDTH, COLUMN_MAX_WIDTH } from '../constants';
 import styles from './Item.scss';
 
 interface SortableItemProps {
@@ -54,10 +55,29 @@ export const Item = forwardRef<HTMLDivElement, ItemProps>(({
   isOverlay = false,
   onChange,
 }, ref) => {
-  function handleChange(ev: React.ChangeEvent<HTMLInputElement>) {
+  const [width, setWidth] = useState(String(item.width));
+
+  function handleChangeVisible(ev: React.ChangeEvent<HTMLInputElement>) {
     if (onChange) {
       onChange({ ...item, isVisible: ev.target.checked });
     }
+  }
+
+  function handleBlurWidth(ev: React.FocusEvent<HTMLInputElement>) {
+    let value = Number(ev.target.value);
+
+    if (value < COLUMN_MIN_WIDTH) value = COLUMN_MIN_WIDTH;
+    if (value > COLUMN_MAX_WIDTH) value = COLUMN_MAX_WIDTH;
+
+    setWidth(String(value));
+
+    if (onChange) {
+      onChange({ ...item, width: value });
+    }
+  }
+
+  function handleChangeWidth(ev: React.ChangeEvent<HTMLInputElement>) {
+    setWidth(ev.target.value);
   }
 
   const css = classNames(
@@ -81,10 +101,20 @@ export const Item = forwardRef<HTMLDivElement, ItemProps>(({
         <input
           type="checkbox"
           checked={item.isVisible}
-          onChange={handleChange}
+          onChange={handleChangeVisible}
         />
       </span>
       <span>{item.name}</span>
+      <span>
+        <input
+          className={styles.columnWidthInput}
+          type="number"
+          value={width}
+          onChange={handleChangeWidth}
+          onBlur={handleBlurWidth}
+          disabled={!item.isVisible}
+        />
+      </span>
       <span>{item.isVisible && item.position + 1}</span>
     </div>
   );

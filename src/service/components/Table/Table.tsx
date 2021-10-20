@@ -9,10 +9,10 @@ import { Pagination } from './Pagination';
 import { ColumnsSettingsModal } from './ColumnsSettingsModal';
 import { SortSettingsModal } from './SortSettingsModal';
 import { Grid, GridRef } from '../Grid';
+import { COLUMN_MIN_WIDTH, COLUMN_MAX_WIDTH } from './constants';
 import styles from './Table.scss';
 
 const PER_PAGE = 1000;
-const MIN_COLUMN_WIDTH = 50;
 
 type LoadingStatus = 'loading' | 'reloading' | 'success';
 
@@ -294,7 +294,8 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
   }, []);
 
   function handleResizeColumn(column: Column, width: number) {
-    if (width < MIN_COLUMN_WIDTH) width = MIN_COLUMN_WIDTH;
+    if (width < COLUMN_MIN_WIDTH) width = COLUMN_MIN_WIDTH;
+    if (width > COLUMN_MAX_WIDTH) width = COLUMN_MAX_WIDTH;
 
     setColumns(state => {
       const i = state.findIndex(e => e.name === column.name);
