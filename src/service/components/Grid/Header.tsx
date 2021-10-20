@@ -5,7 +5,6 @@ import {
   DragOverlay,
   DragStartEvent,
   DragEndEvent,
-  closestCenter,
   useSensor,
   useSensors,
   PointerSensor,
@@ -20,6 +19,7 @@ import {
   horizontalListSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable';
+import { inTheMiddle } from '../../../CollisionDetection';
 import { useGridContext } from '../../hooks';
 import { HeaderCell, SortableHeaderCell } from './HeaderCell';
 import styles from './Header.scss';
@@ -62,7 +62,7 @@ export function Header() {
       <div className={styles.columns}>
         <DndContext
           measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
-          collisionDetection={closestCenter}
+          collisionDetection={inTheMiddle}
           modifiers={[restrictToHorizontalAxis, restrictToParentElement]}
           sensors={sensors}
           autoScroll={{ threshold: { x: 0.1, y: 0 } }}
