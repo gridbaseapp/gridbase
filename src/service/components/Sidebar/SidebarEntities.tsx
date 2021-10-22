@@ -111,6 +111,7 @@ export function SidebarEntities({ entityTypes }: Props) {
   }, [filteredEntities], { global: false });
 
   function handleClickEntity(ev: React.MouseEvent, entity: Entity) {
+    setFocusedEntityIndex(filteredEntities.indexOf(entity));
     ev.preventDefault();
   }
 
@@ -150,7 +151,6 @@ export function SidebarEntities({ entityTypes }: Props) {
                 return (
                   <a
                     key={entity.id}
-                    href=""
                     className={css}
                     onClick={(ev) => handleClickEntity(ev, entity)}
                     onDoubleClick={(ev) => handleOpenEntity(ev, entity)}
