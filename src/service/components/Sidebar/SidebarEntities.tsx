@@ -23,6 +23,7 @@ export function SidebarEntities({ entityTypes }: Props) {
   const [focusedEntityIndex, setFocusedEntityIndex] = useState(-1);
   const [highlightedEntities, setHighlightedEntities] = useState<Entity[]>([]);
 
+  const listRef = useRef<HTMLDivElement>(null);
   const filterElementRef = useRef<HTMLInputElement>(null);
   const focusedEntityFilter = useRef('');
 
@@ -37,6 +38,27 @@ export function SidebarEntities({ entityTypes }: Props) {
 
     return entityTypes.includes(type) && lowercaseName.includes(query);
   });
+
+  function scrollToEntity(idx: number) {
+    const entity = filteredEntities[idx];
+
+    if (!entity) return;
+    if (!listRef.current) return;
+
+    const el = document.getElementById(`sidebar-entity-${entity.id}`)!;
+
+    const scrollTop = listRef.current.scrollTop;
+    const listRect = listRef.current.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+
+    if (elRect.top < listRect.top) {
+      listRef.current.scrollTo({ top: scrollTop - (listRect.top - elRect.top) });
+    }
+
+    if (elRect.bottom > listRect.bottom) {
+      listRef.current.scrollTo({ top: scrollTop - (listRect.bottom - elRect.bottom) });
+    }
+  }
 
   useEffect(() => {
     setFocusedEntityIndex(-1);
@@ -72,20 +94,24 @@ export function SidebarEntities({ entityTypes }: Props) {
     let idx = focusedEntityIndex + 1;
     if (idx > filteredEntities.length - 1) idx = -1;
     setFocusedEntityIndex(idx);
+    scrollToEntity(idx);
   }, [filteredEntities]);
 
   useHotkey(scopes, 'cmd+down', () => {
     setFocusedEntityIndex(filteredEntities.length - 1);
+    scrollToEntity(filteredEntities.length - 1);
   }, [filteredEntities]);
 
   useHotkey(scopes, 'up', () => {
     let idx = focusedEntityIndex - 1;
     if (idx < -1) idx = filteredEntities.length - 1;
     setFocusedEntityIndex(idx);
+    scrollToEntity(idx);
   }, [filteredEntities]);
 
   useHotkey(scopes, 'cmd+up', () => {
     setFocusedEntityIndex(0);
+    scrollToEntity(0);
   }, [filteredEntities]);
 
   useHotkey(scopes, 'enter', () => {
@@ -105,7 +131,9 @@ export function SidebarEntities({ entityTypes }: Props) {
 
     setHighlightedEntities(highlighted)
 
-    setFocusedEntityIndex(filteredEntities.indexOf(highlighted[0]));
+    const idx = filteredEntities.indexOf(highlighted[0]);
+    setFocusedEntityIndex(idx);
+    scrollToEntity(idx);
 
     clearFocusedEntityFilter();
   }, [filteredEntities], { global: false });
@@ -137,7 +165,7 @@ export function SidebarEntities({ entityTypes }: Props) {
           )}
 
           {filteredEntities.length > 0 && (
-            <div className={styles.list}>
+            <div ref={listRef} className={styles.list}>
               {filteredEntities.map((entity, idx) => {
                 const isOpaque = highlightedEntities.length > 0 &&
                   !highlightedEntities.includes(entity);
@@ -150,6 +178,7 @@ export function SidebarEntities({ entityTypes }: Props) {
 
                 return (
                   <a
+                    id={`sidebar-entity-${entity.id}`}
                     key={entity.id}
                     className={css}
                     onClick={(ev) => handleClickEntity(ev, entity)}

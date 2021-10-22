@@ -12,6 +12,7 @@ interface Props {
 export function GoTo({ onClose }: Props) {
   const { entities, openEntity } = useServiceContext();
 
+  const listRef = useRef<HTMLDivElement>(null);
   const filterRef = useRef<HTMLInputElement>(null);
 
   const [filter, setFilter] = useState('');
@@ -23,6 +24,27 @@ export function GoTo({ onClose }: Props) {
 
     return lowercaseName.includes(query);
   });
+
+  function scrollToEntity(idx: number) {
+    const entity = filteredEntities[idx];
+
+    if (!entity) return;
+    if (!listRef.current) return;
+
+    const el = document.getElementById(`goto-entity-${entity.id}`)!;
+
+    const scrollTop = listRef.current.scrollTop;
+    const listRect = listRef.current.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+
+    if (elRect.top < listRect.top) {
+      listRef.current.scrollTo({ top: scrollTop - (listRect.top - elRect.top) });
+    }
+
+    if (elRect.bottom > listRect.bottom) {
+      listRef.current.scrollTo({ top: scrollTop - (listRect.bottom - elRect.bottom) });
+    }
+  }
 
   useEffect(() => {
     if (filterRef.current) filterRef.current.focus();
@@ -44,12 +66,24 @@ export function GoTo({ onClose }: Props) {
     let idx = focusedEntityIndex + 1;
     if (idx > filteredEntities.length - 1) idx = 0;
     setFocusedEntityIndex(idx);
+    scrollToEntity(idx);
+  }, [filteredEntities]);
+
+  useHotkey(scope, 'cmd+down', () => {
+    setFocusedEntityIndex(filteredEntities.length - 1);
+    scrollToEntity(filteredEntities.length - 1);
   }, [filteredEntities]);
 
   useHotkey(scope, 'up', () => {
     let idx = focusedEntityIndex - 1;
     if (idx < 0) idx = filteredEntities.length - 1;
     setFocusedEntityIndex(idx);
+    scrollToEntity(idx);
+  }, [filteredEntities]);
+
+  useHotkey(scope, 'cmd+up', () => {
+    setFocusedEntityIndex(0);
+    scrollToEntity(0);
   }, [filteredEntities]);
 
   useHotkey(scope, 'enter', () => {
@@ -81,9 +115,10 @@ export function GoTo({ onClose }: Props) {
         onChange={handleFilter}
       />
 
-      <div className={styles.list}>
+      <div ref={listRef} className={styles.list}>
         {filteredEntities.map((entity, idx) => (
           <a
+            id={`goto-entity-${entity.id}`}
             key={entity.id}
             className={classNames({ [styles.focus]: idx === focusedEntityIndex })}
             onClick={(ev) => handleClickEntity(ev, entity)}
