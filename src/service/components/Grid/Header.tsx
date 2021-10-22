@@ -27,7 +27,7 @@ import { HEADER_HEIGHT, GUTTER_WIDTH } from './constants';
 import { Column } from '../../types';
 
 export function Header() {
-  const { columns, onSortColumns } = useGridContext();
+  const { columns, rows, onSortColumns, onSelectRows } = useGridContext();
 
   const [focusedColumn, setFocusedColumn] = useState<Column | null>(null);
 
@@ -58,7 +58,11 @@ export function Header() {
 
   return (
     <div className={styles.header} style={{ height: HEADER_HEIGHT }} onMouseDown={ev => ev.stopPropagation()}>
-      <div style={{ width: GUTTER_WIDTH }} className={styles.gutter}></div>
+      <div
+        style={{ width: GUTTER_WIDTH }}
+        className={styles.gutter}
+        onClick={() => onSelectRows(0, rows.length - 1, 'select')}
+      ></div>
       <div className={styles.columns}>
         <DndContext
           measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
