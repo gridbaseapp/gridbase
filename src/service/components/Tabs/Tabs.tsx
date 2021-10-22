@@ -173,7 +173,6 @@ export function Tabs({ setGoToTriggerTargetRef, onShowGoTo }: Props) {
 
       <a
         ref={setGoToTriggerTargetRef}
-        href=""
         className={styles.newTab}
         onClick={handleShowGoTo}
       >+</a>

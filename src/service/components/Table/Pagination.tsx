@@ -65,7 +65,6 @@ export function Pagination({
       {from} - {to} of {total}
 
       <a
-        href=""
         className={
           classNames(styles.button, { [styles.disabled]: page  === 1 })
         }
@@ -73,7 +72,6 @@ export function Pagination({
       >&laquo;</a>
 
       <a
-        href=""
         className={
           classNames(styles.button, { [styles.disabled]: page  === 1 })
         }
@@ -90,7 +88,6 @@ export function Pagination({
       </span>
 
       <a
-        href=""
         className={
           classNames(styles.button, { [styles.disabled]: page  === totalPages })
         }
@@ -98,7 +95,6 @@ export function Pagination({
       >&gt;</a>
 
       <a
-        href=""
         className={
           classNames(styles.button, { [styles.disabled]: page  === totalPages })
         }

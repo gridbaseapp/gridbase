@@ -42,13 +42,12 @@ export function DockItem({
             <div>port: {port}</div>
             <div>database: {database}</div>
             <div>user: {user}</div>
-            <div><a href="" onClick={handleDisconnect}>Disconnect</a></div>
+            <div><a onClick={handleDisconnect}>Disconnect</a></div>
           </div>
         )}
       >
         <a
           className={classNames(styles.item, { [styles.selected]: isActive })}
-          href=""
           onClick={handleActivateService}
         >
           {database}

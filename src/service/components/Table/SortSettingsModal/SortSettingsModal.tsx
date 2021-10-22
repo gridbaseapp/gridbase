@@ -115,8 +115,8 @@ export function SortSettingsModal({
     <div className={styles.backdrop} onClick={handleClose}>
       <div className={styles.modal} onClick={ev => ev.stopPropagation()}>
         <div className={styles.header}>
-          <a href="" onClick={handleApply}>apply</a>
-          <a href="" onClick={handleClose}>close</a>
+          <a onClick={handleApply}>apply</a>
+          <a onClick={handleClose}>close</a>
         </div>
 
         <div className={styles.columnsHeader}>

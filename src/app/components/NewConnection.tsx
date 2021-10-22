@@ -53,7 +53,7 @@ export function NewConnection({ isCloseable, onClose, onCreate }: Props) {
 
   return (
     <div className={styles.newConnection}>
-      {isCloseable && <a href="" onClick={handleClose}>Close</a>}
+      {isCloseable && <a onClick={handleClose}>Close</a>}
 
       <form onSubmit={handleSubmit(submitForm)}>
         <div>

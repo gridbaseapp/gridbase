@@ -117,7 +117,6 @@ export const HeaderCell = forwardRef<HTMLDivElement, HeaderCellProps>(({
       </span>
 
       <a
-        href=""
         draggable="false"
         className={orderCss}
         onClick={handleOrder}

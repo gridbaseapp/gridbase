@@ -513,7 +513,6 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
             />
 
             <a
-              href=""
               onClick={handleColumnsSettingsModalTriggerClick}
             >
               {columns.find(e => !e.isVisible) && <span>*</span>}
@@ -521,7 +520,6 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
             </a>
 
             <a
-              href=""
               onClick={handleSortSettingsModalTriggerClick}
             >
               {columns.find(e => e.sort.position > 0) && <span>*</span>}

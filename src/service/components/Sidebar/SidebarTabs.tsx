@@ -19,14 +19,12 @@ export function SidebarTabs({ activeTab, onActivateTab }: Props) {
     <div className={styles.sidebarTabs}>
       <a
         className={classNames({ [styles.active]: activeTab === 'tables' })}
-        href=""
         onClick={(ev) => handleActivateTab(ev, 'tables')}
       >
         Tables
       </a>
       <a
         className={classNames({ [styles.active]: activeTab === 'views' })}
-        href=""
         onClick={(ev) => handleActivateTab(ev, 'views')}
       >
         Views

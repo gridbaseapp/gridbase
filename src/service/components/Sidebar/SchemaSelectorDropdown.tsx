@@ -72,7 +72,6 @@ export function SchemaSelectorDropdown({ onClose }: Props) {
     <div className={styles.schemaSelectorDropdown}>
       {filteredSchemas.map((schema, idx) => (
         <a
-          href=""
           key={schema.id}
           className={
             classNames(
@@ -86,12 +85,12 @@ export function SchemaSelectorDropdown({ onClose }: Props) {
       ))}
 
       {!isAllSchemasVisible &&
-        <a href="" onClick={handleExpandSchemas} className={styles.expandSchemas}>
+        <a onClick={handleExpandSchemas} className={styles.expandSchemas}>
           Show all schemas
         </a>
       }
       {isAllSchemasVisible &&
-        <a href="" onClick={handleExpandSchemas} className={styles.expandSchemas}>
+        <a onClick={handleExpandSchemas} className={styles.expandSchemas}>
           Hide internal schemas
         </a>
       }

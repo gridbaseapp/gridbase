@@ -22,7 +22,6 @@ export function HiddenTabsDropdown({ entities, onActivateEntity }: Props) {
       {entities.map(entity => (
         <a
           key={entity.id}
-          href=""
           className={classNames({ [styles.active]: entity.id === activeEntity?.id })}
           onClick={(ev) => handleClick(ev, entity)}
         >

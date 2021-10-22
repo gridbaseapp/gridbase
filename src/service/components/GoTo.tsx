@@ -84,7 +84,6 @@ export function GoTo({ onClose }: Props) {
       <div className={styles.list}>
         {filteredEntities.map((entity, idx) => (
           <a
-            href=""
             key={entity.id}
             className={classNames({ [styles.focus]: idx === focusedEntityIndex })}
             onClick={(ev) => handleClickEntity(ev, entity)}

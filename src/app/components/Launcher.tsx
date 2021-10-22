@@ -102,7 +102,7 @@ export function Launcher({
         />
       }
 
-      {services.length > 0 && <a href="" onClick={handleClose}>Close</a>}
+      {services.length > 0 && <a onClick={handleClose}>Close</a>}
 
       <br />
 
@@ -117,7 +117,6 @@ export function Launcher({
 
       <div>
         <a
-          href=""
           onClick={
             (ev) => {
               ev.preventDefault();

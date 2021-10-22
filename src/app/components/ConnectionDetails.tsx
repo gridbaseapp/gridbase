@@ -60,15 +60,15 @@ export function ConnectionDetails({
   if (status === 'connected') {
     content = (
       <>
-        <a href="" onClick={handleDisconnect}>Disconnect</a>
-        <a href="" onClick={handleDelete}>Disconnect and Delete</a>
+        <a onClick={handleDisconnect}>Disconnect</a>
+        <a onClick={handleDelete}>Disconnect and Delete</a>
       </>
     );
   } else if (status === 'disconnected' || status === 'error') {
     content = (
       <>
-        <a href="" onClick={handleConnect}>Connect</a>
-        <a href="" onClick={handleDelete}>Delete</a>
+        <a onClick={handleConnect}>Connect</a>
+        <a onClick={handleDelete}>Delete</a>
         {error ? 'Error: ' + error : ''}
       </>
     );

@@ -34,7 +34,7 @@ export function Dock({
           onDisconnect={onDisconnect}
         />
       )}
-      <a className={styles.newConnection} href="" onClick={handleShowLauncher}>+</a>
+      <a className={styles.newConnection} onClick={handleShowLauncher}>+</a>
     </div>
   );
 }

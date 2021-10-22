@@ -108,7 +108,6 @@ export const Tab = forwardRef<HTMLDivElement, TabProps>(({
         <div className={styles.tabContent}>
           <span>{entity.name}</span>
           <a
-            href=""
             draggable="false"
             onPointerDown={ev => ev.stopPropagation()}
             onClick={handleClick}
