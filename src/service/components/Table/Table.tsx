@@ -285,14 +285,6 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
     setRows([...rows]);
   }, [rows]);
 
-  // prevent scroll
-  useHotkey(scopes, [
-    'up', 'down', 'cmd+up', 'cmd+down',
-    'alt+up', 'alt+down', 'space',
-  ], (ev) => {
-    ev.preventDefault();
-  }, []);
-
   function handleResizeColumn(column: Column, width: number) {
     if (width < COLUMN_MIN_WIDTH) width = COLUMN_MIN_WIDTH;
     if (width > COLUMN_MAX_WIDTH) width = COLUMN_MAX_WIDTH;

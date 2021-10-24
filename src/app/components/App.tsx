@@ -37,6 +37,14 @@ function AppContent({ initialConnections }: Props) {
     if (activeService) handleDisconnect(activeService);
   }, [activeService]);
 
+  // prevent scroll
+  useHotkey(scope, [
+    'up', 'down', 'cmd+up', 'cmd+down',
+    'alt+up', 'alt+down', 'space',
+  ], (ev) => {
+    ev.preventDefault();
+  }, []);
+
   for (let i = 1; i < 10; i++) {
     useHotkey(scope, `cmd+${i}`, () => {
       const service = services[i - 1];
