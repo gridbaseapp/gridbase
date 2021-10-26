@@ -45,17 +45,22 @@ export function GridRow({ index, style }: ListChildComponentProps) {
         {row && row.isActive && <span>&rarr;</span>}
         {row && !row.isActive && row.isSelected && <span>&bull;</span>}
       </div>
-      {visibleColumns.map(column =>
-        <div
-          key={`${index}-${column.name}`}
-          style={{ width: column.width }}
-          className={styles.cell}
-        >
-          <span className={styles.truncate}>
-            {row && row.getValue(column.name)}
-          </span>
-        </div>
-      )}
+      {visibleColumns.map(column => {
+        const value = row?.getValue(column.name);
+
+        return (
+          <div
+            key={`${index}-${column.name}`}
+            style={{ width: column.width }}
+            className={styles.cell}
+          >
+            <span className={styles.truncate}>
+              {row && !value && <span className={styles.null}>[Null]</span>}
+              {row && value && value}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -88,7 +88,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
 
     const [resultTotal, resultRows] = await Promise.all([
       adapter.query(SQLTotal),
-      adapter.query(SQLRows),
+      adapter.queryNoTypeCasting(SQLRows),
     ]);
 
     const rows = resultRows.rows.map(e => new Row(e));

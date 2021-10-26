@@ -16,6 +16,10 @@
     .gutter {
       background-color: #ddd;
     }
+
+    .null {
+      color: #999;
+    }
   }
 
   :global(.focus) &.row--selected {
@@ -25,6 +29,11 @@
     .gutter {
       background-color: blue;
       color: #fff;
+    }
+
+    .null {
+      color: #fff;
+      opacity: 0.7;
     }
   }
 }
@@ -45,4 +54,8 @@
     white-space: nowrap;
     text-overflow: ellipsis;
   }
+}
+
+.null {
+  color: #bbb;
 }

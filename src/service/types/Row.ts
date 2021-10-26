@@ -9,7 +9,7 @@ export class Row {
 
   getValue(field: string) {
     const value = this.cells[field];
-    return value ? value.toString() : value;
+    return value === null ? null : String(value);
   }
 
   get isActive() {
