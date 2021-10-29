@@ -78,11 +78,11 @@ export function SidebarEntities({ entityTypes }: Props) {
 
   useFocus(name);
 
-  useHotkey(scopes, 'cmd+f', () => {
+  useHotkey(scopes, 'meta+f', () => {
     filterElementRef.current?.focus();
   });
 
-  useHotkey(scopes, 'esc', () => {
+  useHotkey(scopes, 'escape', () => {
     filterElementRef.current?.blur();
 
     if (filter != '') {
@@ -90,33 +90,33 @@ export function SidebarEntities({ entityTypes }: Props) {
     }
   }, [filter]);
 
-  useHotkey(scopes, 'down', () => {
+  useHotkey(scopes, 'arrowdown', () => {
     let idx = focusedEntityIndex + 1;
     if (idx > filteredEntities.length - 1) idx = -1;
     setFocusedEntityIndex(idx);
     scrollToEntity(idx);
   }, [filteredEntities]);
 
-  useHotkey(scopes, 'cmd+down', () => {
+  useHotkey(scopes, 'meta+arrowdown', () => {
     setFocusedEntityIndex(filteredEntities.length - 1);
     scrollToEntity(filteredEntities.length - 1);
   }, [filteredEntities]);
 
-  useHotkey(scopes, 'up', () => {
+  useHotkey(scopes, 'arrowup', () => {
     let idx = focusedEntityIndex - 1;
     if (idx < -1) idx = filteredEntities.length - 1;
     setFocusedEntityIndex(idx);
     scrollToEntity(idx);
   }, [filteredEntities]);
 
-  useHotkey(scopes, 'cmd+up', () => {
+  useHotkey(scopes, 'meta+arrowup', () => {
     setFocusedEntityIndex(0);
     scrollToEntity(0);
   }, [filteredEntities]);
 
   useHotkey(scopes, 'enter', () => {
     const entity = filteredEntities[focusedEntityIndex];
-    if (entity) openEntity(entity);
+    if (entity) openEntity(entity.id);
   }, [focusedEntityIndex]);
 
   useHotkey(scopes, 'alphabet', (ev) => {

@@ -27,15 +27,15 @@ export function SchemaSelectorDropdown({ onClose }: Props) {
 
   useFocus(scope, true);
 
-  useHotkey(scope, 'esc', () => onClose());
+  useHotkey(scope, 'escape', () => onClose());
 
-  useHotkey(scope, 'down', () => {
+  useHotkey(scope, 'arrowdown', () => {
     let idx = focusedSchemaIndex + 1;
     if (idx > filteredSchemas.length - 1) idx = -1;
     setFocusedSchemaIndex(idx);
   }, [filteredSchemas]);
 
-  useHotkey(scope, 'up', () => {
+  useHotkey(scope, 'arrowup', () => {
     let idx = focusedSchemaIndex - 1;
     if (idx < -1) idx = filteredSchemas.length - 1;
     setFocusedSchemaIndex(idx);

@@ -29,28 +29,66 @@ function AppContent({ initialConnections }: Props) {
 
   useFocus(scope);
 
-  useHotkey(scope, 'cmd+n', () => {
+  useHotkey(scope, 'meta+n', () => {
     setLauncherVisible(true);
   });
 
-  useHotkey(scope, 'cmd+.', () => {
+  useHotkey(scope, 'meta+.', () => {
     if (activeService) handleDisconnect(activeService);
   }, [activeService]);
 
-  // prevent scroll
+  // prevent default scroll behavior
   useHotkey(scope, [
-    'up', 'down', 'cmd+up', 'cmd+down',
-    'alt+up', 'alt+down', 'space',
+    'arrowup', 'arrowdown', 'meta+arrowup', 'meta+arrowdown',
+    'alt+arrowup', 'alt+arrowdown', 'space',
   ], (ev) => {
     ev.preventDefault();
-  }, []);
+  }, [], { global: false });
 
-  for (let i = 1; i < 10; i++) {
-    useHotkey(scope, `cmd+${i}`, () => {
-      const service = services[i - 1];
-      if (service) setActiveService(service);
-    }, [services]);
-  }
+  useHotkey(scope, 'meta+1', () => {
+    const service = services[0];
+    if (service) setActiveService(service);
+  }, [services]);
+
+  useHotkey(scope, 'meta+2', () => {
+    const service = services[1];
+    if (service) setActiveService(service);
+  }, [services]);
+
+  useHotkey(scope, 'meta+3', () => {
+    const service = services[2];
+    if (service) setActiveService(service);
+  }, [services]);
+
+  useHotkey(scope, 'meta+4', () => {
+    const service = services[3];
+    if (service) setActiveService(service);
+  }, [services]);
+
+  useHotkey(scope, 'meta+5', () => {
+    const service = services[4];
+    if (service) setActiveService(service);
+  }, [services]);
+
+  useHotkey(scope, 'meta+6', () => {
+    const service = services[5];
+    if (service) setActiveService(service);
+  }, [services]);
+
+  useHotkey(scope, 'meta+7', () => {
+    const service = services[6];
+    if (service) setActiveService(service);
+  }, [services]);
+
+  useHotkey(scope, 'meta+8', () => {
+    const service = services[7];
+    if (service) setActiveService(service);
+  }, [services]);
+
+  useHotkey(scope, 'meta+9', () => {
+    const service = services[8];
+    if (service) setActiveService(service);
+  }, [services]);
 
   useEffect(() => {
     if (services.length === 0) setLauncherVisible(true);

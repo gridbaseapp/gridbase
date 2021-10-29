@@ -53,25 +53,25 @@ export function Launcher({
 
   useExclusiveFocus(scope, !isNewConnectionVisible);
 
-  useHotkey(scope, 'esc', () => {
+  useHotkey(scope, 'escape', () => {
     if (services.length > 0) onClose();
   });
 
-  useHotkey(scope, 'cmd+n', () => {
+  useHotkey(scope, 'meta+n', () => {
     setNewConnectionVisible(true);
   });
 
-  useHotkey(scope, 'cmd+f', () => {
+  useHotkey(scope, 'meta+f', () => {
     filterInputRef.current?.focus();
   });
 
-  useHotkey(scope, 'down', () => {
+  useHotkey(scope, 'arrowdown', () => {
     let idx = focusedConnectionIndex + 1;
     if (idx > filteredConnections.length - 1) idx = -1;
     setFocusedConnectionIndex(idx);
   }, [filteredConnections]);
 
-  useHotkey(scope, 'up', () => {
+  useHotkey(scope, 'arrowup', () => {
     let idx = focusedConnectionIndex - 1;
     if (idx < -1) idx = filteredConnections.length - 1;
     setFocusedConnectionIndex(idx);

@@ -96,29 +96,29 @@ export function PostgreSQLService({ isVisible }: Props) {
 
   useFocus(scope, isVisible);
 
-  useHotkey(scope, 'cmd+t', () => {
+  useHotkey(scope, 'meta+t', () => {
     setGoToVisible(true);
   });
 
-  useHotkey([scope, `Sidebar-${connection.uuid}`], 'cmd+r', () => {
+  useHotkey([scope, `Sidebar-${connection.uuid}`], 'meta+r', () => {
     loadEntities();
   }, [activeSchema]);
 
-  useHotkey(scope, 'cmd+w', () => {
-    if (activeEntity) closeEntity(activeEntity);
-  }, [activeEntity, openEntities]);
+  useHotkey(scope, 'meta+w', () => {
+    if (activeEntityId) closeEntity(activeEntityId);
+  }, [entities, activeEntityId, openEntityIds]);
 
-  useHotkey(scope, 'cmd+shift+e', () => {
-    if (openEntities.length === 0) {
+  useHotkey(scope, 'meta+shift+e', () => {
+    if (openEntityIds.length === 0) {
       setFocusedSection('sidebar');
     } else {
       setFocusedSection(state => state === 'sidebar' ? 'table' : 'sidebar');
     }
   });
 
-  useHotkey(scope, 'cmd+shift+[', () => {
-    if (!activeEntity) return;
-    if (openEntities.length === 0) return;
+  useHotkey(scope, 'meta+shift+[', () => {
+    if (!activeEntityId) return;
+    if (openEntityIds.length === 0) return;
 
     let idx = openEntities.indexOf(activeEntity);
     idx -= 1;
@@ -126,9 +126,9 @@ export function PostgreSQLService({ isVisible }: Props) {
     setActiveEntity(openEntities[idx]);
   }, [activeEntity, openEntities]);
 
-  useHotkey(scope, 'cmd+shift+]', () => {
-    if (!activeEntity) return;
-    if (openEntities.length === 0) return;
+  useHotkey(scope, 'meta+shift+]', () => {
+    if (!activeEntityId) return;
+    if (openEntityIds.length === 0) return;
 
     let idx = openEntities.indexOf(activeEntity);
     idx += 1;

@@ -30,7 +30,7 @@ export function NewConnection({ isCloseable, onClose, onCreate }: Props) {
 
   useExclusiveFocus(scope);
 
-  useHotkey(scope, 'esc', () => {
+  useHotkey(scope, 'escape', () => {
     if (isCloseable) onClose();
   });
 

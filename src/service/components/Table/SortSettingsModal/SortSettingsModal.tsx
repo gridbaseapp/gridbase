@@ -43,7 +43,7 @@ export function SortSettingsModal({
 
   useExclusiveFocus(scope);
 
-  useHotkey(scope, 'esc', () => {
+  useHotkey(scope, 'escape', () => {
     onClose();
   });
 

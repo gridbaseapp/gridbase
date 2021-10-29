@@ -124,7 +124,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
 
   useFocus(name, hasFocus);
 
-  useHotkey(scopes, 'cmd+r', async () => {
+  useHotkey(scopes, 'meta+r', async () => {
     setLoadingStatus('reloading');
 
     const cols = await loadColumns();
@@ -137,7 +137,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
     setLoadingStatus('success');
   }, [page]);
 
-  useHotkey(scopes, 'up', () => {
+  useHotkey(scopes, 'arrowup', () => {
     rangeSelectionInitialIndex.current = -1;
 
     const idx = rows.findIndex(e => e.isActive);
@@ -157,7 +157,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
     setRows([...rows]);
   }, [rows]);
 
-  useHotkey(scopes, 'cmd+up', () => {
+  useHotkey(scopes, 'meta+arrowup', () => {
     rangeSelectionInitialIndex.current = -1;
 
     const idx = rows.findIndex(e => e.isActive);
@@ -173,7 +173,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
     setRows([...rows]);
   }, [rows]);
 
-  useHotkey(scopes, 'shift+up', () => {
+  useHotkey(scopes, 'shift+arrowup', () => {
     const idx = rows.findIndex(e => e.isActive);
 
     if (idx === -1) {
@@ -188,7 +188,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
     setRows([...rows]);
   }, [rows]);
 
-  useHotkey(scopes, 'cmd+shift+up', () => {
+  useHotkey(scopes, 'meta+shift+arrowup', () => {
     const idx = rows.findIndex(e => e.isActive);
     rangeSelectionInitialIndex.current = idx;
 
@@ -200,7 +200,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
     setRows([...rows]);
   }, [rows]);
 
-  useHotkey(scopes, 'down', () => {
+  useHotkey(scopes, 'arrowdown', () => {
     rangeSelectionInitialIndex.current = -1;
 
     const idx = rows.findIndex(e => e.isActive);
@@ -220,7 +220,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
     setRows([...rows]);
   }, [rows]);
 
-  useHotkey(scopes, 'cmd+down', () => {
+  useHotkey(scopes, 'meta+arrowdown', () => {
     rangeSelectionInitialIndex.current = -1;
 
     const idx = rows.findIndex(e => e.isActive);
@@ -236,7 +236,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
     setRows([...rows]);
   }, [rows]);
 
-  useHotkey(scopes, 'shift+down', () => {
+  useHotkey(scopes, 'shift+arrowdown', () => {
     const idx = rows.findIndex(e => e.isActive);
 
     if (idx === -1) {
@@ -251,7 +251,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
     setRows([...rows]);
   }, [rows]);
 
-  useHotkey(scopes, 'cmd+shift+down', () => {
+  useHotkey(scopes, 'meta+shift+arrowdown', () => {
     const idx = rows.findIndex(e => e.isActive);
     rangeSelectionInitialIndex.current = idx;
 
@@ -263,7 +263,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
     setRows([...rows]);
   }, [rows]);
 
-  useHotkey(scopes, 'cmd+a', () => {
+  useHotkey(scopes, 'meta+a', () => {
     rangeSelectionInitialIndex.current = -1;
 
     rows.forEach(e => e.isSelected = true);
@@ -272,7 +272,7 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
     setRows([...rows]);
   }, [rows]);
 
-  useHotkey(scopes, 'esc', () => {
+  useHotkey(scopes, 'escape', () => {
     rangeSelectionInitialIndex.current = -1;
 
     rows.forEach(e => e.isSelected = false);

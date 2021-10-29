@@ -44,7 +44,7 @@ export function ColumnsSettingsModal({
 
   useExclusiveFocus(scope);
 
-  useHotkey(scope, 'esc', () => {
+  useHotkey(scope, 'escape', () => {
     onClose();
   });
 

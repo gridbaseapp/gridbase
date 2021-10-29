@@ -58,30 +58,30 @@ export function GoTo({ onClose }: Props) {
 
   useExclusiveFocus(scope);
 
-  useHotkey(scope, 'esc', () => {
+  useHotkey(scope, 'escape', () => {
     onClose();
   });
 
-  useHotkey(scope, 'down', () => {
+  useHotkey(scope, 'arrowdown', () => {
     let idx = focusedEntityIndex + 1;
     if (idx > filteredEntities.length - 1) idx = 0;
     setFocusedEntityIndex(idx);
     scrollToEntity(idx);
   }, [filteredEntities]);
 
-  useHotkey(scope, 'cmd+down', () => {
+  useHotkey(scope, 'meta+arrowdown', () => {
     setFocusedEntityIndex(filteredEntities.length - 1);
     scrollToEntity(filteredEntities.length - 1);
   }, [filteredEntities]);
 
-  useHotkey(scope, 'up', () => {
+  useHotkey(scope, 'arrowup', () => {
     let idx = focusedEntityIndex - 1;
     if (idx < 0) idx = filteredEntities.length - 1;
     setFocusedEntityIndex(idx);
     scrollToEntity(idx);
   }, [filteredEntities]);
 
-  useHotkey(scope, 'cmd+up', () => {
+  useHotkey(scope, 'meta+arrowup', () => {
     setFocusedEntityIndex(0);
     scrollToEntity(0);
   }, [filteredEntities]);
