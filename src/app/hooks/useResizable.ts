@@ -1,19 +1,29 @@
 import React, { useCallback, useRef } from 'react';
 
-type Callback = (width: number) => void;
+type Callback = ({ width, height }: { width: number, height: number }) => void;
 
-export function useResizable<T extends HTMLElement>(onResize: Callback) {
+interface Options {
+  direction: 'row' | 'col';
+}
+
+export function useResizable<T extends HTMLElement>(
+  onResize: Callback,
+  options: Options = { direction: 'col' },
+) {
   const resizableElementRef = useRef<T | null>(null);
 
   const initialX = useRef(0);
+  const initialY = useRef(0);
   const initialWidth = useRef(0);
+  const initialHeight = useRef(0);
 
   const onMouseDown = useCallback((ev: React.MouseEvent) => {
     if (!resizableElementRef.current) return;
 
     function onMouseMove(event: MouseEvent) {
       const width = initialWidth.current + (event.clientX - initialX.current);
-      onResize(width);
+      const height = initialHeight.current + (event.clientY - initialY.current);
+      onResize({ width, height });
     }
 
     function onMouseUp() {
@@ -27,12 +37,14 @@ export function useResizable<T extends HTMLElement>(onResize: Callback) {
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
 
-    const { width } = resizableElementRef.current.getBoundingClientRect();
+    const { width, height } = resizableElementRef.current.getBoundingClientRect();
 
     initialX.current = ev.clientX;
+    initialY.current = ev.clientY;
     initialWidth.current = width || 0;
+    initialHeight.current = height || 0;
 
-    document.body.style.cursor = 'col-resize';
+    document.body.style.cursor = `${options.direction}-resize`;
     document.body.style.userSelect = 'none';
   }, []);
 

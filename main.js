@@ -39,23 +39,27 @@ function createWindow() {
     {
       label: 'dbadmin',
       submenu: [
-        {
-          label: 'Quit dbadmin',
-          role: 'quit',
-        },
+        { role: 'quit' },
+      ],
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'delete' },
+        { role: 'selectAll' },
       ],
     },
     {
       label: 'View',
       submenu: [
-        {
-          label: 'Force Reload',
-          role: 'forceReload',
-        },
-        {
-          label: 'Toggle Developer Tools',
-          role: 'toggleDevTools',
-        },
+        { role: 'forceReload' },
+        { role: 'toggleDevTools' },
       ],
     }
   ];

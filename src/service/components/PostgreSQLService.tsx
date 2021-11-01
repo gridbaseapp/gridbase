@@ -6,12 +6,13 @@ import { Sidebar } from './Sidebar';
 import { Tabs } from './Tabs';
 import { GoTo } from './GoTo';
 import { Table } from './Table';
+import { Query } from './Query';
 import styles from './PostgreSQLService.scss';
 import { useServiceContext, useServiceStash } from '../hooks';
 import { useDidUpdateEffect, useFocus, useHotkey } from '../../app/hooks';
-import { Entity } from '../types';
+import { EntityType, SqlQuery } from '../types';
 
-type FocusedSection = 'sidebar' | 'table';
+type FocusedSection = 'sidebar' | 'content';
 
 interface Props {
   isVisible: boolean;
@@ -22,15 +23,15 @@ export function PostgreSQLService({ isVisible }: Props) {
     adapter,
     connection,
     schemas,
-    activeSchema,
+    activeSchemaId,
     entities,
-    openEntities,
-    activeEntity,
+    openEntityIds,
+    activeEntityId,
     setSchemas,
-    setActiveSchema,
+    setActiveSchemaId,
     setEntities,
     setEntitiesStatus,
-    setActiveEntity,
+    setActiveEntityId,
     closeEntity,
   } = useServiceContext();
 
@@ -38,14 +39,18 @@ export function PostgreSQLService({ isVisible }: Props) {
   const [goToTriggerTargetRef, setGoToTriggerTargetRef] = useState<Element | null>(null);
   const [focusedSection, setFocusedSection] = useState<FocusedSection>('sidebar');
   const [
-    openEntitiesStaticCopy,
-    setOpenEntitiesStaticCopy,
-  ] = useState<Entity[]>([...openEntities]);
+    openEntityIdsStaticCopy,
+    setOpenEntityIdsStaticCopy,
+  ] = useState<string[]>([...openEntityIds]);
 
   const [
     loadDefaultSchemaId,
     saveDefaultSchemaId,
   ] = useServiceStash<string>('defaultSchemaId');
+
+  const [
+    loadSqlQueries,
+  ] = useServiceStash<SqlQuery[]>(`queries.${activeSchemaId}`, []);
 
   useEffect(() => {
     (async () => {
@@ -58,39 +63,39 @@ export function PostgreSQLService({ isVisible }: Props) {
       if (!active) active = rows[0];
 
       setSchemas(rows);
-      setActiveSchema(active);
+      setActiveSchemaId(active.id);
     })()
   }, []);
 
   useDidUpdateEffect(() => {
-    if (activeSchema) {
-      saveDefaultSchemaId(activeSchema.id);
+    if (activeSchemaId) {
+      saveDefaultSchemaId(activeSchemaId);
     }
-  }, [activeSchema]);
+  }, [activeSchemaId]);
 
   useEffect(() => {
     loadEntities();
-  }, [activeSchema]);
+  }, [activeSchemaId]);
 
   useEffect(() => {
-    setOpenEntitiesStaticCopy(state => {
+    setOpenEntityIdsStaticCopy(state => {
       const newState = [...state];
 
-      openEntities.forEach(e => {
+      openEntityIds.forEach(e => {
         if (!newState.includes(e)) newState.push(e);
       });
 
-      return newState.filter(e => openEntities.includes(e));
+      return newState.filter(e => openEntityIds.includes(e));
     });
-  }, [openEntities]);
+  }, [openEntityIds]);
 
   useEffect(() => {
-    if (openEntitiesStaticCopy.length === 0) {
+    if (openEntityIdsStaticCopy.length === 0) {
       setFocusedSection('sidebar');
     } else {
-      setFocusedSection('table');
+      setFocusedSection('content');
     }
-  }, [openEntitiesStaticCopy, activeEntity]);
+  }, [openEntityIdsStaticCopy, activeEntityId]);
 
   const scope = `Service-${connection.uuid}`;
 
@@ -102,7 +107,7 @@ export function PostgreSQLService({ isVisible }: Props) {
 
   useHotkey([scope, `Sidebar-${connection.uuid}`], 'meta+r', () => {
     loadEntities();
-  }, [activeSchema]);
+  }, [activeSchemaId]);
 
   useHotkey(scope, 'meta+w', () => {
     if (activeEntityId) closeEntity(activeEntityId);
@@ -112,7 +117,7 @@ export function PostgreSQLService({ isVisible }: Props) {
     if (openEntityIds.length === 0) {
       setFocusedSection('sidebar');
     } else {
-      setFocusedSection(state => state === 'sidebar' ? 'table' : 'sidebar');
+      setFocusedSection(state => state === 'sidebar' ? 'content' : 'sidebar');
     }
   });
 
@@ -120,33 +125,47 @@ export function PostgreSQLService({ isVisible }: Props) {
     if (!activeEntityId) return;
     if (openEntityIds.length === 0) return;
 
-    let idx = openEntities.indexOf(activeEntity);
+    let idx = openEntityIds.indexOf(activeEntityId);
     idx -= 1;
-    if (idx === -1) idx = openEntities.length - 1;
-    setActiveEntity(openEntities[idx]);
-  }, [activeEntity, openEntities]);
+    if (idx === -1) idx = openEntityIds.length - 1;
+    setActiveEntityId(openEntityIds[idx]);
+  }, [activeEntityId, openEntityIds]);
 
   useHotkey(scope, 'meta+shift+]', () => {
     if (!activeEntityId) return;
     if (openEntityIds.length === 0) return;
 
-    let idx = openEntities.indexOf(activeEntity);
+    let idx = openEntityIds.indexOf(activeEntityId);
     idx += 1;
-    if (idx >= openEntities.length) idx = 0;
-    setActiveEntity(openEntities[idx]);
-  }, [activeEntity, openEntities]);
+    if (idx >= openEntityIds.length) idx = 0;
+    setActiveEntityId(openEntityIds[idx]);
+  }, [activeEntityId, openEntityIds]);
 
   async function loadEntities() {
-    if (activeSchema) {
+    const activeSchema = schemas?.find(e => e.id === activeSchemaId);
+
+    if (activeSchemaId && activeSchema) {
       setEntitiesStatus('loading');
-      const rows = await adapter.getEntities(activeSchema.id);
+      const rows = await adapter.getEntities(activeSchemaId);
+      const sqlQueries = loadSqlQueries();
 
       rows.forEach(e => e.schema = activeSchema);
+
+      sqlQueries.forEach(e => {
+        rows.push({
+          id: e.id,
+          name: e.name,
+          type: EntityType.Query,
+          schema: activeSchema,
+          status: 'fresh',
+        });
+      });
 
       setEntities(rows);
       setEntitiesStatus('success');
     }
   }
+
   function handleClickOutside(instance: any, ev: Event) {
     if (!goToTriggerTargetRef?.contains(ev.target as Element)) {
       setGoToVisible(false);
@@ -155,7 +174,7 @@ export function PostgreSQLService({ isVisible }: Props) {
 
   return (
     <div className={classNames(styles.service, { hidden: !isVisible })}>
-      {schemas && activeSchema && entities ? (
+      {schemas && activeSchemaId && entities ? (
         <>
           <Tippy
             placement="bottom"
@@ -180,14 +199,36 @@ export function PostgreSQLService({ isVisible }: Props) {
               onShowGoTo={() => setGoToVisible(state => !state)}
             />
 
-            {openEntitiesStaticCopy.map(entity => (
-              <Table
-                key={entity.id}
-                entity={entity}
-                isVisible={entity === activeEntity}
-                hasFocus={entity === activeEntity && focusedSection === 'table'}
-              />
-            ))}
+            {openEntityIdsStaticCopy.map(id => {
+              const entity = entities.find(e => e.id === id);
+
+              if (!entity) return;
+
+              switch (entity.type) {
+                case EntityType.Table:
+                case EntityType.View:
+                case EntityType.MaterializedView:
+                  return (
+                    <Table
+                      key={id}
+                      entity={entity}
+                      isVisible={id === activeEntityId}
+                      hasFocus={id === activeEntityId && focusedSection === 'content'}
+                      onFocus={() => setFocusedSection('content')}
+                    />
+                  );
+                case EntityType.Query:
+                  return (
+                    <Query
+                      key={id}
+                      entity={entity}
+                      isVisible={id === activeEntityId}
+                      hasFocus={id === activeEntityId && focusedSection === 'content'}
+                      onFocus={() => setFocusedSection('content')}
+                    />
+                  );
+              }
+            })}
           </div>
         </>
       ) : (

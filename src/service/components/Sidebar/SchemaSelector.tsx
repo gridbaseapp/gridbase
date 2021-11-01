@@ -5,7 +5,7 @@ import { useServiceContext } from '../../hooks';
 import { SchemaSelectorDropdown } from './SchemaSelectorDropdown';
 
 export function SchemaSelector() {
-  const { activeSchema } = useServiceContext();
+  const { schemas, activeSchemaId } = useServiceContext();
 
   const [isDropdownVisible, setDropdownVisible] = useState(false);
 
@@ -17,6 +17,8 @@ export function SchemaSelector() {
   function hideDropwdown() {
     setDropdownVisible(false);
   }
+
+  const activeSchema = schemas?.find(e => e.id === activeSchemaId);
 
   return (
     <div className={styles.schemaSelector}>
@@ -30,7 +32,7 @@ export function SchemaSelector() {
         }
       >
         <a className={styles.schemaSelect} onClick={handleToggleDropdown}>
-          {activeSchema!.name}
+          {activeSchema?.name}
         </a>
       </Tippy>
     </div>

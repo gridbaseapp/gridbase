@@ -20,9 +20,10 @@ interface Props {
   entity: Entity;
   isVisible: boolean;
   hasFocus: boolean;
+  onFocus(): void;
 }
 
-export function Table({ entity, isVisible, hasFocus }: Props) {
+export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
   const [contentRef, contentSize] = useElementSize();
 
   const { adapter, connection } = useServiceContext();
@@ -475,7 +476,10 @@ export function Table({ entity, isVisible, hasFocus }: Props) {
   }
 
   return (
-    <div className={classNames(styles.table, { hidden: !isVisible, focus: hasFocus })}>
+    <div
+      className={classNames(styles.table, { hidden: !isVisible, focus: hasFocus })}
+      onFocus={onFocus}
+    >
       {loadingStatus === 'loading' && <div className={styles.splash}>Loading...</div>}
 
       {loadingStatus !== 'loading' && (

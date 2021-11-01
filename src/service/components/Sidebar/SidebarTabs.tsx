@@ -1,8 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import styles from './SidebarTabs.scss';
-
-export type Tab = 'tables' | 'views';
+import { Tab } from './types';
 
 interface Props {
   activeTab: Tab;
@@ -28,6 +27,12 @@ export function SidebarTabs({ activeTab, onActivateTab }: Props) {
         onClick={(ev) => handleActivateTab(ev, 'views')}
       >
         Views
+      </a>
+      <a
+        className={classNames({ [styles.active]: activeTab === 'queries' })}
+        onClick={(ev) => handleActivateTab(ev, 'queries')}
+      >
+        Queries
       </a>
     </div>
   );

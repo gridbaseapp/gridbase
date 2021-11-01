@@ -9,17 +9,17 @@ export interface ServiceContextDescriptor {
   connection: Connection;
   adapter: PostgreSQLAdapter;
   schemas?: Schema[];
-  activeSchema?: Schema;
+  activeSchemaId?: string;
   entities?: Entity[];
   entitiesStatus: EntitiesStatus;
-  openEntities: Entity[];
-  activeEntity?: Entity;
+  openEntityIds: string[];
+  activeEntityId?: string;
   setSchemas: Dispatch<SetStateAction<Schema[] | undefined>>;
-  setActiveSchema: Dispatch<SetStateAction<Schema | undefined>>;
+  setActiveSchemaId: Dispatch<SetStateAction<string | undefined>>;
   setEntities: Dispatch<SetStateAction<Entity[] | undefined>>;
   setEntitiesStatus: Dispatch<SetStateAction<EntitiesStatus>>;
-  setOpenEntities: Dispatch<SetStateAction<Entity[]>>;
-  setActiveEntity: Dispatch<SetStateAction<Entity | undefined>>;
-  openEntity(entity: Entity): void;
-  closeEntity(entity: Entity): void;
+  setOpenEntityIds: Dispatch<SetStateAction<string[]>>;
+  setActiveEntityId: Dispatch<SetStateAction<string | undefined>>;
+  openEntity(id: string): void;
+  closeEntity(id: string): void;
 }

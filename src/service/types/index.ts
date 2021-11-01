@@ -7,3 +7,4 @@ export { Column, SortOrder } from './Column';
 export { Row } from './Row';
 export { GridContextDescriptor } from './GridContextDescriptor';
 export { ServiceContextDescriptor } from './ServiceContextDescriptor';
+export { SqlQuery } from './SqlQuery';

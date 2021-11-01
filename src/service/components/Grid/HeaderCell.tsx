@@ -62,7 +62,7 @@ export const HeaderCell = forwardRef<HTMLDivElement, HeaderCellProps>(({
   const {
     resizableElementRef,
     resizableTrigger,
-  } = useResizable<HTMLDivElement>((width) => {
+  } = useResizable<HTMLDivElement>(({ width }) => {
     onResizeColumn(column, width);
   });
 

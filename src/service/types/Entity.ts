@@ -6,4 +6,5 @@ export interface Entity {
   name: string;
   type: EntityType;
   schema: Schema;
+  status: 'fresh' | 'new' | 'unsaved';
 }

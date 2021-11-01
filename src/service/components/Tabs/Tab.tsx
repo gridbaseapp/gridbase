@@ -106,7 +106,10 @@ export const Tab = forwardRef<HTMLDivElement, TabProps>(({
         render={() => <TabTooltip entity={entity} />}
       >
         <div className={styles.tabContent}>
-          <span>{entity.name}</span>
+          <span>
+            {(entity.status === 'new' || entity.status === 'unsaved') && '*'}
+            {entity.name}
+          </span>
           <a
             draggable="false"
             onPointerDown={ev => ev.stopPropagation()}

@@ -23,6 +23,10 @@ export function GoTo({ onClose }: Props) {
     const lowercaseName = name.toLowerCase();
 
     return lowercaseName.includes(query);
+  }).sort((a, b) => {
+    if (a.name < b.name) return -1;
+    if (a.name > b.name) return 1;
+    return 0;
   });
 
   function scrollToEntity(idx: number) {
@@ -90,7 +94,7 @@ export function GoTo({ onClose }: Props) {
     const entity = filteredEntities[focusedEntityIndex];
 
     if (entity) {
-      openEntity(entity);
+      openEntity(entity.id);
       onClose();
     }
   }, [filteredEntities]);
@@ -101,7 +105,7 @@ export function GoTo({ onClose }: Props) {
 
   function handleClickEntity(ev: React.MouseEvent, entity: Entity) {
     ev.preventDefault();
-    openEntity(entity);
+    openEntity(entity.id);
     onClose();
   }
 

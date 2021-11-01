@@ -36,10 +36,11 @@ export function Tabs({ setGoToTriggerTargetRef, onShowGoTo }: Props) {
   const [tabsContentRef, tabsContentSize] = useElementSize();
 
   const {
-    openEntities,
-    activeEntity,
-    setOpenEntities,
-    setActiveEntity,
+    entities,
+    openEntityIds,
+    activeEntityId,
+    setOpenEntityIds,
+    setActiveEntityId,
     closeEntity,
   } = useServiceContext();
 
@@ -59,16 +60,16 @@ export function Tabs({ setGoToTriggerTargetRef, onShowGoTo }: Props) {
     const maxNumberOfTabs = Math.floor(width / MIN_TAB_WIDTH);
     const maxTabWidth = width / Math.min(DEFAULT_NUMBERS_OF_TABS, maxNumberOfTabs);
     const tabWidth = Math.min(
-      width / Math.min(openEntities.length, maxNumberOfTabs),
+      width / Math.min(openEntityIds.length, maxNumberOfTabs),
       maxTabWidth,
     ) || 0;
 
     setMaxNumberOfTabs(maxNumberOfTabs);
     if (!isTabResizingPrevented) setTabWidth(tabWidth);
-  }, [openEntities, tabsContentSize, isTabResizingPrevented]);
+  }, [openEntityIds, tabsContentSize, isTabResizingPrevented]);
 
   function handleActivateEntity(entity: Entity) {
-    setActiveEntity(entity);
+    setActiveEntityId(entity.id);
   }
 
   function handleShowMoreTabs(ev: React.MouseEvent) {
@@ -77,7 +78,7 @@ export function Tabs({ setGoToTriggerTargetRef, onShowGoTo }: Props) {
   }
 
   function handleActivateHiddenTabsEntity(entity: Entity) {
-    setActiveEntity(entity);
+    setActiveEntityId(entity.id);
     setMoreTabsVisible(false);
   }
 
@@ -87,7 +88,7 @@ export function Tabs({ setGoToTriggerTargetRef, onShowGoTo }: Props) {
   }
 
   function handleDragStart({ active }: DragStartEvent) {
-    const entity = openEntities.find(el => String(el.id) === String(active.id));
+    const entity = entities!.find(el => String(el.id) === active.id);
     if (entity) setFocusedEntity(entity);
   }
 
@@ -95,9 +96,9 @@ export function Tabs({ setGoToTriggerTargetRef, onShowGoTo }: Props) {
     setFocusedEntity(undefined);
 
     if (over && active.id !== over.id) {
-      setOpenEntities(state => {
-        const oldIndex = state.findIndex(el => String(el.id) === String(active.id));
-        const newIndex = state.findIndex(el => String(el.id) === String(over.id));
+      setOpenEntityIds(state => {
+        const oldIndex = state.findIndex(id => String(id) === active.id);
+        const newIndex = state.findIndex(id => String(id) === over.id);
         return arrayMove(state, oldIndex, newIndex);
       });
     }
@@ -107,8 +108,12 @@ export function Tabs({ setGoToTriggerTargetRef, onShowGoTo }: Props) {
   let hiddenTabs: Entity[] = [];
 
   if (maxNumberOfTabs > 0) {
-    visibleTabs = [...openEntities].slice(0, maxNumberOfTabs);
-    hiddenTabs = [...openEntities].slice(maxNumberOfTabs);
+    visibleTabs = [...openEntityIds]
+      .slice(0, maxNumberOfTabs)
+      .map(id => entities!.find(e => e.id == id)!);
+    hiddenTabs = [...openEntityIds]
+      .slice(maxNumberOfTabs)
+      .map(id => entities!.find(e => e.id == id)!);
   }
 
   return (
@@ -135,9 +140,9 @@ export function Tabs({ setGoToTriggerTargetRef, onShowGoTo }: Props) {
                 key={entity.id}
                 entity={entity}
                 width={tabWidth}
-                isActive={activeEntity?.id === entity.id}
+                isActive={entity.id === activeEntityId}
                 onActivate={handleActivateEntity}
-                onClose={closeEntity}
+                onClose={(entity) => closeEntity(entity.id)}
               />
             )}
           </SortableContext>

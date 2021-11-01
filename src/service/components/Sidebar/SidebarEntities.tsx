@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { debounce } from 'lodash';
 import classNames from 'classnames';
+import { v4 as uuid } from 'uuid';
 import { Entity, EntityType } from '../../types';
 import styles from './SidebarEntities.scss';
 import { useServiceContext } from '../../hooks';
 import { useFocus, useHotkey } from '../../../app/hooks';
+import { SidebarItem } from './SidebarItem';
 
 interface Props {
   entityTypes: EntityType[];
@@ -15,13 +17,18 @@ export function SidebarEntities({ entityTypes }: Props) {
     connection,
     entities,
     entitiesStatus,
-    activeEntity,
+    activeEntityId,
+    schemas,
+    activeSchemaId,
+    setEntities,
     openEntity,
+    closeEntity,
   } = useServiceContext();
 
   const [filter, setFilter] = useState('');
   const [focusedEntityIndex, setFocusedEntityIndex] = useState(-1);
-  const [highlightedEntities, setHighlightedEntities] = useState<Entity[]>([]);
+  const [editedEntityIndex, setEditedEntityIndex] = useState(-1);
+  const [highlightedEntityIds, setHighlightedEntityIds] = useState<string[]>([]);
 
   const listRef = useRef<HTMLDivElement>(null);
   const filterElementRef = useRef<HTMLInputElement>(null);
@@ -29,14 +36,25 @@ export function SidebarEntities({ entityTypes }: Props) {
 
   const clearFocusedEntityFilter = useCallback(debounce(() => {
     focusedEntityFilter.current = '';
-    setHighlightedEntities([]);
+    setHighlightedEntityIds([]);
   }, 1000), []);
 
-  const filteredEntities = entities!.filter(({ name, type }) => {
+  const filteredEntities = entities!.filter(({ name, type, status }) => {
     const query = filter.trim().toLowerCase();
     const lowercaseName = name.toLowerCase();
 
-    return entityTypes.includes(type) && lowercaseName.includes(query);
+    return (
+      entityTypes.includes(type)
+      &&
+      lowercaseName.includes(query)
+      &&
+      status !== 'new'
+    );
+  })
+  .sort((a, b) => {
+    if (a.name < b.name) return -1;
+    if (a.name > b.name) return 1;
+    return 0;
   });
 
   function scrollToEntity(idx: number) {
@@ -65,9 +83,9 @@ export function SidebarEntities({ entityTypes }: Props) {
   }, [filter]);
 
   useEffect(() => {
-    const index = filteredEntities.findIndex(e => e.id === activeEntity?.id);
+    const index = filteredEntities.findIndex(e => e.id === activeEntityId);
     setFocusedEntityIndex(index);
-  }, [activeEntity]);
+  }, [entities, activeEntityId]);
 
   const name = `SidebarEntities-${connection.uuid}`;
   const scopes = [
@@ -90,34 +108,38 @@ export function SidebarEntities({ entityTypes }: Props) {
     }
   }, [filter]);
 
+  useHotkey(scopes, 'escape', () => {
+    setEditedEntityIndex(-1);
+  }, [filteredEntities, focusedEntityIndex]);
+
   useHotkey(scopes, 'arrowdown', () => {
     let idx = focusedEntityIndex + 1;
     if (idx > filteredEntities.length - 1) idx = -1;
     setFocusedEntityIndex(idx);
     scrollToEntity(idx);
-  }, [filteredEntities]);
+  }, [filteredEntities], { global: false });
 
   useHotkey(scopes, 'meta+arrowdown', () => {
     setFocusedEntityIndex(filteredEntities.length - 1);
     scrollToEntity(filteredEntities.length - 1);
-  }, [filteredEntities]);
+  }, [filteredEntities], { global: false });
 
   useHotkey(scopes, 'arrowup', () => {
     let idx = focusedEntityIndex - 1;
     if (idx < -1) idx = filteredEntities.length - 1;
     setFocusedEntityIndex(idx);
     scrollToEntity(idx);
-  }, [filteredEntities]);
+  }, [filteredEntities], { global: false });
 
   useHotkey(scopes, 'meta+arrowup', () => {
     setFocusedEntityIndex(0);
     scrollToEntity(0);
-  }, [filteredEntities]);
+  }, [filteredEntities], { global: false });
 
   useHotkey(scopes, 'enter', () => {
     const entity = filteredEntities[focusedEntityIndex];
     if (entity) openEntity(entity.id);
-  }, [focusedEntityIndex]);
+  }, [focusedEntityIndex], { global: false });
 
   useHotkey(scopes, 'alphabet', (ev) => {
     focusedEntityFilter.current += ev.key;
@@ -129,7 +151,7 @@ export function SidebarEntities({ entityTypes }: Props) {
       return name.includes(filter);
     });
 
-    setHighlightedEntities(highlighted)
+    setHighlightedEntityIds(highlighted.map(e => e.id));
 
     const idx = filteredEntities.indexOf(highlighted[0]);
     setFocusedEntityIndex(idx);
@@ -138,18 +160,64 @@ export function SidebarEntities({ entityTypes }: Props) {
     clearFocusedEntityFilter();
   }, [filteredEntities], { global: false });
 
-  function handleClickEntity(ev: React.MouseEvent, entity: Entity) {
+  useHotkey(scopes, 'meta+e', () => {
+    if (entityTypes.includes(EntityType.Query)) {
+      setEditedEntityIndex(focusedEntityIndex);
+    }
+  }, [filteredEntities, focusedEntityIndex]);
+
+  function handleClickEntity(entity: Entity) {
     setFocusedEntityIndex(filteredEntities.indexOf(entity));
-    ev.preventDefault();
   }
 
-  function handleOpenEntity(ev: React.MouseEvent, entity: Entity) {
-    ev.preventDefault();
-    openEntity(entity);
+  function handleOpenEntity(entity: Entity) {
+    openEntity(entity.id);
+  }
+
+  function handleUpdateEntity(entity: Entity) {
+    setEditedEntityIndex(-1);
+
+    setEntities(state => {
+      if (!state) return;
+
+      const i = state.findIndex(e => e.id === entity.id);
+
+      return [
+        ...state.slice(0, i),
+        { ...entity, name: entity.name, status: 'fresh' },
+        ...state.slice(i + 1),
+      ];
+    });
+  }
+
+  function handleDeleteEntity(entity: Entity) {
+    closeEntity(entity.id);
+    setEntities(state => {
+      if (!state) return;
+
+      return state.filter(e => e.id !== entity.id);
+    });
   }
 
   function handleFilter(ev: React.ChangeEvent<HTMLInputElement>) {
     setFilter(ev.target.value);
+  }
+
+  function handleClickNewQuery(ev: React.MouseEvent) {
+    ev.preventDefault();
+
+    const activeSchema = schemas!.find(e => e.id === activeSchemaId)!;
+
+    const entity: Entity = {
+      id: uuid(),
+      name: '[Draft Query]',
+      type: EntityType.Query,
+      schema: activeSchema,
+      status: 'new',
+    };
+
+    setEntities(state => [...(state || []), entity]);
+    openEntity(entity.id);
   }
 
   return (
@@ -167,31 +235,36 @@ export function SidebarEntities({ entityTypes }: Props) {
           {filteredEntities.length > 0 && (
             <div ref={listRef} className={styles.list}>
               {filteredEntities.map((entity, idx) => {
-                const isOpaque = highlightedEntities.length > 0 &&
-                  !highlightedEntities.includes(entity);
-
-                const css = classNames({
-                  [styles.active]: entity.id === activeEntity?.id,
-                  [styles.focus]: idx === focusedEntityIndex,
-                  [styles.dim]: isOpaque,
-                });
+                const isOpaque = (
+                  (highlightedEntityIds.length > 0 && !highlightedEntityIds.includes(entity.id))
+                  ||
+                  (editedEntityIndex > -1 && editedEntityIndex !== idx)
+                );
 
                 return (
-                  <a
-                    id={`sidebar-entity-${entity.id}`}
+                  <SidebarItem
                     key={entity.id}
-                    className={css}
-                    onClick={(ev) => handleClickEntity(ev, entity)}
-                    onDoubleClick={(ev) => handleOpenEntity(ev, entity)}
-                  >
-                    {entity.name}
-                  </a>
+                    entity={entity}
+                    isActive={entity.id === activeEntityId}
+                    isFocused={idx === focusedEntityIndex}
+                    isOpaque={isOpaque}
+                    isEdited={editedEntityIndex === idx}
+                    onClick={handleClickEntity}
+                    onDoubleClick={handleOpenEntity}
+                    onEdit={() => setEditedEntityIndex(idx)}
+                    onUpdate={handleUpdateEntity}
+                    onDelete={handleDeleteEntity}
+                  />
                 );
               })}
             </div>
           )}
 
           <div>
+            {entityTypes.includes(EntityType.Query) && (
+              <a onClick={handleClickNewQuery}>New Query</a>
+            )}
+
             <input
               ref={filterElementRef}
               className={styles.filter}

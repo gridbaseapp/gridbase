@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function SchemaSelectorDropdown({ onClose }: Props) {
-  const { schemas, activeSchema, setActiveSchema } = useServiceContext();
+  const { schemas, activeSchemaId, setActiveSchemaId } = useServiceContext();
 
   const [isAllSchemasVisible, setAllSchemasVisible] = useState(false);
   const [focusedSchemaIndex, setFocusedSchemaIndex] = useState(-1);
@@ -44,13 +44,14 @@ export function SchemaSelectorDropdown({ onClose }: Props) {
   useHotkey(scope, 'enter', () => {
     const schema = filteredSchemas[focusedSchemaIndex];
     if (schema) {
-      setActiveSchema(schema);
+      setActiveSchemaId(schema.id);
       onClose();
     }
   }, [focusedSchemaIndex]);
 
   useEffect(() => {
-    if (activeSchema!.internal) setAllSchemasVisible(true);
+    const activeSchema = schemas?.find(e => e.id === activeSchemaId);
+    if (activeSchema?.internal) setAllSchemasVisible(true);
   }, []);
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export function SchemaSelectorDropdown({ onClose }: Props) {
 
   function handleSelectSchema(ev: React.MouseEvent, schema: Schema) {
     ev.preventDefault();
-    setActiveSchema(schema);
+    setActiveSchemaId(schema.id);
     onClose();
   }
 
@@ -76,7 +77,7 @@ export function SchemaSelectorDropdown({ onClose }: Props) {
           className={
             classNames(
               styles.schema,
-              { [styles.selected]: schema.id === activeSchema!.id },
+              { [styles.selected]: schema.id === activeSchemaId },
               { [styles.focus]: idx === focusedSchemaIndex },
             )
           }

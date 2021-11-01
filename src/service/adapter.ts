@@ -19,7 +19,8 @@ const SQL_GET_ENTITIES = `
       WHEN 'r' THEN ${EntityType.Table}
       WHEN 'v' THEN ${EntityType.View}
       WHEN 'm' THEN ${EntityType.MaterializedView}
-    END AS "type"
+    END AS "type",
+    'fresh' AS "status"
   FROM "pg_catalog"."pg_class"
   WHERE
     "relnamespace" = $1

@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function HiddenTabsDropdown({ entities, onActivateEntity }: Props) {
-  const { activeEntity } = useServiceContext();
+  const { activeEntityId } = useServiceContext();
 
   function handleClick(ev: React.MouseEvent, entity: Entity) {
     ev.preventDefault();
@@ -22,7 +22,7 @@ export function HiddenTabsDropdown({ entities, onActivateEntity }: Props) {
       {entities.map(entity => (
         <a
           key={entity.id}
-          className={classNames({ [styles.active]: entity.id === activeEntity?.id })}
+          className={classNames({ [styles.active]: entity.id === activeEntityId })}
           onClick={(ev) => handleClick(ev, entity)}
         >
           {entity.name}

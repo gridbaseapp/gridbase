@@ -10,47 +10,67 @@ interface Props {
 
 export function PostgreSQLServiceContext({ service, children }: Props) {
   const [schemas, setSchemas] = useState<Schema[]>();
-  const [activeSchema, setActiveSchema] = useState<Schema>();
+  const [activeSchemaId, setActiveSchemaId] = useState<string>();
   const [entities, setEntities] = useState<Entity[]>();
-  const [openEntities, setOpenEntities] = useState<Entity[]>([]);
-  const [activeEntity, setActiveEntity] = useState<Entity>();
+  const [openEntityIds, setOpenEntityIds] = useState<string[]>([]);
+  const [activeEntityId, setActiveEntityId] = useState<string>();
   const [entitiesStatus, setEntitiesStatus] = useState<EntitiesStatus>('success');
 
-  function openEntity(entity: Entity) {
-    if (!openEntities.map(e => e.id).includes(entity.id)) {
-      setOpenEntities(state => [...state, entity]);
+  function openEntity(id: string) {
+    if (!openEntityIds.includes(id)) {
+      setOpenEntityIds(state => [...state, id]);
     }
 
-    setActiveEntity(entity);
+    setActiveEntityId(id);
   }
 
-  function closeEntity(entity: Entity) {
-    if (activeEntity?.id === entity.id) {
-      const idx = openEntities.map(e => e.id).indexOf(entity.id);
+  function closeEntity(id: string) {
+    if (activeEntityId === id) {
+      const idx = openEntityIds.indexOf(id);
 
-      let newActiveEntity = openEntities[idx + 1];
-      if (!newActiveEntity) newActiveEntity = openEntities[idx - 1];
+      let newActiveEntityId = openEntityIds[idx + 1];
+      if (!newActiveEntityId) newActiveEntityId = openEntityIds[idx - 1];
 
-      setActiveEntity(newActiveEntity);
+      setActiveEntityId(newActiveEntityId);
     }
 
-    setOpenEntities(state => state.filter(e => e.id !== entity.id));
+    setOpenEntityIds(state => state.filter(e => e !== id));
+
+    const entity = entities?.find(e => e.id === id);
+
+    if (entity) {
+      if (entity.status === 'new') {
+        setEntities(state => state?.filter(e => e.id !== id));
+      } else if (entity.status === 'unsaved') {
+        setEntities(state => {
+          if (!state) return;
+
+          const i = state.findIndex(e => e.id === entity.id);
+
+          return [
+            ...state.slice(0, i),
+            { ...entity, status: 'fresh' },
+            ...state.slice(i + 1),
+          ];
+        });
+      }
+    }
   }
 
   const contextValue = {
     ...service,
     schemas,
-    activeSchema,
+    activeSchemaId,
     entities,
     entitiesStatus,
-    openEntities,
-    activeEntity,
+    openEntityIds,
+    activeEntityId,
     setSchemas,
-    setActiveSchema,
+    setActiveSchemaId,
     setEntities,
     setEntitiesStatus,
-    setOpenEntities,
-    setActiveEntity,
+    setOpenEntityIds,
+    setActiveEntityId,
     openEntity,
     closeEntity,
   };

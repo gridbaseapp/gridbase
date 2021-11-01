@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import classNames from 'classnames';
 import { useServiceContext } from '../../hooks';
 import { SchemaSelector } from './SchemaSelector';
-import { SidebarTabs, Tab } from './SidebarTabs';
+import { SidebarTabs } from './SidebarTabs';
 import { SidebarEntities } from './SidebarEntities';
 import { EntityType } from '../../types';
 import styles from './Sidebar.scss';
 import { useFocus } from '../../../app/hooks';
+import { Tab } from './types';
 
 interface Props {
   hasFocus: boolean;
@@ -40,6 +41,11 @@ export function Sidebar({ hasFocus, onFocus }: Props) {
             entityTypes={[EntityType.View, EntityType.MaterializedView]}
           />
         )}
+        {activeTab === 'queries' && (
+          <SidebarEntities
+            entityTypes={[EntityType.Query]}
+          />
+      )}
       </div>
     </div>
   );

@@ -1,0 +1,42 @@
+.query {
+  grid-area: content;
+  display: flex;
+  overflow: scroll;
+
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .editorSection {
+    display: grid;
+    grid-template-rows: auto 2px;
+    min-height: 200px;
+    max-height: 60%;
+
+    .editor {
+      overflow: hidden;
+    }
+
+    .resizer {
+      background-color: #ddd;
+      cursor: row-resize;
+    }
+  }
+
+  .result {
+    flex: 1;
+    overflow: scroll;
+    display: grid;
+    grid-template-rows: auto 40px;
+
+    .grid {
+      overflow: scroll;
+    }
+
+    .controll-panel {
+      border-top: 1px solid #ddd;
+    }
+  }
+}
