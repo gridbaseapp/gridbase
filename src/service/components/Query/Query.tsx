@@ -7,7 +7,7 @@ import styles from './Query.scss';
 import { useServiceContext, useServiceStash } from '../../hooks';
 import { SaveAs } from './SaveAs';
 import { useFocus, useHotkey, useElementSize, useResizable } from '../../../app/hooks';
-import { Grid } from '../Grid';
+import { Grid, GridRef } from '../Grid';
 import { COLUMN_MIN_WIDTH, COLUMN_MAX_WIDTH } from '../Table/constants';
 
 type LoadingStatus = 'loading' | 'success';
@@ -44,6 +44,8 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
     queryExecutionError,
     setQueryExecutionError,
   ] = useState<string | null>(null);
+
+  const gridRef = useRef<GridRef>(null);
 
   const sqlInitialValue = useRef('');
   const editorInstance = useRef<editor.IStandaloneCodeEditor | null>(null);
@@ -191,8 +193,9 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
         sort: { position: 0, order: 'none' },
       }));
 
-      setRows(rows.map(e => new Row(e)));
       setColumns(columns);
+      setRows(rows.map(e => new Row(e)));
+      gridRef.current?.clearSelection();
 
       setQueryExecutionError(null);
       setQueryExecutionStatus('success');
@@ -213,6 +216,42 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
         { ...state[i], width },
         ...state.slice(i + 1),
       ];
+    });
+  }
+
+  function handleSelectRows(selected: number[], active: number) {
+    setRows(state => {
+      const newRows: Row[] = [];
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = state[i];
+
+        if (i === active) {
+          if (row.isActive) {
+            newRows.push(row);
+          } else {
+            const newRow = new Row(row.cells);
+            newRow.isActive = true;
+            newRows.push(newRow);
+          }
+        } else if (selected.includes(i)) {
+          if (row.isSelected && !row.isActive) {
+            newRows.push(row);
+          } else {
+            const newRow = new Row(row.cells);
+            newRow.isSelected = true;
+            newRows.push(newRow);
+          }
+        } else {
+          if (row.isSelected || row.isActive) {
+            newRows.push(new Row(row.cells));
+          } else {
+            newRows.push(row);
+          }
+        }
+      }
+
+      return newRows;
     });
   }
 
@@ -242,13 +281,15 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
               {queryExecutionError}
               {!queryExecutionError && (
                 <Grid
+                  ref={gridRef}
+                  scopes={scopes}
                   width={gridSize.width}
                   height={gridSize.height}
                   columns={columns}
                   rows={rows}
                   onResizeColumn={handleResizeColumn}
                   onSortColumns={setColumns}
-                  onSelectRows={() => {}}
+                  onSelectRows={handleSelectRows}
                 />
               )}
             </div>

@@ -27,7 +27,7 @@ import { HEADER_HEIGHT, GUTTER_WIDTH } from './constants';
 import { Column } from '../../types';
 
 export function Header() {
-  const { columns, rows, onSortColumns, onSelectRows } = useGridContext();
+  const { columns, rows, onSortColumns, selectRow } = useGridContext();
 
   const [focusedColumn, setFocusedColumn] = useState<Column | null>(null);
 
@@ -54,6 +54,11 @@ export function Header() {
     }
   }
 
+  function handleClickGutter() {
+    selectRow(0, 'select');
+    selectRow(rows.length - 1, 'range');
+  }
+
   const visibleColumns = columns.filter(e => e.isVisible);
 
   return (
@@ -61,7 +66,7 @@ export function Header() {
       <div
         style={{ width: GUTTER_WIDTH }}
         className={styles.gutter}
-        onClick={() => onSelectRows(0, rows.length - 1, 'select')}
+        onClick={handleClickGutter}
       ></div>
       <div className={styles.columns}>
         <DndContext

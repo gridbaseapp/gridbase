@@ -1,6 +1,6 @@
 .dock {
   grid-area: dock;
-  overflow: scroll;
+  overflow: auto;
   background: #f5f5f5;
   border-right: 1px solid #ddd;
 }

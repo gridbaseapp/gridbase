@@ -4,7 +4,7 @@
   grid-template-rows: 0 auto;
   grid-template-columns: 200px auto;
   grid-template-areas: "goto-placeholder goto-placeholder" "sidebar content";
-  overflow: scroll;
+  overflow: hidden;
 }
 
 .goto-placeholder {
@@ -16,5 +16,5 @@
   display: grid;
   grid-template-rows: 30px auto;
   grid-template-areas: "tabs" "content";
-  overflow: scroll;
+  overflow: hidden;
 }

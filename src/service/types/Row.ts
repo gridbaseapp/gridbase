@@ -1,7 +1,7 @@
 export class Row {
   private _isActive: boolean = false;
   private _isSelected: boolean = false;
-  private readonly cells: any;
+  readonly cells: any;
 
   constructor(cells: any) {
     this.cells = cells;

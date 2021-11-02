@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const GridElement = forwardRef<HTMLDivElement, Props>(({ children, style }, ref) => {
-  const { columns, rows, onSelectRows } = useGridContext();
+  const { columns, rows, selectRow } = useGridContext();
 
   const initialSelectionIndex = useRef(-1);
 
@@ -31,18 +31,15 @@ export const GridElement = forwardRef<HTMLDivElement, Props>(({ children, style 
         initialSelectionIndex.current = startIndex;
       }
 
-      let from = 0;
-      let to = 0;
+      let index = 0;
 
       if (startIndex >= initialSelectionIndex.current) {
-        from = startIndex;
-        to = endIndex;
+        index = endIndex;
       } else {
-        from = endIndex;
-        to = startIndex;
+        index = startIndex;
       }
 
-      onSelectRows(from, to, 'select');
+      selectRow(index, 'range');
     },
     onEnd() {
       initialSelectionIndex.current = -1;

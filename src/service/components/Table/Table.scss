@@ -1,6 +1,6 @@
 .table {
   grid-area: content;
-  overflow: scroll;
+  overflow: hidden;
   font-size: 11px;
   display: grid;
   grid-template-rows: auto 40px;
@@ -9,7 +9,7 @@
 
 .content {
   grid-area: content;
-  overflow: scroll;
+  overflow: hidden;
 }
 
 .footer {

@@ -7,7 +7,7 @@ import styles from './GridRow.scss';
 import { SelectionModifier } from '../../types';
 
 export function GridRow({ index, style }: ListChildComponentProps) {
-  const { columns, rows, onSelectRows } = useGridContext();
+  const { columns, rows, selectRow } = useGridContext();
 
   const row = rows[index];
 
@@ -29,10 +29,10 @@ export function GridRow({ index, style }: ListChildComponentProps) {
     if (ev.metaKey || ev.ctrlKey) modifier = 'append';
     if (ev.shiftKey) modifier = 'range';
 
-    row && onSelectRows(index, index, modifier);
+    row && selectRow(index, modifier);
   }
 
-  return (
+  return React.useMemo(() =>
     <div
       style={{ ...style, top, width: 'auto' }}
       className={css}
@@ -62,5 +62,5 @@ export function GridRow({ index, style }: ListChildComponentProps) {
         );
       })}
     </div>
-  );
+  , [row]);
 }

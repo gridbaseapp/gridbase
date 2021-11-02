@@ -1,7 +1,7 @@
 .query {
   grid-area: content;
   display: flex;
-  overflow: scroll;
+  overflow: hidden;
 
   .content {
     flex: 1;
@@ -27,12 +27,12 @@
 
   .result {
     flex: 1;
-    overflow: scroll;
+    overflow: hidden;
     display: grid;
     grid-template-rows: auto 40px;
 
     .grid {
-      overflow: scroll;
+      overflow: hidden;
     }
 
     .controll-panel {
