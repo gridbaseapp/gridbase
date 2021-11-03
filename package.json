@@ -32,6 +32,7 @@
     "@types/react-window": "^1.8.5",
     "@types/uuid": "^8.3.1",
     "classnames": "^2.3.1",
+    "csv": "^5.5.3",
     "electron-store": "^8.0.1",
     "keytar": "^7.7.0",
     "lodash": "^4.17.21",

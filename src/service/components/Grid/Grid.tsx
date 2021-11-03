@@ -1,4 +1,5 @@
 import React, { useRef, useImperativeHandle, forwardRef } from 'react';
+import stringify from 'csv-stringify/lib/sync';
 import { FixedSizeList } from 'react-window';
 import { GridContext } from '../../contexts';
 import { Column, SortOrder, Row, SelectionModifier } from '../../types';
@@ -113,6 +114,17 @@ export const Grid = forwardRef<GridRef, Props>(({
   useHotkey(scopes, 'escape', () => {
     selectRow(-1, 'select');
   }, []);
+
+  useHotkey(scopes, 'meta+c', () => {
+    const selectedRows = rows.filter(e => e.isSelected);
+
+    if (selectedRows.length === 0) return;
+
+    const cols = columns.filter(e => e.isVisible).map(e => e.name);
+    const values = selectedRows.map(row => cols.map(col => row.getValue(col)));
+
+    navigator.clipboard.writeText(stringify(values));
+  }, [columns, rows]);
 
   function selectRow(index: number, modifier: SelectionModifier) {
     if (index === -1) {
