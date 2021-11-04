@@ -25,7 +25,7 @@ export function PostgreSQLService({ isVisible }: Props) {
     schemas,
     activeSchemaId,
     entities,
-    openEntityIds,
+    openEntities,
     activeEntityId,
     setSchemas,
     setActiveSchemaId,
@@ -41,7 +41,7 @@ export function PostgreSQLService({ isVisible }: Props) {
   const [
     openEntityIdsStaticCopy,
     setOpenEntityIdsStaticCopy,
-  ] = useState<string[]>([...openEntityIds]);
+  ] = useState<string[]>(openEntities.map(e => e.id));
 
   const [
     loadDefaultSchemaId,
@@ -81,13 +81,13 @@ export function PostgreSQLService({ isVisible }: Props) {
     setOpenEntityIdsStaticCopy(state => {
       const newState = [...state];
 
-      openEntityIds.forEach(e => {
-        if (!newState.includes(e)) newState.push(e);
+      openEntities.forEach(e => {
+        if (!newState.includes(e.id)) newState.push(e.id);
       });
 
-      return newState.filter(e => openEntityIds.includes(e));
+      return newState.filter(e => openEntities.map(e => e.id).includes(e));
     });
-  }, [openEntityIds]);
+  }, [openEntities]);
 
   useEffect(() => {
     if (openEntityIdsStaticCopy.length === 0) {
@@ -111,10 +111,10 @@ export function PostgreSQLService({ isVisible }: Props) {
 
   useHotkey(scope, 'meta+w', () => {
     if (activeEntityId) closeEntity(activeEntityId);
-  }, [entities, activeEntityId, openEntityIds]);
+  }, [entities, activeEntityId, openEntities]);
 
   useHotkey(scope, 'meta+shift+e', () => {
-    if (openEntityIds.length === 0) {
+    if (openEntities.length === 0) {
       setFocusedSection('sidebar');
     } else {
       setFocusedSection(state => state === 'sidebar' ? 'content' : 'sidebar');
@@ -123,23 +123,23 @@ export function PostgreSQLService({ isVisible }: Props) {
 
   useHotkey(scope, 'meta+shift+[', () => {
     if (!activeEntityId) return;
-    if (openEntityIds.length === 0) return;
+    if (openEntities.length === 0) return;
 
-    let idx = openEntityIds.indexOf(activeEntityId);
+    let idx = openEntities.map(e => e.id).indexOf(activeEntityId);
     idx -= 1;
-    if (idx === -1) idx = openEntityIds.length - 1;
-    setActiveEntityId(openEntityIds[idx]);
-  }, [activeEntityId, openEntityIds]);
+    if (idx === -1) idx = openEntities.length - 1;
+    setActiveEntityId(openEntities[idx].id);
+  }, [activeEntityId, openEntities]);
 
   useHotkey(scope, 'meta+shift+]', () => {
     if (!activeEntityId) return;
-    if (openEntityIds.length === 0) return;
+    if (openEntities.length === 0) return;
 
-    let idx = openEntityIds.indexOf(activeEntityId);
+    let idx = openEntities.map(e => e.id).indexOf(activeEntityId);
     idx += 1;
-    if (idx >= openEntityIds.length) idx = 0;
-    setActiveEntityId(openEntityIds[idx]);
-  }, [activeEntityId, openEntityIds]);
+    if (idx >= openEntities.length) idx = 0;
+    setActiveEntityId(openEntities[idx].id);
+  }, [activeEntityId, openEntities]);
 
   async function loadEntities() {
     const activeSchema = schemas?.find(e => e.id === activeSchemaId);
@@ -200,7 +200,7 @@ export function PostgreSQLService({ isVisible }: Props) {
             />
 
             {openEntityIdsStaticCopy.map(id => {
-              const entity = entities.find(e => e.id === id);
+              const entity = openEntities.find(e => e.id === id);
 
               if (!entity) return;
 

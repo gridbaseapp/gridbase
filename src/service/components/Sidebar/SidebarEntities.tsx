@@ -21,6 +21,7 @@ export function SidebarEntities({ entityTypes }: Props) {
     schemas,
     activeSchemaId,
     setEntities,
+    setOpenEntities,
     openEntity,
     closeEntity,
   } = useServiceContext();
@@ -43,13 +44,7 @@ export function SidebarEntities({ entityTypes }: Props) {
     const query = filter.trim().toLowerCase();
     const lowercaseName = name.toLowerCase();
 
-    return (
-      entityTypes.includes(type)
-      &&
-      lowercaseName.includes(query)
-      &&
-      status !== 'new'
-    );
+    return entityTypes.includes(type) && lowercaseName.includes(query);
   })
   .sort((a, b) => {
     if (a.name < b.name) return -1;
@@ -138,7 +133,7 @@ export function SidebarEntities({ entityTypes }: Props) {
 
   useHotkey(scopes, 'enter', () => {
     const entity = filteredEntities[focusedEntityIndex];
-    if (entity) openEntity(entity.id);
+    if (entity) openEntity(entity);
   }, [focusedEntityIndex], { global: false });
 
   useHotkey(scopes, 'alphabet', (ev) => {
@@ -171,7 +166,7 @@ export function SidebarEntities({ entityTypes }: Props) {
   }
 
   function handleOpenEntity(entity: Entity) {
-    openEntity(entity.id);
+    openEntity(entity);
   }
 
   function handleUpdateEntity(entity: Entity) {
@@ -181,6 +176,18 @@ export function SidebarEntities({ entityTypes }: Props) {
       if (!state) return;
 
       const i = state.findIndex(e => e.id === entity.id);
+
+      return [
+        ...state.slice(0, i),
+        { ...entity, name: entity.name, status: 'fresh' },
+        ...state.slice(i + 1),
+      ];
+    });
+
+    setOpenEntities(state => {
+      const i = state.findIndex(e => e.id === entity.id);
+
+      if (i < 0) return state;
 
       return [
         ...state.slice(0, i),
@@ -216,8 +223,7 @@ export function SidebarEntities({ entityTypes }: Props) {
       status: 'new',
     };
 
-    setEntities(state => [...(state || []), entity]);
-    openEntity(entity.id);
+    openEntity(entity);
   }
 
   return (

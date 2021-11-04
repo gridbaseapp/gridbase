@@ -94,7 +94,7 @@ export function GoTo({ onClose }: Props) {
     const entity = filteredEntities[focusedEntityIndex];
 
     if (entity) {
-      openEntity(entity.id);
+      openEntity(entity);
       onClose();
     }
   }, [filteredEntities]);
@@ -105,7 +105,7 @@ export function GoTo({ onClose }: Props) {
 
   function handleClickEntity(ev: React.MouseEvent, entity: Entity) {
     ev.preventDefault();
-    openEntity(entity.id);
+    openEntity(entity);
     onClose();
   }
 

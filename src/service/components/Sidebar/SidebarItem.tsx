@@ -48,17 +48,11 @@ export function SidebarItem({
     setValue(entity.name);
   }, [isEdited]);
 
-  const name = `SidebarItem-${entity.id}`;
-  const scopes = [
-    `Service-${connection.uuid}`,
-    `Sidebar-${connection.uuid}`,
-    `SidebarEntities-${connection.uuid}`,
-    name,
-  ];
+  const name = `SidebarItem-${connection.uuid}-${entity.id}`;
 
   useFocus(name, isEdited);
 
-  useHotkey(scopes, 'meta+s, enter', () => {
+  useHotkey(name, 'meta+s, enter', () => {
     handleUpdate();
   }, [value]);
 

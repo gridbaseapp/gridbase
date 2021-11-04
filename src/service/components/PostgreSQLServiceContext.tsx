@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Service } from '../../app/types';
 import { ServiceContext } from '../contexts';
 import { Schema, Entity, EntitiesStatus } from '../types';
@@ -12,29 +12,52 @@ export function PostgreSQLServiceContext({ service, children }: Props) {
   const [schemas, setSchemas] = useState<Schema[]>();
   const [activeSchemaId, setActiveSchemaId] = useState<string>();
   const [entities, setEntities] = useState<Entity[]>();
-  const [openEntityIds, setOpenEntityIds] = useState<string[]>([]);
+  const [openEntities, setOpenEntities] = useState<Entity[]>([]);
   const [activeEntityId, setActiveEntityId] = useState<string>();
   const [entitiesStatus, setEntitiesStatus] = useState<EntitiesStatus>('success');
 
-  function openEntity(id: string) {
-    if (!openEntityIds.includes(id)) {
-      setOpenEntityIds(state => [...state, id]);
+  useEffect(() => {
+    setEntities(state => {
+      if (!state) return;
+
+      const newState: Entity[] = [];
+
+      state.forEach(entity => {
+        const foundEntity = openEntities.find(e => e.id === entity.id);
+        newState.push(foundEntity ?? entity);
+      });
+
+      openEntities.forEach(entity => {
+        if (entity.status === 'new') return;
+
+        if (!state.map(e => e.id).includes(entity.id) ) {
+          newState.push(entity);
+        }
+      })
+
+      return newState;
+    });
+  }, [openEntities]);
+
+  function openEntity(entity: Entity) {
+    if (!openEntities.map(e => e.id).includes(entity.id)) {
+      setOpenEntities(state => [...state, entity]);
     }
 
-    setActiveEntityId(id);
+    setActiveEntityId(entity.id);
   }
 
   function closeEntity(id: string) {
     if (activeEntityId === id) {
-      const idx = openEntityIds.indexOf(id);
+      const idx = openEntities.map(e => e.id).indexOf(id);
 
-      let newActiveEntityId = openEntityIds[idx + 1];
-      if (!newActiveEntityId) newActiveEntityId = openEntityIds[idx - 1];
+      let newActiveEntity = openEntities[idx + 1];
+      if (!newActiveEntity) newActiveEntity = openEntities[idx - 1];
 
-      setActiveEntityId(newActiveEntityId);
+      setActiveEntityId(newActiveEntity?.id);
     }
 
-    setOpenEntityIds(state => state.filter(e => e !== id));
+    setOpenEntities(state => state.filter(e => e.id !== id));
 
     const entity = entities?.find(e => e.id === id);
 
@@ -63,13 +86,13 @@ export function PostgreSQLServiceContext({ service, children }: Props) {
     activeSchemaId,
     entities,
     entitiesStatus,
-    openEntityIds,
+    openEntities,
     activeEntityId,
     setSchemas,
     setActiveSchemaId,
     setEntities,
     setEntitiesStatus,
-    setOpenEntityIds,
+    setOpenEntities,
     setActiveEntityId,
     openEntity,
     closeEntity,

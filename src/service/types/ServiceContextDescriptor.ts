@@ -12,14 +12,14 @@ export interface ServiceContextDescriptor {
   activeSchemaId?: string;
   entities?: Entity[];
   entitiesStatus: EntitiesStatus;
-  openEntityIds: string[];
+  openEntities: Entity[];
   activeEntityId?: string;
   setSchemas: Dispatch<SetStateAction<Schema[] | undefined>>;
   setActiveSchemaId: Dispatch<SetStateAction<string | undefined>>;
   setEntities: Dispatch<SetStateAction<Entity[] | undefined>>;
   setEntitiesStatus: Dispatch<SetStateAction<EntitiesStatus>>;
-  setOpenEntityIds: Dispatch<SetStateAction<string[]>>;
+  setOpenEntities: Dispatch<SetStateAction<Entity[]>>;
   setActiveEntityId: Dispatch<SetStateAction<string | undefined>>;
-  openEntity(id: string): void;
+  openEntity(entity: Entity): void;
   closeEntity(id: string): void;
 }

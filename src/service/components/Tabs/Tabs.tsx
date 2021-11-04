@@ -37,9 +37,9 @@ export function Tabs({ setGoToTriggerTargetRef, onShowGoTo }: Props) {
 
   const {
     entities,
-    openEntityIds,
+    openEntities,
     activeEntityId,
-    setOpenEntityIds,
+    setOpenEntities,
     setActiveEntityId,
     closeEntity,
   } = useServiceContext();
@@ -60,13 +60,13 @@ export function Tabs({ setGoToTriggerTargetRef, onShowGoTo }: Props) {
     const maxNumberOfTabs = Math.floor(width / MIN_TAB_WIDTH);
     const maxTabWidth = width / Math.min(DEFAULT_NUMBERS_OF_TABS, maxNumberOfTabs);
     const tabWidth = Math.min(
-      width / Math.min(openEntityIds.length, maxNumberOfTabs),
+      width / Math.min(openEntities.length, maxNumberOfTabs),
       maxTabWidth,
     ) || 0;
 
     setMaxNumberOfTabs(maxNumberOfTabs);
     if (!isTabResizingPrevented) setTabWidth(tabWidth);
-  }, [openEntityIds, tabsContentSize, isTabResizingPrevented]);
+  }, [openEntities, tabsContentSize, isTabResizingPrevented]);
 
   function handleActivateEntity(entity: Entity) {
     setActiveEntityId(entity.id);
@@ -96,9 +96,9 @@ export function Tabs({ setGoToTriggerTargetRef, onShowGoTo }: Props) {
     setFocusedEntity(undefined);
 
     if (over && active.id !== over.id) {
-      setOpenEntityIds(state => {
-        const oldIndex = state.findIndex(id => String(id) === active.id);
-        const newIndex = state.findIndex(id => String(id) === over.id);
+      setOpenEntities(state => {
+        const oldIndex = state.findIndex(e => String(e.id) === active.id);
+        const newIndex = state.findIndex(e => String(e.id) === over.id);
         return arrayMove(state, oldIndex, newIndex);
       });
     }
@@ -108,12 +108,8 @@ export function Tabs({ setGoToTriggerTargetRef, onShowGoTo }: Props) {
   let hiddenTabs: Entity[] = [];
 
   if (maxNumberOfTabs > 0) {
-    visibleTabs = [...openEntityIds]
-      .slice(0, maxNumberOfTabs)
-      .map(id => entities!.find(e => e.id == id)!);
-    hiddenTabs = [...openEntityIds]
-      .slice(maxNumberOfTabs)
-      .map(id => entities!.find(e => e.id == id)!);
+    visibleTabs = [...openEntities].slice(0, maxNumberOfTabs);
+    hiddenTabs = [...openEntities].slice(maxNumberOfTabs);
   }
 
   return (

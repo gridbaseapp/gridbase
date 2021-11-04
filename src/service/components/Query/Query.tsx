@@ -23,7 +23,7 @@ interface Props {
 export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
   const [gridContainerRef, gridSize] = useElementSize();
 
-  const { connection, adapter, setEntities } = useServiceContext();
+  const { connection, adapter, setOpenEntities } = useServiceContext();
 
   const [
     loadSqlQueries,
@@ -91,9 +91,7 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
         setQuery(state => ({ ...state!, sql }));
 
         if (sql !== sqlInitialValue.current && entity.status === 'fresh') {
-          setEntities(state => {
-            if (!state) return;
-
+          setOpenEntities(state => {
             const i = state.findIndex(e => e.id === entity.id);
 
             return [
@@ -103,8 +101,11 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
             ];
           });
         }
-
       });
+
+      setTimeout(() => {
+        editorInstance.current?.focus();
+      }, 0)
     } else {
       if (editorInstance.current) {
         editorInstance.current.dispose();
@@ -147,9 +148,7 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
     saveSqlQueries(queries);
     sqlInitialValue.current = query.sql;
     setQuery(query);
-    setEntities(state => {
-      if (!state) return;
-
+    setOpenEntities(state => {
       const i = state.findIndex(e => e.id === entity.id);
 
       return [
