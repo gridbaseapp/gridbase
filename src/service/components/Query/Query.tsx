@@ -36,6 +36,7 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
   const [isSaveAsVisible, setSaveAsVisible] = useState(false);
   const [columns, setColumns] = useState<Column[]>([])
   const [rows, setRows] = useState<any[]>([]);
+  const [focusedSection, setFocusedSection] = useState<'editor' | 'grid'>('editor');
   const [
     queryExecutionStatus,
     setQueryExecutionStatus,
@@ -102,10 +103,6 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
           });
         }
       });
-
-      setTimeout(() => {
-        editorInstance.current?.focus();
-      }, 0)
     } else {
       if (editorInstance.current) {
         editorInstance.current.dispose();
@@ -121,6 +118,18 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
       isEditorHydrated.current = true;
     }
   }, [query]);
+
+  useEffect(() => {
+    if (hasFocus && focusedSection === 'editor') {
+      setTimeout(() => {
+        editorInstance.current?.focus();
+      }, 0);
+    } else {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    }
+  }, [hasFocus, focusedSection]);
 
   const name = `Query-${connection.uuid}-${entity.id}`;
   const scopes = [`Service-${connection.uuid}`, name]
@@ -256,26 +265,37 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
 
   return (
     <div
-      className={classNames(styles.query, { hidden: !isVisible, focus: hasFocus })}
+      className={classNames(styles.query, { hidden: !isVisible })}
       onClick={onFocus}
     >
       {loadingStatus === 'loading' && <div className={styles.splash}>Loading...</div>}
 
       {loadingStatus === 'success' && query && (
-        <div className={styles.content}>
+        <div className={styles.content} onClick={() => setFocusedSection('grid')}>
           <div
             ref={resizableElementRef}
             className={styles.editorSection}
             style={{ height: editorSectionHeight }}
           >
-            <div className={styles.editor} ref={setEditorRef}></div>
+            <div
+              className={styles.editor}
+              ref={setEditorRef}
+              onClick={(ev) => { ev.stopPropagation(); setFocusedSection('editor'); }}
+            ></div>
             <div
               className={styles.resizer}
               onMouseDown={resizableTrigger}
             ></div>
           </div>
 
-          <div className={styles.result}>
+          <div
+            className={
+              classNames(
+                styles.result,
+                { focus: hasFocus && focusedSection === 'grid' },
+              )
+            }
+          >
             <div ref={gridContainerRef} className={styles.grid}>
               {queryExecutionError}
               {!queryExecutionError && (
