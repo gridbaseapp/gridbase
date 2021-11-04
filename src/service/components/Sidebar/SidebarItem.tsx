@@ -2,7 +2,7 @@ import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import Tippy from '@tippyjs/react/headless';
 import { Entity, EntityType, SqlQuery } from '../../types';
-import { useFocus, useHotkey } from '../../../app/hooks';
+import { useExclusiveFocus, useHotkey } from '../../../app/hooks';
 import styles from './SidebarItem.scss';
 import { useServiceContext, useServiceStash } from '../../hooks';
 
@@ -15,6 +15,7 @@ interface Props {
   onClick(entity: Entity): void
   onDoubleClick(entity: Entity): void;
   onEdit(): void;
+  onCancel(): void;
   onUpdate(entity: Entity): void;
   onDelete(entity: Entity): void;
 }
@@ -28,6 +29,7 @@ export function SidebarItem({
   onClick,
   onDoubleClick,
   onEdit,
+  onCancel,
   onUpdate,
   onDelete,
 }: Props) {
@@ -50,11 +52,15 @@ export function SidebarItem({
 
   const name = `SidebarItem-${connection.uuid}-${entity.id}`;
 
-  useFocus(name, isEdited);
+  useExclusiveFocus(name, isEdited);
 
   useHotkey(name, 'meta+s, enter', () => {
     handleUpdate();
   }, [value]);
+
+  useHotkey(name, 'escape', () => {
+    onCancel();
+  }, []);
 
   function handleChange(ev: ChangeEvent<HTMLInputElement>) {
     setValue(ev.target.value);

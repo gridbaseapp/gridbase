@@ -103,10 +103,6 @@ export function SidebarEntities({ entityTypes }: Props) {
     }
   }, [filter]);
 
-  useHotkey(scopes, 'escape', () => {
-    setEditedEntityIndex(-1);
-  }, [filteredEntities, focusedEntityIndex]);
-
   useHotkey(scopes, 'arrowdown', () => {
     let idx = focusedEntityIndex + 1;
     if (idx > filteredEntities.length - 1) idx = -1;
@@ -258,6 +254,7 @@ export function SidebarEntities({ entityTypes }: Props) {
                     onClick={handleClickEntity}
                     onDoubleClick={handleOpenEntity}
                     onEdit={() => setEditedEntityIndex(idx)}
+                    onCancel={() => setEditedEntityIndex(-1)}
                     onUpdate={handleUpdateEntity}
                     onDelete={handleDeleteEntity}
                   />
