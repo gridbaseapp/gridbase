@@ -1,4 +1,13 @@
-const { app, BrowserWindow, screen, Menu } = require('electron');
+const {
+  app,
+  BrowserWindow,
+  screen,
+  Menu,
+  ipcMain,
+  dialog,
+} = require('electron');
+const os = require('os');
+const fs = require('fs');
 const Store = require('electron-store');
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = false;
@@ -65,6 +74,17 @@ function createWindow() {
   ];
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
+
+  ipcMain.on('export-ready', (event, arg) => {
+    const defaultPath = `${os.homedir()}/Downloads/${arg.name}.${arg.format}`;
+    dialog
+      .showSaveDialog(win, { showsTagField: false, defaultPath })
+      .then(({ filePath }) => {
+        if (filePath) {
+          fs.copyFileSync(arg.path, filePath);
+        }
+      });
+  });
 }
 
 app.whenReady().then(createWindow);

@@ -9,6 +9,7 @@ import { Pagination } from './Pagination';
 import { ColumnsSettingsModal } from './ColumnsSettingsModal';
 import { SortSettingsModal } from './SortSettingsModal';
 import { Grid, GridRef } from '../Grid';
+import { ExportModal } from '../ExportModal';
 import { COLUMN_MIN_WIDTH, COLUMN_MAX_WIDTH } from './constants';
 import styles from './Table.scss';
 
@@ -32,6 +33,8 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
     loadColumnsFromStash,
     saveColumnsToStash,
   ] = useServiceStash<Column[]>(`columns.${entity.id}`, []);
+
+  const [isExportModalVisible, setExportModalVisible] = useState(false);
 
   const [
     isColumnsSettingsModalVisible,
@@ -93,7 +96,7 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
 
     const rows = resultRows.rows.map(e => new Row(e));
 
-    return [resultTotal.rows[0].count, rows] as const;
+    return [Number(resultTotal.rows[0].count), rows] as const;
   }
 
   useEffect(() => {
@@ -315,6 +318,8 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
           <div className={styles.footer}>
             {loadingStatus === 'reloading' && <div className={styles.spinner}>Loading...</div>}
 
+            <a onClick={() => setExportModalVisible(true)}>Export</a>
+
             <Pagination
               total={total}
               page={page}
@@ -338,6 +343,18 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
           </div>
         </>
       )}
+
+      {isExportModalVisible &&
+        <ExportModal
+          entity={entity}
+          columns={columns}
+          rows={rows}
+          total={total}
+          page={page}
+          perPage={PER_PAGE}
+          onClose={() => setExportModalVisible(false)}
+        />
+      }
 
       {isColumnsSettingsModalVisible &&
         <ColumnsSettingsModal
