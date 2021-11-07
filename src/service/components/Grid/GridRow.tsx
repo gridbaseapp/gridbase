@@ -62,5 +62,5 @@ export function GridRow({ index, style }: ListChildComponentProps) {
         );
       })}
     </div>
-  , [row]);
+  , [row, columns]);
 }
