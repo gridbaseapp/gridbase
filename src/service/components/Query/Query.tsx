@@ -22,7 +22,7 @@ interface Props {
 export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
   const [gridContainerRef, gridSize] = useElementSize();
 
-  const { connection, adapter, setEntities } = useServiceContext();
+  const { connection, adapter, schemas, setEntities } = useServiceContext();
 
   const [
     loadSqlQueries,
@@ -101,13 +101,17 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
         const sql = editorInstance.current!.getValue();
         setQuery(state => ({ ...state!, sql }));
 
-        if (sql !== sqlInitialValue.current && entity.status === 'fresh') {
+        if (sql !== sqlInitialValue.current) {
           setEntities(state => {
             const i = state.findIndex(e => e.id === entity.id);
+            const e = state[i];
+
+            let status: 'unsaved' | 'new' = 'unsaved';
+            if (e.status === 'new') status = 'new';
 
             return [
               ...state.slice(0, i),
-              { ...entity, status: 'unsaved' },
+              { ...e, status },
               ...state.slice(i + 1),
             ];
           });
@@ -203,6 +207,8 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
     try {
       setQueryExecutionStatus('running');
 
+      const schema = schemas.find(e => e.id === entity.schemaId);
+      await adapter.queryNoTypeCasting(`SET search_path TO ${schema?.name}`);
       const { fields, rows } = await adapter.queryNoTypeCasting(query.sql);
       const columns: Column[] = fields.map(e => ({
         name: e.name,
