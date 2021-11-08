@@ -67,7 +67,7 @@ export const Tab = forwardRef<HTMLDivElement, TabProps>(({
 }, ref) => {
   function handlePointerDown(ev: React.PointerEvent) {
     if (onActivate) onActivate(entity);
-    if (listeners.onPointerDown) listeners.onPointerDown(ev);
+    if (listeners && listeners.onPointerDown) listeners.onPointerDown(ev);
   }
 
   function handleClick(ev: React.MouseEvent) {

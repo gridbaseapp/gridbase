@@ -8,9 +8,9 @@ import { GoTo } from './GoTo';
 import { Table } from './Table';
 import { Query } from './Query';
 import styles from './PostgreSQLService.scss';
-import { useServiceContext, useServiceStash } from '../hooks';
-import { useDidUpdateEffect, useFocus, useHotkey } from '../../app/hooks';
-import { EntityType, SqlQuery } from '../types';
+import { useServiceContext } from '../hooks';
+import { useFocus, useHotkey } from '../../app/hooks';
+import { EntityType } from '../types';
 
 type FocusedSection = 'sidebar' | 'content';
 
@@ -20,82 +20,27 @@ interface Props {
 
 export function PostgreSQLService({ isVisible }: Props) {
   const {
-    adapter,
     connection,
-    schemas,
-    activeSchemaId,
     entities,
-    openEntities,
+    dataLoadingStatus,
+    openEntityIds,
     activeEntityId,
-    setSchemas,
-    setActiveSchemaId,
-    setEntities,
-    setEntitiesStatus,
     setActiveEntityId,
+    loadData,
     closeEntity,
   } = useServiceContext();
 
   const [isGoToVisible, setGoToVisible] = useState(false);
   const [goToTriggerTargetRef, setGoToTriggerTargetRef] = useState<Element | null>(null);
   const [focusedSection, setFocusedSection] = useState<FocusedSection>('sidebar');
-  const [
-    openEntityIdsStaticCopy,
-    setOpenEntityIdsStaticCopy,
-  ] = useState<string[]>(openEntities.map(e => e.id));
-
-  const [
-    loadDefaultSchemaId,
-    saveDefaultSchemaId,
-  ] = useServiceStash<string>('defaultSchemaId');
-
-  const [
-    loadSqlQueries,
-  ] = useServiceStash<SqlQuery[]>(`queries.${activeSchemaId}`, []);
 
   useEffect(() => {
-    (async () => {
-      const defaultSchemaId = loadDefaultSchemaId();
-      const rows = await adapter.getSchemas();
-
-      let active = rows.find(e => e.id === defaultSchemaId);
-      if (!active) active = rows.find(e => e.name === 'public');
-      if (!active) active = rows.filter(e => !e.internal)[0];
-      if (!active) active = rows[0];
-
-      setSchemas(rows);
-      setActiveSchemaId(active.id);
-    })()
+    loadData();
   }, []);
 
-  useDidUpdateEffect(() => {
-    if (activeSchemaId) {
-      saveDefaultSchemaId(activeSchemaId);
-    }
-  }, [activeSchemaId]);
-
   useEffect(() => {
-    loadEntities();
-  }, [activeSchemaId]);
-
-  useEffect(() => {
-    setOpenEntityIdsStaticCopy(state => {
-      const newState = [...state];
-
-      openEntities.forEach(e => {
-        if (!newState.includes(e.id)) newState.push(e.id);
-      });
-
-      return newState.filter(e => openEntities.map(e => e.id).includes(e));
-    });
-  }, [openEntities]);
-
-  useEffect(() => {
-    if (openEntityIdsStaticCopy.length === 0) {
-      setFocusedSection('sidebar');
-    } else {
-      setFocusedSection('content');
-    }
-  }, [openEntityIdsStaticCopy, activeEntityId]);
+    setFocusedSection(openEntityIds.length === 0 ? 'sidebar' : 'content');
+  }, [openEntityIds]);
 
   const scope = `Service-${connection.uuid}`;
 
@@ -105,66 +50,37 @@ export function PostgreSQLService({ isVisible }: Props) {
     setGoToVisible(true);
   });
 
-  useHotkey([scope, `Sidebar-${connection.uuid}`], 'meta+r', () => {
-    loadEntities();
-  }, [activeSchemaId]);
-
   useHotkey(scope, 'meta+w', () => {
     if (activeEntityId) closeEntity(activeEntityId);
-  }, [entities, activeEntityId, openEntities]);
+  }, [entities, activeEntityId, openEntityIds]);
 
   useHotkey(scope, 'meta+shift+e', () => {
-    if (openEntities.length === 0) {
+    if (openEntityIds.length === 0) {
       setFocusedSection('sidebar');
     } else {
       setFocusedSection(state => state === 'sidebar' ? 'content' : 'sidebar');
     }
-  });
+  }, [openEntityIds]);
 
   useHotkey(scope, 'meta+shift+[', () => {
     if (!activeEntityId) return;
-    if (openEntities.length === 0) return;
+    if (openEntityIds.length === 0) return;
 
-    let idx = openEntities.map(e => e.id).indexOf(activeEntityId);
+    let idx = openEntityIds.indexOf(activeEntityId);
     idx -= 1;
-    if (idx === -1) idx = openEntities.length - 1;
-    setActiveEntityId(openEntities[idx].id);
-  }, [activeEntityId, openEntities]);
+    if (idx === -1) idx = openEntityIds.length - 1;
+    setActiveEntityId(openEntityIds[idx]);
+  }, [activeEntityId, openEntityIds]);
 
   useHotkey(scope, 'meta+shift+]', () => {
     if (!activeEntityId) return;
-    if (openEntities.length === 0) return;
+    if (openEntityIds.length === 0) return;
 
-    let idx = openEntities.map(e => e.id).indexOf(activeEntityId);
+    let idx = openEntityIds.indexOf(activeEntityId);
     idx += 1;
-    if (idx >= openEntities.length) idx = 0;
-    setActiveEntityId(openEntities[idx].id);
-  }, [activeEntityId, openEntities]);
-
-  async function loadEntities() {
-    const activeSchema = schemas?.find(e => e.id === activeSchemaId);
-
-    if (activeSchemaId && activeSchema) {
-      setEntitiesStatus('loading');
-      const rows = await adapter.getEntities(activeSchemaId);
-      const sqlQueries = loadSqlQueries();
-
-      rows.forEach(e => e.schema = activeSchema);
-
-      sqlQueries.forEach(e => {
-        rows.push({
-          id: e.id,
-          name: e.name,
-          type: EntityType.Query,
-          schema: activeSchema,
-          status: 'fresh',
-        });
-      });
-
-      setEntities(rows);
-      setEntitiesStatus('success');
-    }
-  }
+    if (idx >= openEntityIds.length) idx = 0;
+    setActiveEntityId(openEntityIds[idx]);
+  }, [activeEntityId, openEntityIds]);
 
   function handleClickOutside(instance: any, ev: Event) {
     if (!goToTriggerTargetRef?.contains(ev.target as Element)) {
@@ -172,9 +88,11 @@ export function PostgreSQLService({ isVisible }: Props) {
     }
   }
 
+  const openEntities = entities.filter(e => openEntityIds.includes(e.id));
+
   return (
     <div className={classNames(styles.service, { hidden: !isVisible })}>
-      {schemas && activeSchemaId && entities ? (
+      {['reloading', 'success'].includes(dataLoadingStatus) ? (
         <>
           <Tippy
             placement="bottom"
@@ -199,31 +117,27 @@ export function PostgreSQLService({ isVisible }: Props) {
               onShowGoTo={() => setGoToVisible(state => !state)}
             />
 
-            {openEntityIdsStaticCopy.map(id => {
-              const entity = openEntities.find(e => e.id === id);
-
-              if (!entity) return;
-
+            {openEntities.map(entity => {
               switch (entity.type) {
                 case EntityType.Table:
                 case EntityType.View:
                 case EntityType.MaterializedView:
                   return (
                     <Table
-                      key={id}
+                      key={entity.id}
                       entity={entity}
-                      isVisible={id === activeEntityId}
-                      hasFocus={id === activeEntityId && focusedSection === 'content'}
+                      isVisible={entity.id === activeEntityId}
+                      hasFocus={entity.id === activeEntityId && focusedSection === 'content'}
                       onFocus={() => setFocusedSection('content')}
                     />
                   );
                 case EntityType.Query:
                   return (
                     <Query
-                      key={id}
+                      key={entity.id}
                       entity={entity}
-                      isVisible={id === activeEntityId}
-                      hasFocus={id === activeEntityId && focusedSection === 'content'}
+                      isVisible={entity.id === activeEntityId}
+                      hasFocus={entity.id === activeEntityId && focusedSection === 'content'}
                       onFocus={() => setFocusedSection('content')}
                     />
                   );

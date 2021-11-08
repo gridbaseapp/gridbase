@@ -20,11 +20,11 @@ const SQL_GET_ENTITIES = `
       WHEN 'v' THEN ${EntityType.View}
       WHEN 'm' THEN ${EntityType.MaterializedView}
     END AS "type",
+    "relnamespace" AS "schemaId",
     'fresh' AS "status"
   FROM "pg_catalog"."pg_class"
   WHERE
-    "relnamespace" = $1
-  AND "relkind" IN ('r', 'v', 'm')
+    "relkind" IN ('r', 'v', 'm')
   ORDER BY "relname";
 `;
 
@@ -58,8 +58,8 @@ export class PostgreSQLAdapter {
     return (await this.client.query<Schema>(SQL_GET_SCHEMAS)).rows;
   }
 
-  async getEntities(schemaId: string) {
-    return (await this.client.query<Entity>(SQL_GET_ENTITIES, [schemaId])).rows;
+  async getEntities() {
+    return (await this.client.query<Entity>(SQL_GET_ENTITIES)).rows;
   }
 
   async getAttributes(relationId: string) {

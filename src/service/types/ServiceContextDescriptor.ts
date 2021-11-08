@@ -3,23 +3,24 @@ import { Connection } from '../../app/types';
 import { PostgreSQLAdapter } from '../adapter';
 import { Schema } from './Schema';
 import { Entity } from './Entity';
-import { EntitiesStatus } from './EntitiesStatus';
+import { LoadingStatus } from './LoadingStatus';
 
 export interface ServiceContextDescriptor {
   connection: Connection;
   adapter: PostgreSQLAdapter;
-  schemas?: Schema[];
-  activeSchemaId?: string;
-  entities?: Entity[];
-  entitiesStatus: EntitiesStatus;
-  openEntities: Entity[];
-  activeEntityId?: string;
-  setSchemas: Dispatch<SetStateAction<Schema[] | undefined>>;
-  setActiveSchemaId: Dispatch<SetStateAction<string | undefined>>;
-  setEntities: Dispatch<SetStateAction<Entity[] | undefined>>;
-  setEntitiesStatus: Dispatch<SetStateAction<EntitiesStatus>>;
-  setOpenEntities: Dispatch<SetStateAction<Entity[]>>;
-  setActiveEntityId: Dispatch<SetStateAction<string | undefined>>;
-  openEntity(entity: Entity): void;
+  schemas: Schema[];
+  activeSchemaId: string | null;
+  entities: Entity[];
+  openEntityIds: string[];
+  activeEntityId: string | null;
+  dataLoadingStatus: LoadingStatus;
+  setSchemas: Dispatch<SetStateAction<Schema[]>>;
+  setActiveSchemaId: Dispatch<SetStateAction<string | null>>;
+  setEntities: Dispatch<SetStateAction<Entity[]>>;
+  setOpenEntityIds: Dispatch<SetStateAction<string[]>>;
+  setActiveEntityId: Dispatch<SetStateAction<string | null>>;
+  setDataLoadingStatus: Dispatch<SetStateAction<LoadingStatus>>;
+  loadData(status?: LoadingStatus): void;
+  openEntity(id: string): void;
   closeEntity(id: string): void;
 }

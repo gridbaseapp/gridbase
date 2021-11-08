@@ -3,7 +3,7 @@ import { debounce, isEqual } from 'lodash';
 import classNames from 'classnames';
 import { useDidUpdateEffect, useElementSize, useFocus, useHotkey } from '../../../app/hooks';
 import { useServiceContext, useServiceStash } from '../../hooks';
-import { Column, Entity, SortOrder, Row } from '../../types';
+import { Column, Entity, SortOrder, Row, LoadingStatus } from '../../types';
 import { mergeColumnsWithAttributes } from './utils';
 import { Pagination } from './Pagination';
 import { ColumnsSettingsModal } from './ColumnsSettingsModal';
@@ -15,8 +15,6 @@ import styles from './Table.scss';
 
 const PER_PAGE = 1000;
 
-type LoadingStatus = 'loading' | 'reloading' | 'success';
-
 interface Props {
   entity: Entity;
   isVisible: boolean;
@@ -27,7 +25,7 @@ interface Props {
 export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
   const [contentRef, contentSize] = useElementSize();
 
-  const { adapter, connection } = useServiceContext();
+  const { adapter, connection, schemas } = useServiceContext();
 
   const [
     loadColumnsFromStash,
@@ -66,7 +64,8 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
   }
 
   async function loadRows(columns: Column[], page: number) {
-    const relation = `"${entity.schema.name}"."${entity.name}"`;
+    const schema = schemas.find(e => e.id === entity.schemaId)!;
+    const relation = `"${schema.name}"."${entity.name}"`;
     const offset = (page - 1) * PER_PAGE;
 
     const order = columns

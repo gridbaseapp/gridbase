@@ -16,12 +16,10 @@ export function SidebarEntities({ entityTypes }: Props) {
   const {
     connection,
     entities,
-    entitiesStatus,
+    dataLoadingStatus,
     activeEntityId,
-    schemas,
     activeSchemaId,
     setEntities,
-    setOpenEntities,
     openEntity,
     closeEntity,
   } = useServiceContext();
@@ -40,17 +38,23 @@ export function SidebarEntities({ entityTypes }: Props) {
     setHighlightedEntityIds([]);
   }, 1000), []);
 
-  const filteredEntities = entities!.filter(({ name, type, status }) => {
-    const query = filter.trim().toLowerCase();
-    const lowercaseName = name.toLowerCase();
+  const filteredEntities = entities
+    .filter(entity => {
+      const query = filter.trim().toLowerCase();
+      const lowercaseName = entity.name.toLowerCase();
 
-    return entityTypes.includes(type) && lowercaseName.includes(query);
-  })
-  .sort((a, b) => {
-    if (a.name < b.name) return -1;
-    if (a.name > b.name) return 1;
-    return 0;
-  });
+      const matchSchema = entity.schemaId === activeSchemaId;
+      const matchType = entityTypes.includes(entity.type);
+      const matchQuery = lowercaseName.includes(query);
+      const isNew = entity.status === 'new'
+
+      return matchSchema && matchType && matchQuery && !isNew;
+    })
+    .sort((a, b) => {
+      if (a.name < b.name) return -1;
+      if (a.name > b.name) return 1;
+      return 0;
+    });
 
   function scrollToEntity(idx: number) {
     const entity = filteredEntities[idx];
@@ -129,7 +133,7 @@ export function SidebarEntities({ entityTypes }: Props) {
 
   useHotkey(scopes, 'enter', () => {
     const entity = filteredEntities[focusedEntityIndex];
-    if (entity) openEntity(entity);
+    if (entity) openEntity(entity.id);
   }, [focusedEntityIndex], { global: false });
 
   useHotkey(scopes, 'alphabet', (ev) => {
@@ -162,28 +166,14 @@ export function SidebarEntities({ entityTypes }: Props) {
   }
 
   function handleOpenEntity(entity: Entity) {
-    openEntity(entity);
+    openEntity(entity.id);
   }
 
   function handleUpdateEntity(entity: Entity) {
     setEditedEntityIndex(-1);
 
     setEntities(state => {
-      if (!state) return;
-
       const i = state.findIndex(e => e.id === entity.id);
-
-      return [
-        ...state.slice(0, i),
-        { ...entity, name: entity.name, status: 'fresh' },
-        ...state.slice(i + 1),
-      ];
-    });
-
-    setOpenEntities(state => {
-      const i = state.findIndex(e => e.id === entity.id);
-
-      if (i < 0) return state;
 
       return [
         ...state.slice(0, i),
@@ -195,11 +185,7 @@ export function SidebarEntities({ entityTypes }: Props) {
 
   function handleDeleteEntity(entity: Entity) {
     closeEntity(entity.id);
-    setEntities(state => {
-      if (!state) return;
-
-      return state.filter(e => e.id !== entity.id);
-    });
+    setEntities(state => state.filter(e => e.id !== entity.id));
   }
 
   function handleFilter(ev: React.ChangeEvent<HTMLInputElement>) {
@@ -209,26 +195,25 @@ export function SidebarEntities({ entityTypes }: Props) {
   function handleClickNewQuery(ev: React.MouseEvent) {
     ev.preventDefault();
 
-    const activeSchema = schemas!.find(e => e.id === activeSchemaId)!;
-
     const entity: Entity = {
       id: uuid(),
       name: '[Draft Query]',
       type: EntityType.Query,
-      schema: activeSchema,
+      schemaId: activeSchemaId!,
       status: 'new',
     };
 
-    openEntity(entity);
+    setEntities(state => [...state, entity]);
+    openEntity(entity.id);
   }
 
   return (
     <div className={classNames(styles.sidebarEntities)}>
-      {entitiesStatus === 'loading' && 'loading...'}
+      {dataLoadingStatus === 'reloading' && 'loading...'}
 
-      {entities?.length === 0 && 'Nothing to show'}
+      {entities.length === 0 && 'Nothing to show'}
 
-      {entities?.length !== 0 && (
+      {entities.length !== 0 && (
         <>
           {filteredEntities.length === 0 && (
             <div className={styles.noResults}>Nothing found</div>

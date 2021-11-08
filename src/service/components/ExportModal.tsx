@@ -33,7 +33,7 @@ export function ExportModal({
   perPage,
   onClose,
 }: Props) {
-  const { adapter } = useServiceContext();
+  const { adapter, schemas } = useServiceContext();
 
   const scope = 'SortSettingsModal';
 
@@ -71,7 +71,8 @@ export function ExportModal({
       .map(e => [e.name, e.sort.order].join(' '))
       .join(', ')
 
-    const relation = `"${entity.schema.name}"."${entity.name}"`;
+    const schema = schemas.find(e => e.id === entity.schemaId)!;
+    const relation = `"${schema.name}"."${entity.name}"`;
     const orderSQL = order.length === 0 ? '' : `ORDER BY ${order}`;
 
     const path = `${tmpdir()}/${uuid()}`;

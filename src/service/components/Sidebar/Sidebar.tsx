@@ -6,7 +6,7 @@ import { SidebarTabs } from './SidebarTabs';
 import { SidebarEntities } from './SidebarEntities';
 import { EntityType } from '../../types';
 import styles from './Sidebar.scss';
-import { useFocus } from '../../../app/hooks';
+import { useFocus, useHotkey } from '../../../app/hooks';
 import { Tab } from './types';
 
 interface Props {
@@ -15,11 +15,17 @@ interface Props {
 }
 
 export function Sidebar({ hasFocus, onFocus }: Props) {
-  const { connection } = useServiceContext();
+  const { connection, loadData } = useServiceContext();
 
   const [activeTab, setActiveTab] = useState<Tab>('tables');
 
-  useFocus(`Sidebar-${connection.uuid}`, hasFocus);
+  const name = `Sidebar-${connection.uuid}`;
+
+  useFocus(name, hasFocus);
+
+  useHotkey([`Service-${connection.uuid}`, name], 'meta+r', () => {
+    loadData('reloading');
+  }, []);
 
   return (
     <div

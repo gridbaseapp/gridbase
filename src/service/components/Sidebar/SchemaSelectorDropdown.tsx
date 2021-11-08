@@ -3,19 +3,24 @@ import classNames from 'classnames';
 import { useServiceContext } from '../../hooks';
 import { Schema } from '../../types';
 import styles from './SchemaSelectorDropdown.scss';
-import { useFocus, useHotkey } from '../../../app/hooks';
+import { useExclusiveFocus, useHotkey } from '../../../app/hooks';
 
 interface Props {
   onClose(): void;
 }
 
 export function SchemaSelectorDropdown({ onClose }: Props) {
-  const { schemas, activeSchemaId, setActiveSchemaId } = useServiceContext();
+  const {
+    schemas,
+    activeSchemaId,
+    setActiveSchemaId,
+    loadData,
+  } = useServiceContext();
 
   const [isAllSchemasVisible, setAllSchemasVisible] = useState(false);
   const [focusedSchemaIndex, setFocusedSchemaIndex] = useState(-1);
 
-  const filteredSchemas = schemas!.filter(e => {
+  const filteredSchemas = schemas.filter(e => {
     if (isAllSchemasVisible) {
       return true;
     } else {
@@ -25,7 +30,7 @@ export function SchemaSelectorDropdown({ onClose }: Props) {
 
   const scope = 'SchemaSelectorDropdown';
 
-  useFocus(scope, true);
+  useExclusiveFocus(scope, true);
 
   useHotkey(scope, 'escape', () => onClose());
 
@@ -43,14 +48,11 @@ export function SchemaSelectorDropdown({ onClose }: Props) {
 
   useHotkey(scope, 'enter', () => {
     const schema = filteredSchemas[focusedSchemaIndex];
-    if (schema) {
-      setActiveSchemaId(schema.id);
-      onClose();
-    }
+    if (schema) handleSelectSchema(schema);
   }, [focusedSchemaIndex]);
 
   useEffect(() => {
-    const activeSchema = schemas?.find(e => e.id === activeSchemaId);
+    const activeSchema = schemas.find(e => e.id === activeSchemaId);
     if (activeSchema?.internal) setAllSchemasVisible(true);
   }, []);
 
@@ -58,10 +60,12 @@ export function SchemaSelectorDropdown({ onClose }: Props) {
     setFocusedSchemaIndex(-1);
   }, [isAllSchemasVisible]);
 
-  function handleSelectSchema(ev: React.MouseEvent, schema: Schema) {
-    ev.preventDefault();
+  function handleSelectSchema(schema: Schema) {
     setActiveSchemaId(schema.id);
     onClose();
+    setTimeout(() => {
+      loadData('reloading');
+    }, 0);
   }
 
   function handleExpandSchemas(ev: React.MouseEvent) {
@@ -81,7 +85,7 @@ export function SchemaSelectorDropdown({ onClose }: Props) {
               { [styles.focus]: idx === focusedSchemaIndex },
             )
           }
-          onClick={(ev) => handleSelectSchema(ev, schema)}
+          onClick={() => handleSelectSchema(schema)}
         >{schema.name}</a>
       ))}
 

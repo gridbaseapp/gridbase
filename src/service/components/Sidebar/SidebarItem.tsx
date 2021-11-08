@@ -38,7 +38,7 @@ export function SidebarItem({
   const [
     loadSqlQueries,
     saveSqlQueries,
-  ] = useServiceStash<SqlQuery[]>(`queries.${entity.schema.id}`, []);
+  ] = useServiceStash<SqlQuery[]>(`queries`, []);
 
   const inputRef = useRef<HTMLInputElement>(null);
 

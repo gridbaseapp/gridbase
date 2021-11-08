@@ -18,7 +18,7 @@ export function SchemaSelector() {
     setDropdownVisible(false);
   }
 
-  const activeSchema = schemas?.find(e => e.id === activeSchemaId);
+  const activeSchema = schemas.find(e => e.id === activeSchemaId);
 
   return (
     <div className={styles.schemaSelector}>

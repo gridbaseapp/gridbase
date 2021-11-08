@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useAppContext, useDidUpdateEffect } from '../../app/hooks';
 import { Service } from '../../app/types';
 import { ServiceContext } from '../contexts';
-import { Schema, Entity, EntitiesStatus } from '../types';
+import { Schema, Entity, EntityType, LoadingStatus, SqlQuery } from '../types';
 
 interface Props {
   service: Service;
@@ -9,91 +10,111 @@ interface Props {
 }
 
 export function PostgreSQLServiceContext({ service, children }: Props) {
-  const [schemas, setSchemas] = useState<Schema[]>();
-  const [activeSchemaId, setActiveSchemaId] = useState<string>();
-  const [entities, setEntities] = useState<Entity[]>();
-  const [openEntities, setOpenEntities] = useState<Entity[]>([]);
-  const [activeEntityId, setActiveEntityId] = useState<string>();
-  const [entitiesStatus, setEntitiesStatus] = useState<EntitiesStatus>('success');
+  const { adapter, connection } = service;
 
-  useEffect(() => {
-    setEntities(state => {
-      if (!state) return;
+  const { stash } = useAppContext();
 
-      const newState: Entity[] = [];
+  const [schemas, setSchemas] = useState<Schema[]>([]);
+  const [activeSchemaId, setActiveSchemaId] = useState<string | null>(null);
+  const [entities, setEntities] = useState<Entity[]>([]);
+  const [openEntityIds, setOpenEntityIds] = useState<string[]>([]);
+  const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
+  const [dataLoadingStatus, setDataLoadingStatus] = useState<LoadingStatus>('loading');
 
-      state.forEach(entity => {
-        const foundEntity = openEntities.find(e => e.id === entity.id);
-        newState.push(foundEntity ?? entity);
-      });
+  useDidUpdateEffect(() => {
+    if (activeSchemaId) {
+      stash.set(`service-${connection.uuid}.defaultSchemaId`, activeSchemaId);
+    }
+  }, [activeSchemaId]);
 
-      openEntities.forEach(entity => {
-        if (entity.status === 'new') return;
-
-        if (!state.map(e => e.id).includes(entity.id) ) {
-          newState.push(entity);
-        }
-      })
-
-      return newState;
-    });
-  }, [openEntities]);
-
-  function openEntity(entity: Entity) {
-    if (!openEntities.map(e => e.id).includes(entity.id)) {
-      setOpenEntities(state => [...state, entity]);
+  function openEntity(id: string) {
+    if (!openEntityIds.includes(id)) {
+      setOpenEntityIds(state => [...state, id]);
     }
 
-    setActiveEntityId(entity.id);
+    setActiveEntityId(id);
   }
 
   function closeEntity(id: string) {
     if (activeEntityId === id) {
-      const idx = openEntities.map(e => e.id).indexOf(id);
+      const idx = openEntityIds.indexOf(id);
 
-      let newActiveEntity = openEntities[idx + 1];
-      if (!newActiveEntity) newActiveEntity = openEntities[idx - 1];
+      const [left, right] = [
+        openEntityIds[idx - 1],
+        openEntityIds[idx + 1],
+      ];
 
-      setActiveEntityId(newActiveEntity?.id);
+      setActiveEntityId(right ?? left ?? null);
     }
 
-    setOpenEntities(state => state.filter(e => e.id !== id));
+    setOpenEntityIds(state => state.filter(e => e !== id));
 
-    const entity = entities?.find(e => e.id === id);
+    const entity = entities.find(e => e.id === id);
 
-    if (entity) {
-      if (entity.status === 'new') {
-        setEntities(state => state?.filter(e => e.id !== id));
-      } else if (entity.status === 'unsaved') {
-        setEntities(state => {
-          if (!state) return;
+    if (entity?.status === 'new') {
+      setEntities(state => state.filter(e => e.id !== id));
+    } else if (entity?.status === 'unsaved') {
+      setEntities(state => {
+        const i = state.findIndex(e => e.id === entity.id);
 
-          const i = state.findIndex(e => e.id === entity.id);
-
-          return [
-            ...state.slice(0, i),
-            { ...entity, status: 'fresh' },
-            ...state.slice(i + 1),
-          ];
-        });
-      }
+        return [
+          ...state.slice(0, i),
+          { ...entity, status: 'fresh' },
+          ...state.slice(i + 1),
+        ];
+      });
     }
   }
 
+  async function loadData(status: LoadingStatus = 'loading') {
+    setDataLoadingStatus(status);
+
+    const defaultSchemaId = stash.get(`service-${connection.uuid}.defaultSchemaId`);
+    const sqlQueries = stash.get(`service-${connection.uuid}.queries`, []) as SqlQuery[];
+
+    const [schemas, entities] = await Promise.all([
+      adapter.getSchemas(),
+      adapter.getEntities(),
+    ]);
+
+    let activeSchema = schemas.find(e => e.id === defaultSchemaId);
+    if (!activeSchema) activeSchema = schemas.find(e => e.name === 'public');
+    if (!activeSchema) activeSchema = schemas.filter(e => !e.internal)[0];
+    if (!activeSchema) activeSchema = schemas[0];
+
+    sqlQueries.forEach(e => {
+      entities.push({
+        id: e.id,
+        name: e.name,
+        type: EntityType.Query,
+        schemaId: e.schemaId,
+        status: 'fresh',
+      });
+    });
+
+    setSchemas(schemas);
+    setEntities(entities);
+    setActiveSchemaId(activeSchema.id);
+
+    setDataLoadingStatus('success');
+  }
+
   const contextValue = {
-    ...service,
+    adapter,
+    connection,
     schemas,
     activeSchemaId,
     entities,
-    entitiesStatus,
-    openEntities,
+    openEntityIds,
     activeEntityId,
+    dataLoadingStatus,
     setSchemas,
     setActiveSchemaId,
     setEntities,
-    setEntitiesStatus,
-    setOpenEntities,
+    setOpenEntityIds,
     setActiveEntityId,
+    setDataLoadingStatus,
+    loadData,
     openEntity,
     closeEntity,
   };

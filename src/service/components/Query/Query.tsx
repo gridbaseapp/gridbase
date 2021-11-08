@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import classNames from 'classnames';
 import { editor } from 'monaco-editor';
 import Tippy from '@tippyjs/react/headless';
-import { Column, Entity, Row, SqlQuery } from '../../types';
+import { Column, Entity, Row, SqlQuery, LoadingStatus } from '../../types';
 import styles from './Query.scss';
 import { useServiceContext, useServiceStash } from '../../hooks';
 import { SaveAs } from './SaveAs';
@@ -10,7 +10,6 @@ import { useFocus, useHotkey, useElementSize, useResizable } from '../../../app/
 import { Grid, GridRef } from '../Grid';
 import { COLUMN_MIN_WIDTH, COLUMN_MAX_WIDTH } from '../Table/constants';
 
-type LoadingStatus = 'loading' | 'success';
 type QueryExecutionStatus = 'running' | 'success';
 
 interface Props {
@@ -23,12 +22,12 @@ interface Props {
 export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
   const [gridContainerRef, gridSize] = useElementSize();
 
-  const { connection, adapter, setOpenEntities } = useServiceContext();
+  const { connection, adapter, setEntities } = useServiceContext();
 
   const [
     loadSqlQueries,
     saveSqlQueries,
-  ] = useServiceStash<SqlQuery[]>(`queries.${entity.schema.id}`, []);
+  ] = useServiceStash<SqlQuery[]>('queries', []);
 
   const [editorSectionHeight, setEditorSectionHeight] = useState(200);
   const [loadingStatus, setLoadingStatus] = useState<LoadingStatus>('loading');
@@ -69,7 +68,12 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
     let query = queries.find(e => e.id === entity.id);
 
     if (!query) {
-      query = { id: entity.id, name: entity.name, sql: '' };
+      query = {
+        id: entity.id,
+        name: entity.name,
+        schemaId: entity.schemaId,
+        sql: '',
+      };
     }
 
     sqlInitialValue.current = query.sql;
@@ -86,13 +90,17 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
         scrollBeyondLastLine: false,
       });
 
+      setTimeout(() => {
+        instance.layout();
+      }, 0);
+
       editorInstance.current = instance;
       editorInstance.current.onDidChangeModelContent(() => {
         const sql = editorInstance.current!.getValue();
         setQuery(state => ({ ...state!, sql }));
 
         if (sql !== sqlInitialValue.current && entity.status === 'fresh') {
-          setOpenEntities(state => {
+          setEntities(state => {
             const i = state.findIndex(e => e.id === entity.id);
 
             return [
@@ -157,7 +165,7 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
     saveSqlQueries(queries);
     sqlInitialValue.current = query.sql;
     setQuery(query);
-    setOpenEntities(state => {
+    setEntities(state => {
       const i = state.findIndex(e => e.id === entity.id);
 
       return [

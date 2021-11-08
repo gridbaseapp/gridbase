@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function GoTo({ onClose }: Props) {
-  const { entities, openEntity } = useServiceContext();
+  const { entities, schemas, activeSchemaId, openEntity } = useServiceContext();
 
   const listRef = useRef<HTMLDivElement>(null);
   const filterRef = useRef<HTMLInputElement>(null);
@@ -18,11 +18,11 @@ export function GoTo({ onClose }: Props) {
   const [filter, setFilter] = useState('');
   const [focusedEntityIndex, setFocusedEntityIndex] = useState(0);
 
-  const filteredEntities = entities!.filter(({ name }) => {
+  const filteredEntities = entities!.filter(({ name, schemaId }) => {
     const query = filter.trim().toLowerCase();
     const lowercaseName = name.toLowerCase();
 
-    return lowercaseName.includes(query);
+    return schemaId === activeSchemaId && lowercaseName.includes(query);
   }).sort((a, b) => {
     if (a.name < b.name) return -1;
     if (a.name > b.name) return 1;
@@ -94,7 +94,7 @@ export function GoTo({ onClose }: Props) {
     const entity = filteredEntities[focusedEntityIndex];
 
     if (entity) {
-      openEntity(entity);
+      openEntity(entity.id);
       onClose();
     }
   }, [filteredEntities]);
@@ -105,7 +105,7 @@ export function GoTo({ onClose }: Props) {
 
   function handleClickEntity(ev: React.MouseEvent, entity: Entity) {
     ev.preventDefault();
-    openEntity(entity);
+    openEntity(entity.id);
     onClose();
   }
 
@@ -120,16 +120,20 @@ export function GoTo({ onClose }: Props) {
       />
 
       <div ref={listRef} className={styles.list}>
-        {filteredEntities.map((entity, idx) => (
-          <a
-            id={`goto-entity-${entity.id}`}
-            key={entity.id}
-            className={classNames({ [styles.focus]: idx === focusedEntityIndex })}
-            onClick={(ev) => handleClickEntity(ev, entity)}
-          >
-            [{entity.schema.name}] [{entity.type}] {entity.name}
-          </a>
-        ))}
+        {filteredEntities.map((entity, idx) => {
+          const schema = schemas.find(e => e.id === entity.schemaId)!;
+
+          return (
+            <a
+              id={`goto-entity-${entity.id}`}
+              key={entity.id}
+              className={classNames({ [styles.focus]: idx === focusedEntityIndex })}
+              onClick={(ev) => handleClickEntity(ev, entity)}
+            >
+              [{schema.name}] [{entity.type}] {entity.name}
+            </a>
+          );
+        })}
       </div>
     </div>
   );
