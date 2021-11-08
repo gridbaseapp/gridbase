@@ -90,6 +90,8 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
         scrollBeyondLastLine: false,
       });
 
+      instance.onDidFocusEditorWidget(() => onFocus());
+
       setTimeout(() => {
         instance.layout();
       }, 0);
