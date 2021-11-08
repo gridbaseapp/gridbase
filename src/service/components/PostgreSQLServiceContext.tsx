@@ -93,7 +93,21 @@ export function PostgreSQLServiceContext({ service, children }: Props) {
     });
 
     setSchemas(schemas);
-    setEntities(entities);
+    setEntities(state => {
+      const newState: Entity[] = [];
+
+      entities.forEach(entity => {
+        newState.push(entity);
+      });
+
+      state.forEach(entity => {
+        if (!newState.find(e => e.id === entity.id)) {
+          newState.push(entity);
+        }
+      });
+
+      return newState;
+    });
     setActiveSchemaId(activeSchema.id);
 
     setDataLoadingStatus('success');
