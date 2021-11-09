@@ -33,7 +33,9 @@ export function SidebarItem({
   onUpdate,
   onDelete,
 }: Props) {
-  const { connection } = useServiceContext();
+  const { adapter, connection, schemas } = useServiceContext();
+
+  const schema = schemas.find(e => e.id === entity.schemaId)!;
 
   const [
     loadSqlQueries,
@@ -67,20 +69,51 @@ export function SidebarItem({
   }
 
   function handleUpdate() {
-    const queries = loadSqlQueries();
-    const idx = queries.findIndex(e => e.id === entity.id);
+    if (entity.type === EntityType.Table) {
+      const name = `"${schema.name}"."${entity.name}"`;
+      adapter.query(`ALTER TABLE ${name} RENAME TO ${value}`);
+    } else if (entity.type === EntityType.View) {
+      const name = `"${schema.name}"."${entity.name}"`;
+      adapter.query(`ALTER VIEW ${name} RENAME TO ${value}`);
+    } else if (entity.type === EntityType.MaterializedView) {
+      const name = `"${schema.name}"."${entity.name}"`;
+      adapter.query(`ALTER MATERIALIZED VIEW ${name} RENAME TO ${value}`);
+    } else if (entity.type === EntityType.Query) {
+      const queries = loadSqlQueries();
+      const idx = queries.findIndex(e => e.id === entity.id);
 
-    if (idx > -1) {
-      queries[idx].name = value;
-      saveSqlQueries(queries);
+      if (idx > -1) {
+        queries[idx].name = value;
+        saveSqlQueries(queries);
+      }
     }
 
     onUpdate({ ...entity, name: value });
   }
 
+  function handleRefresh() {
+    if (entity.type === EntityType.MaterializedView) {
+      const name = `"${schema.name}"."${entity.name}"`;
+      adapter.query(`REFRESH MATERIALIZED VIEW ${name}`);
+    }
+
+    setMenuVisible(false);
+  }
+
   function handleDelete() {
-    const queries = loadSqlQueries();
-    saveSqlQueries(queries.filter(e => e.id !== entity.id));
+    if (entity.type === EntityType.Table) {
+      const name = `"${schema.name}"."${entity.name}"`;
+      adapter.query(`DROP TABLE ${name}`);
+    } else if (entity.type === EntityType.View) {
+      const name = `"${schema.name}"."${entity.name}"`;
+      adapter.query(`DROP VIEW ${name}`);
+    } else if (entity.type === EntityType.MaterializedView) {
+      const name = `"${schema.name}"."${entity.name}"`;
+      adapter.query(`DROP MATERIALIZED VIEW ${name}`);
+    } else if (entity.type === EntityType.Query) {
+      const queries = loadSqlQueries();
+      saveSqlQueries(queries.filter(e => e.id !== entity.id));
+    }
 
     onDelete(entity);
   }
@@ -104,25 +137,26 @@ export function SidebarItem({
             {entity.status === 'unsaved' && '*'}
             {entity.name}
           </span>
-          {entity.type === EntityType.Query && (
-            <Tippy
-              placement="bottom"
-              interactive
-              trigger="click"
-              onClickOutside={() => setMenuVisible(false)}
-              render={() => isMenuVisible && (
-                <div className={styles.menu}>
-                  <a onClick={onEdit}>Edit</a>
-                  <a onClick={handleDelete}>Delete</a>
-                </div>
-              )}
-            >
-              <a
-                className={styles.menuTrigger}
-                onClick={() => setMenuVisible(true)}
-              >e</a>
-            </Tippy>
-          )}
+          <Tippy
+            placement="bottom"
+            interactive
+            trigger="click"
+            onClickOutside={() => setMenuVisible(false)}
+            render={() => isMenuVisible && (
+              <div className={styles.menu}>
+                <a onClick={onEdit}>Edit</a>
+                {entity.type === EntityType.MaterializedView && (
+                  <a onClick={handleRefresh}>Refresh</a>
+                )}
+                <a onClick={handleDelete}>Delete</a>
+              </div>
+            )}
+          >
+            <a
+              className={styles.menuTrigger}
+              onClick={() => setMenuVisible(true)}
+            >e</a>
+          </Tippy>
         </span>
       )}
 

@@ -156,9 +156,7 @@ export function SidebarEntities({ entityTypes }: Props) {
   }, [filteredEntities], { global: false });
 
   useHotkey(scopes, 'meta+e', () => {
-    if (entityTypes.includes(EntityType.Query)) {
-      setEditedEntityIndex(focusedEntityIndex);
-    }
+    setEditedEntityIndex(focusedEntityIndex);
   }, [filteredEntities, focusedEntityIndex]);
 
   function handleClickEntity(entity: Entity) {
