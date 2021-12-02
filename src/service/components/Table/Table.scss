@@ -3,13 +3,21 @@
   overflow: hidden;
   font-size: 11px;
   display: grid;
-  grid-template-rows: auto 40px;
-  grid-template-areas: "content" "footer";
+  grid-template-rows: auto 0 40px;
+  grid-template-areas: "content" "changes-banner" "footer";
+}
+
+.table--with-changes {
+  grid-template-rows: auto 40px 40px;
 }
 
 .content {
   grid-area: content;
   overflow: hidden;
+}
+
+.changesBanner {
+  grid-area: changes-banner;
 }
 
 .footer {
@@ -27,7 +35,7 @@
 }
 
 .splash {
-  grid-area: content / content / footer / footer;
+  grid-area: content / content / changes-banner / changes-banner / footer / footer;
 }
 
 .spinner {

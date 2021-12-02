@@ -137,7 +137,7 @@ export function ExportModal({
       `;
 
       const result = await adapter.queryNoTypeCasting(SQLRows);
-      const rows = result.rows.map(e => new Row(e));
+      const rows = result.rows.map(e => new Row([], e));
 
       if (format === 'csv') {
         let values = [];
@@ -198,7 +198,7 @@ export function ExportModal({
         `;
 
         const result = await adapter.queryNoTypeCasting(SQLRows);
-        const rows = result.rows.map(e => new Row(e));
+        const rows = result.rows.map(e => new Row([], e));
 
         if (format === 'csv') {
           let values = [];

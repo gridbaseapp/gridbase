@@ -9,4 +9,9 @@ export interface GridContextDescriptor {
   onReorderColumn?(column: Column, order: SortOrder): void;
   onSortColumns(columns: Column[]): void;
   selectRow(index: number, modifier: SelectionModifier): void;
+  onEditCell?(row: Row, column: Column): void;
+  onCancelEditCell?(): void;
+  onUpdateCell?(row: Row, column: string, value: string): void;
+  onDeleteRow?(row: Row): void;
+  onAddRow?(target: Row): void;
 }

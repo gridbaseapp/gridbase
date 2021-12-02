@@ -218,7 +218,7 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
       }));
 
       setColumns(columns);
-      setRows(rows.map(e => new Row(e)));
+      setRows(rows.map(e => new Row([], e)));
       gridRef.current?.clearSelection();
 
       setQueryExecutionError(null);
@@ -254,7 +254,7 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
           if (row.isActive) {
             newRows.push(row);
           } else {
-            const newRow = new Row(row.cells);
+            const newRow = new Row([], row.cells);
             newRow.isActive = true;
             newRows.push(newRow);
           }
@@ -262,13 +262,13 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
           if (row.isSelected && !row.isActive) {
             newRows.push(row);
           } else {
-            const newRow = new Row(row.cells);
+            const newRow = new Row([], row.cells);
             newRow.isSelected = true;
             newRows.push(newRow);
           }
         } else {
           if (row.isSelected || row.isActive) {
-            newRows.push(new Row(row.cells));
+            newRows.push(new Row([], row.cells));
           } else {
             newRows.push(row);
           }

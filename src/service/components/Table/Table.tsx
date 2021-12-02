@@ -8,6 +8,7 @@ import { mergeColumnsWithAttributes } from './utils';
 import { Pagination } from './Pagination';
 import { ColumnsSettingsModal } from './ColumnsSettingsModal';
 import { SortSettingsModal } from './SortSettingsModal';
+import { ChangesBanner } from './ChangesBanner';
 import { Grid, GridRef } from '../Grid';
 import { ExportModal } from '../ExportModal';
 import { COLUMN_MIN_WIDTH, COLUMN_MAX_WIDTH } from './constants';
@@ -52,8 +53,8 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
 
   const gridRef = useRef<GridRef>(null);
 
-  function loadAttributes() {
-    return adapter.getAttributes(entity.id);
+  async function loadAttributes() {
+    return (await adapter.getAttributes(entity.id)).map(e => e.name);
   }
 
   async function loadColumns() {
@@ -88,12 +89,18 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
       OFFSET ${offset}
     `;
 
-    const [resultTotal, resultRows] = await Promise.all([
+    const [
+      resultTotal,
+      resultsAttributes,
+      resultRows,
+    ] = await Promise.all([
       adapter.query(SQLTotal),
+      adapter.getAttributes(entity.id),
       adapter.queryNoTypeCasting(SQLRows),
     ]);
 
-    const rows = resultRows.rows.map(e => new Row(e));
+    console.log(resultRows.rows)
+    const rows = resultRows.rows.map(e => new Row(resultsAttributes, e));
 
     return [Number(resultTotal.rows[0].count), rows] as const;
   }
@@ -265,21 +272,28 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
           if (row.isActive) {
             newRows.push(row);
           } else {
-            const newRow = new Row(row.cells);
+            const newRow = new Row(row.attributes, row.cells, row.updatedCells);
             newRow.isActive = true;
+            newRow.isDeleted = row.isDeleted;
+            newRow.isAdded = row.isAdded;
             newRows.push(newRow);
           }
         } else if (selected.includes(i)) {
           if (row.isSelected && !row.isActive) {
             newRows.push(row);
           } else {
-            const newRow = new Row(row.cells);
+            const newRow = new Row(row.attributes, row.cells, row.updatedCells);
             newRow.isSelected = true;
+            newRow.isDeleted = row.isDeleted;
+            newRow.isAdded = row.isAdded;
             newRows.push(newRow);
           }
         } else {
           if (row.isSelected || row.isActive) {
-            newRows.push(new Row(row.cells));
+            const newRow = new Row(row.attributes, row.cells, row.updatedCells);
+            newRow.isDeleted = row.isDeleted;
+            newRow.isAdded = row.isAdded;
+            newRows.push(newRow);
           } else {
             newRows.push(row);
           }
@@ -290,10 +304,199 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
     });
   }
 
+  function handleEditCell(row: Row, column: Column) {
+    setRows(state => {
+      const newRows: Row[] = [];
+
+      state.forEach(r => {
+        if (r === row) {
+          const newRow = new Row(r.attributes, r.cells, r.updatedCells);
+          newRow.editedCell = column.name;
+          newRow.isActive = true;
+          newRow.isDeleted = r.isDeleted;
+          newRow.isAdded = r.isAdded;
+          newRows.push(newRow);
+        } else if (r.editedCell) {
+          const newRow = new Row(r.attributes, r.cells, r.updatedCells);
+          newRow.isDeleted = r.isDeleted;
+          newRow.isAdded = r.isAdded;
+          newRows.push(newRow);
+        } else {
+          newRows.push(r);
+        }
+      });
+
+      return newRows;
+    });
+  }
+
+  function handleCancelEditCell() {
+    setRows(state => {
+      const newRows: Row[] = [];
+
+      state.forEach(r => {
+        if (r.editedCell) {
+          const row = new Row(r.attributes, r.cells, r.updatedCells);
+          row.isActive = true;
+          row.isDeleted = r.isDeleted;
+          row.isAdded = r.isAdded;
+          newRows.push(row);
+        } else {
+          newRows.push(r);
+        }
+      });
+
+      return newRows;
+    });
+  }
+
+  function handleUpdateCell(row: Row, column: string, value: string) {
+    setRows(state => {
+      const newRows: Row[] = [];
+
+      state.forEach(r => {
+        if (r === row) {
+          const newRow = new Row(r.attributes, r.cells, r.updatedCells);
+          newRow.isActive = true;
+          newRow.isDeleted = row.isDeleted;
+          newRow.isAdded = row.isAdded;
+          newRow.editedCell = column;
+          newRow.updateValue(column, value);
+          newRows.push(newRow);
+        } else {
+          newRows.push(r);
+        }
+      });
+
+      return newRows;
+    });
+  }
+
+  function handleDeleteRow(row: Row) {
+    setRows(state => {
+      const newRows: Row[] = [];
+
+      state.forEach(r => {
+        if (r === row) {
+          const newRow = new Row(r.attributes, r.cells, r.updatedCells);
+          newRow.isDeleted = true;
+          newRows.push(newRow);
+        } else {
+          newRows.push(r);
+        }
+      });
+
+      return newRows;
+    });
+  }
+
+  function handleAddRow(target: Row) {
+    setRows(state => {
+      const newRows: Row[] = [];
+
+      state.forEach(r => {
+        newRows.push(r);
+
+        if (r === target) {
+          const cells: any = {};
+          Object.keys(r.cells).forEach(field => cells[field] = null);
+          const newRow = new Row(r.attributes, cells);
+          newRow.isAdded = true;
+          newRows.push(newRow);
+        }
+      });
+
+      return newRows;
+    });
+  }
+
+  async function handleSaveChange() {
+    setLoadingStatus('reloading');
+
+    const promises: Promise<any>[] = [];
+
+    const updates = rows.filter(e => e.hasChanges);
+
+    const schema = schemas.find(e => e.id === entity.schemaId)!;
+    const relation = `"${schema.name}"."${entity.name}"`;
+
+    updates.forEach(row => {
+      const pks = row.attributes
+        .filter(e => e.primary)
+        .map(e => `"${e.name}" = '${row.getValue(e.name)}'`)
+        .join(' AND ');
+
+      if (row.isDeleted) {
+        promises.push(adapter.query(`DELETE FROM ${relation} WHERE ${pks}`));
+      }
+
+      if (row.isEdited) {
+        const changes = Object.entries(row.updatedCells)
+          .map(([key, value]) => value === null ? null : `"${key}" = '${value}'`)
+          .filter(e => e)
+          .join(', ');
+
+          promises.push(adapter.query(`UPDATE ${relation} SET ${changes} WHERE ${pks}`));
+      }
+
+      if (row.isAdded) {
+        const keys = Object.keys(row.updatedCells).filter(e => e);
+        const values = keys.map(e => row.updatedCells[e]);
+
+        const sqlKeys = keys.length === 0 ? '' : `(${keys.map(e => `"${e}"`).join(', ')})`;
+        const sqlValues = values.length === 0 ? 'DEFAULT' : values.map(e => `'${e}'`).join(', ');
+
+        promises.push(adapter.query(`INSERT INTO ${relation} ${sqlKeys} VALUES (${sqlValues})`));
+      }
+    });
+
+    await Promise.all(promises);
+
+    const cols = await loadColumns();
+    const [total, reloadedRows] = await loadRows(cols, page);
+
+    setColumns(cols);
+    setTotal(total);
+    setRows(reloadedRows);
+    gridRef.current?.clearSelection();
+
+    setLoadingStatus('success');
+  }
+
+  function handleDiscardChange() {
+    setRows(state => {
+      const newRows: Row[] = [];
+
+      state.forEach(r => {
+        if (r.isEdited || r.isDeleted) {
+          const newRow = new Row(r.attributes, r.cells);
+          newRow.isActive = r.isActive;
+          newRow.isSelected = r.isSelected;
+          newRows.push(newRow);
+        } else if (!r.isAdded) {
+          newRows.push(r);
+        }
+      });
+
+      return newRows;
+    });
+  }
+
+  const hasChanges = rows.some(e => e.hasChanges);
+
   return (
     <div
-      className={classNames(styles.table, { hidden: !isVisible, focus: hasFocus })}
-      onFocus={onFocus}
+      className={
+        classNames(
+          styles.table,
+          {
+            hidden: !isVisible,
+            focus: hasFocus,
+            [styles.tableWithChanges]: hasChanges,
+          },
+        )
+      }
+      onMouseDown={onFocus}
     >
       {loadingStatus === 'loading' && <div className={styles.splash}>Loading...</div>}
 
@@ -311,7 +514,22 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
               onReorderColumn={handleReorderColumn}
               onSortColumns={setColumns}
               onSelectRows={handleSelectRows}
+              onEditCell={handleEditCell}
+              onCancelEditCell={handleCancelEditCell}
+              onUpdateCell={handleUpdateCell}
+              onDeleteRow={handleDeleteRow}
+              onAddRow={handleAddRow}
             />
+          </div>
+
+          <div className={styles.changesBanner}>
+            {hasChanges && (
+              <ChangesBanner
+                rows={rows}
+                onSave={handleSaveChange}
+                onDiscard={handleDiscardChange}
+              />
+            )}
           </div>
 
           <div className={styles.footer}>

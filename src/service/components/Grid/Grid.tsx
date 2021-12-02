@@ -19,6 +19,11 @@ interface Props {
   onReorderColumn?(column: Column, order: SortOrder): void;
   onSortColumns(columns: Column[]): void;
   onSelectRows(selected: number[], active: number): void;
+  onEditCell?(row: Row, column: Column): void;
+  onCancelEditCell?(): void;
+  onUpdateCell?(row: Row, column: string, value: string): void
+  onDeleteRow?(row: Row): void;
+  onAddRow?(target: Row): void;
 }
 
 export interface GridRef {
@@ -35,6 +40,11 @@ export const Grid = forwardRef<GridRef, Props>(({
   onReorderColumn,
   onSortColumns,
   onSelectRows,
+  onEditCell,
+  onCancelEditCell,
+  onUpdateCell,
+  onDeleteRow,
+  onAddRow,
 }, ref) => {
   const elementRef = useRef<FixedSizeList>(null);
   const outerRef = useRef<HTMLDivElement>();
@@ -196,6 +206,11 @@ export const Grid = forwardRef<GridRef, Props>(({
     onReorderColumn,
     onSortColumns,
     selectRow,
+    onEditCell,
+    onCancelEditCell,
+    onUpdateCell,
+    onDeleteRow,
+    onAddRow,
   }
 
   return (

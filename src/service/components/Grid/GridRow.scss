@@ -10,6 +10,54 @@
     }
   }
 
+  &.row--edited {
+    background-color: #efefcd;
+
+    .gutter {
+      background-color: #efefcd;
+    }
+  }
+
+  :global(.focus) &.row--edited {
+    background-color: #e1e1a4;
+
+    .gutter {
+      background-color: #e1e1a4;
+    }
+  }
+
+  &.row--deleted {
+    background-color: #db8484;
+
+    .gutter {
+      background-color: #db8484;
+    }
+  }
+
+  :global(.focus) &.row--deleted {
+    background-color: #df6161;
+
+    .gutter {
+      background-color: #df6161;
+    }
+  }
+
+  &.row--added {
+    background-color: #c6f7c0;
+
+    .gutter {
+      background-color: #c6f7c0;
+    }
+  }
+
+  :global(.focus) &.row--added {
+    background-color: #a1eb98;
+
+    .gutter {
+      background-color: #a1eb98;
+    }
+  }
+
   &.row--selected {
     background-color: #ddd;
 
@@ -43,6 +91,37 @@
   left: 0;
   background-color: #fff;
   border-right: 1px solid #ddd;
+
+  &:hover {
+    .gutter-menu {
+      display: block;
+    }
+  }
+}
+
+.gutter-menu {
+  cursor: pointer;
+  background-color: #ddd;
+  margin: 3px 2px 0 0;
+  padding: 0px 3px;
+  border-radius: 10px;
+  float: right;
+  display: none;
+}
+
+.gutter-dropdown {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  width: 100px;
+
+  a {
+    display: block;
+    padding: 4px 10px;
+
+    &:hover {
+      background-color: #eee;
+    }
+  }
 }
 
 .cell {
@@ -51,8 +130,19 @@
   .truncate {
     display: block;
     overflow: hidden;
-    white-space: nowrap;
+    white-space: pre;
     text-overflow: ellipsis;
+  }
+
+  input {
+    margin-top: -4px;
+    height: calc(100% + 8px);
+    margin-left: -5px;
+    width: calc(100% + 10px);
+    border: 1px solid #000;
+    outline: 0;
+    font-size: 11px;
+    padding: 4px 4px;
   }
 }
 

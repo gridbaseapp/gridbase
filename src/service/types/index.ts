@@ -1,10 +1,11 @@
-export { SelectionModifier } from './SelectionModifier';
+export { Attribute } from './Attribute';
+export { Column, SortOrder } from './Column';
 export { Entity } from './Entity';
 export { EntityType } from './EntityType';
-export { Schema } from './Schema';
-export { LoadingStatus } from './LoadingStatus';
-export { Column, SortOrder } from './Column';
-export { Row } from './Row';
 export { GridContextDescriptor } from './GridContextDescriptor';
+export { LoadingStatus } from './LoadingStatus';
+export { Row } from './Row';
+export { Schema } from './Schema';
+export { SelectionModifier } from './SelectionModifier';
 export { ServiceContextDescriptor } from './ServiceContextDescriptor';
 export { SqlQuery } from './SqlQuery';

@@ -1,6 +1,6 @@
 import { Client } from 'pg';
 import { Connection } from '../app/types';
-import { Schema, EntityType, Entity } from './types';
+import { Attribute, Schema, EntityType, Entity } from './types';
 
 const SQL_GET_SCHEMAS = `
   SELECT
@@ -30,13 +30,30 @@ const SQL_GET_ENTITIES = `
 
 const SQL_GET_ATTRIBUTES = `
   SELECT
-    "attname" AS "name"
+    "pg_attribute"."attname" AS "name",
+    (
+      SELECT
+        "pg_catalog"."pg_get_expr"("pg_attrdef"."adbin", "pg_attrdef"."adrelid", true)
+      FROM "pg_catalog"."pg_attrdef"
+      WHERE
+        "pg_attrdef"."adrelid" = "pg_attribute"."attrelid"
+        AND "pg_attrdef"."adnum" = "pg_attribute"."attnum"
+        AND "pg_attribute"."atthasdef"
+    ) default,
+    (
+      SELECT
+        true
+      FROM "pg_catalog"."pg_index"
+      WHERE
+        "pg_index"."indrelid" = "pg_attribute"."attrelid"
+        AND "pg_attribute"."attnum" = any("pg_index"."indkey")
+    ) AS "primary"
   FROM "pg_catalog"."pg_attribute"
   WHERE
-    "attrelid" = $1
-    AND "attnum" > 0
-    AND NOT "attisdropped"
-  ORDER BY "attnum"
+    "pg_attribute"."attrelid" = $1
+    AND "pg_attribute"."attnum" > 0
+    AND NOT "pg_attribute"."attisdropped"
+  ORDER BY "pg_attribute"."attnum"
 `;
 
 export class PostgreSQLAdapter {
@@ -63,8 +80,8 @@ export class PostgreSQLAdapter {
   }
 
   async getAttributes(relationId: string) {
-    const { rows } = await this.client.query<{ name: string }>(SQL_GET_ATTRIBUTES, [relationId]);
-    return rows.map(e => e.name);
+    const { rows } = await this.client.query<Attribute>(SQL_GET_ATTRIBUTES, [relationId]);
+    return rows;
   }
 
   async query(sql: string) {

@@ -1,0 +1,16 @@
+.changes-banner {
+  border-top: 1px solid #ddd;
+  background-color: #eee;
+  padding: 0 10px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+
+  span {
+    margin-right: 5px;
+  }
+
+  a {
+    margin: 0 10px;
+  }
+}
