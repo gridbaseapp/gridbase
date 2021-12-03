@@ -1,7 +1,8 @@
 {
   "name": "dbadmin",
   "version": "1.0.0",
-  "main": "main.js",
+  "author": "Kamil Giszczak <beerkg@gmail.com>",
+  "main": "src/main/index.js",
   "license": "MIT",
   "scripts": {
     "start": "electron .",

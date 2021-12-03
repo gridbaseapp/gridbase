@@ -42,7 +42,7 @@ function createWindow() {
     store.set(WINDOW_RECT_STORE_KEY, { x, y, width, height });
   });
 
-  win.loadFile('index.html');
+  win.loadFile('./src/main/index.html');
 
   const menu = [
     {
