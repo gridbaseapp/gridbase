@@ -99,7 +99,6 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
       adapter.queryNoTypeCasting(SQLRows),
     ]);
 
-    console.log(resultRows.rows)
     const rows = resultRows.rows.map(e => new Row(resultsAttributes, e));
 
     return [Number(resultTotal.rows[0].count), rows] as const;

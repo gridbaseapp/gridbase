@@ -14,12 +14,15 @@ export interface ServiceContextDescriptor {
   openEntityIds: string[];
   activeEntityId: string | null;
   dataLoadingStatus: LoadingStatus;
+  isDisconnected: boolean;
+  setAdapter: Dispatch<SetStateAction<PostgreSQLAdapter>>;
   setSchemas: Dispatch<SetStateAction<Schema[]>>;
   setActiveSchemaId: Dispatch<SetStateAction<string | null>>;
   setEntities: Dispatch<SetStateAction<Entity[]>>;
   setOpenEntityIds: Dispatch<SetStateAction<string[]>>;
   setActiveEntityId: Dispatch<SetStateAction<string | null>>;
   setDataLoadingStatus: Dispatch<SetStateAction<LoadingStatus>>;
+  setDisconnected: Dispatch<SetStateAction<boolean>>;
   loadData(status?: LoadingStatus): void;
   openEntity(id: string): void;
   closeEntity(id: string): void;

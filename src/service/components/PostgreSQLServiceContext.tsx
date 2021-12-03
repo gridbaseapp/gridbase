@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAppContext, useDidUpdateEffect } from '../../app/hooks';
 import { Service } from '../../app/types';
+import { PostgreSQLAdapter } from '../adapter';
 import { ServiceContext } from '../contexts';
 import { Schema, Entity, EntityType, LoadingStatus, SqlQuery } from '../types';
 
@@ -10,16 +11,18 @@ interface Props {
 }
 
 export function PostgreSQLServiceContext({ service, children }: Props) {
-  const { adapter, connection } = service;
+  const { connection } = service;
 
   const { stash } = useAppContext();
 
+  const [adapter, setAdapter] = useState<PostgreSQLAdapter>(service.adapter);
   const [schemas, setSchemas] = useState<Schema[]>([]);
   const [activeSchemaId, setActiveSchemaId] = useState<string | null>(null);
   const [entities, setEntities] = useState<Entity[]>([]);
   const [openEntityIds, setOpenEntityIds] = useState<string[]>([]);
   const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
   const [dataLoadingStatus, setDataLoadingStatus] = useState<LoadingStatus>('loading');
+  const [isDisconnected, setDisconnected] = useState(false);
 
   useDidUpdateEffect(() => {
     if (activeSchemaId) {
@@ -122,12 +125,15 @@ export function PostgreSQLServiceContext({ service, children }: Props) {
     openEntityIds,
     activeEntityId,
     dataLoadingStatus,
+    isDisconnected,
+    setAdapter,
     setSchemas,
     setActiveSchemaId,
     setEntities,
     setOpenEntityIds,
     setActiveEntityId,
     setDataLoadingStatus,
+    setDisconnected,
     loadData,
     openEntity,
     closeEntity,

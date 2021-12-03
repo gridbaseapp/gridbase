@@ -71,6 +71,10 @@ export class PostgreSQLAdapter {
     return this.client.end();
   }
 
+  onConnectionError(callback: () => void) {
+    this.client.on('error', callback);
+  }
+
   async getSchemas() {
     return (await this.client.query<Schema>(SQL_GET_SCHEMAS)).rows;
   }

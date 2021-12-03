@@ -11,6 +11,7 @@ import styles from './PostgreSQLService.scss';
 import { useServiceContext } from '../hooks';
 import { useFocus, useHotkey } from '../../app/hooks';
 import { EntityType } from '../types';
+import { PostgreSQLAdapter } from '../adapter';
 
 type FocusedSection = 'sidebar' | 'content';
 
@@ -20,12 +21,16 @@ interface Props {
 
 export function PostgreSQLService({ isVisible }: Props) {
   const {
+    adapter,
     connection,
     entities,
     dataLoadingStatus,
     openEntityIds,
     activeEntityId,
+    isDisconnected,
+    setAdapter,
     setActiveEntityId,
+    setDisconnected,
     loadData,
     closeEntity,
   } = useServiceContext();
@@ -37,6 +42,12 @@ export function PostgreSQLService({ isVisible }: Props) {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    adapter.onConnectionError(() => {
+      setDisconnected(true);
+    });
+  }, [adapter]);
 
   useEffect(() => {
     setFocusedSection(openEntityIds.length === 0 ? 'sidebar' : 'content');
@@ -86,6 +97,13 @@ export function PostgreSQLService({ isVisible }: Props) {
     if (!goToTriggerTargetRef?.contains(ev.target as Element)) {
       setGoToVisible(false);
     }
+  }
+
+  function handleReconnect() {
+    const adapter = new PostgreSQLAdapter(connection)
+    adapter.connect();
+    setAdapter(adapter);
+    setDisconnected(false);
   }
 
   const openEntities = entities.filter(e => openEntityIds.includes(e.id));
@@ -144,6 +162,13 @@ export function PostgreSQLService({ isVisible }: Props) {
               }
             })}
           </div>
+
+          {isDisconnected &&(
+            <div className={styles.disconnectedBanner}>
+              Connection error
+              <a onClick={handleReconnect}>Reconnect</a>
+            </div>
+          )}
         </>
       ) : (
         <Splash />
