@@ -1,5 +1,5 @@
 import React, { useRef, useImperativeHandle, forwardRef } from 'react';
-import stringify from 'csv-stringify/lib/sync';
+import { stringify } from 'csv-stringify/sync';
 import { FixedSizeList } from 'react-window';
 import { GridContext } from '../../contexts';
 import { Column, SortOrder, Row, SelectionModifier } from '../../types';

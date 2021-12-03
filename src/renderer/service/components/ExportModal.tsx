@@ -3,7 +3,7 @@ import { ipcRenderer } from 'electron';
 import { tmpdir } from 'os';
 import { appendFileSync } from 'fs';
 import { v4 as uuid } from 'uuid';
-import stringify from 'csv-stringify/lib/sync';
+import { stringify } from 'csv-stringify/sync';
 import { fragment } from 'xmlbuilder2';
 import classNames from 'classnames';
 import { useExclusiveFocus, useHotkey } from '../../app/hooks';
