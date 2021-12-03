@@ -21,7 +21,8 @@ const SQL_GET_ENTITIES = `
       WHEN 'm' THEN ${EntityType.MaterializedView}
     END AS "type",
     "relnamespace" AS "schemaId",
-    'fresh' AS "status"
+    'fresh' AS "status",
+    has_table_privilege("oid", 'SELECT') AS "canSelect"
   FROM "pg_catalog"."pg_class"
   WHERE
     "relkind" IN ('r', 'v', 'm')
@@ -47,6 +48,7 @@ const SQL_GET_ATTRIBUTES = `
       WHERE
         "pg_index"."indrelid" = "pg_attribute"."attrelid"
         AND "pg_attribute"."attnum" = any("pg_index"."indkey")
+        AND "pg_index"."indisprimary"
     ) AS "primary"
   FROM "pg_catalog"."pg_attribute"
   WHERE

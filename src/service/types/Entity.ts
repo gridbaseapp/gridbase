@@ -5,5 +5,6 @@ export interface Entity {
   name: string;
   type: EntityType;
   schemaId: string;
+  canSelect: boolean;
   status: 'fresh' | 'new' | 'unsaved';
 }

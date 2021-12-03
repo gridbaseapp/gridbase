@@ -91,6 +91,7 @@ export function PostgreSQLServiceContext({ service, children }: Props) {
         name: e.name,
         type: EntityType.Query,
         schemaId: e.schemaId,
+        canSelect: true,
         status: 'fresh',
       });
     });

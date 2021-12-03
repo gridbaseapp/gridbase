@@ -135,6 +135,7 @@ export function SidebarItem({
         <span className={styles.content}>
           <span>
             {entity.status === 'unsaved' && '*'}
+            {!entity.canSelect && '(locked)'}
             {entity.name}
           </span>
           <Tippy

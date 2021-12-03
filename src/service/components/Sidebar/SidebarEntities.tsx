@@ -198,6 +198,7 @@ export function SidebarEntities({ entityTypes }: Props) {
       name: '[Draft Query]',
       type: EntityType.Query,
       schemaId: activeSchemaId!,
+      canSelect: true,
       status: 'new',
     };
 
