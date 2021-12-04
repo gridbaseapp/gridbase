@@ -8,6 +8,7 @@ const {
 } = require('electron');
 const os = require('os');
 const fs = require('fs');
+const path = require('path');
 const Store = require('electron-store');
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = false;
@@ -42,7 +43,11 @@ function createWindow() {
     store.set(WINDOW_RECT_STORE_KEY, { x, y, width, height });
   });
 
-  win.loadFile('./src/main/index.html');
+  if (app.isPackaged) {
+    win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+  } else {
+    win.loadURL(`http://localhost:8080`);
+  }
 
   const menu = [
     {

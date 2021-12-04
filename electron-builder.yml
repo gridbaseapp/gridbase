@@ -1,0 +1,8 @@
+appId: "dbadmin.id"
+mac:
+  category: "public.app-category.developer-tools"
+files:
+- "package.json"
+-
+  from: "build"
+  to: ""

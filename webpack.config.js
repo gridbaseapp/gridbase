@@ -1,7 +1,13 @@
+const path = require('path');
 const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/renderer/index.tsx',
+  output: {
+    path: path.resolve(__dirname, 'build/src/renderer'),
+  },
   target: 'electron-renderer',
   resolve: {
     extensions: ['.js', '.ts', '.tsx'],
@@ -46,6 +52,14 @@ module.exports = {
       resourceRegExp: /^pg-native$/,
     }),
     new webpack.ExternalsPlugin('commonjs', ['keytar']),
+    new HtmlWebpackPlugin({
+      template: 'src/renderer/index.html',
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'src/main', to: '../main' },
+      ],
+    }),
   ],
   devtool: 'eval-cheap-source-map',
   devServer: {

@@ -6,11 +6,16 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dev": "webpack serve --mode development"
+    "dev": "webpack serve --mode development",
+    "build": "webpack build --mode production",
+    "dist": "yarn build && electron-builder"
   },
   "devDependencies": {
+    "copy-webpack-plugin": "^10.0.0",
     "css-loader": "^6.5.1",
     "electron": "^16.0.4",
+    "electron-builder": "^22.14.5",
+    "html-webpack-plugin": "^5.5.0",
     "sass": "^1.44.0",
     "sass-loader": "^12.3.0",
     "style-loader": "^3.3.1",
@@ -25,8 +30,8 @@
     "@dnd-kit/modifiers": "^4.0.0",
     "@dnd-kit/sortable": "^5.1.0",
     "@tippyjs/react": "^4.2.6",
-    "@types/pg": "^8.6.1",
     "@types/lodash": "^4.14.177",
+    "@types/pg": "^8.6.1",
     "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.11",
     "@types/react-window": "^1.8.5",
