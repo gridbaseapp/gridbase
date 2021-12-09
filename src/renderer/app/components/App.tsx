@@ -8,10 +8,13 @@ import { TitleBar } from './TitleBar';
 import styles from './App.scss';
 import { useDidUpdateEffect, useFocus, useHotkey, useAppSecureStash } from '../hooks';
 import { Stash } from '../Stash';
-import { Connection, Service } from '../types';
+import { AvailableUpdate, Connection, Service } from '../types';
 import { AppContext } from './AppContext';
 import { getPasswordFromVault } from '../vault';
 import { findExistingConnection } from '../utils';
+import { ipcRenderer } from 'electron';
+
+const CHECK_FOR_UPDATES_INTERVAL = 5 * 60 * 60 * 1000; // 5 hours
 
 interface Props {
   initialConnections: Connection[];
@@ -22,6 +25,7 @@ function AppContent({ initialConnections }: Props) {
   const [services, setServices] = useState<Service[]>([]);
   const [activeService, setActiveService] = useState<Service | null>(null);
   const [isLauncherVisible, setLauncherVisible] = useState(true);
+  const [availableUpdate, setAvailableUpdate] = useState<AvailableUpdate | null>(null);
 
   const [_, saveConnections] = useAppSecureStash<Connection[]>('connections');
 
@@ -89,6 +93,21 @@ function AppContent({ initialConnections }: Props) {
     const service = services[8];
     if (service) setActiveService(service);
   }, [services]);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') {
+      ipcRenderer.on('autoupdater:update-available', (_, info: AvailableUpdate) => {
+        setAvailableUpdate(info);
+      });
+
+      function checkForUpdates() {
+        ipcRenderer.send('autoupdater:check-for-updates');
+      }
+
+      checkForUpdates();
+      setInterval(checkForUpdates, CHECK_FOR_UPDATES_INTERVAL);
+    }
+  }, []);
 
   useEffect(() => {
     if (services.length === 0) setLauncherVisible(true);
@@ -168,7 +187,9 @@ function AppContent({ initialConnections }: Props) {
 
       {services.length > 0 && (
         <>
-          <TitleBar />
+          <TitleBar
+            availableUpdate={availableUpdate}
+          />
           <Dock
             services={services}
             activeService={activeService}

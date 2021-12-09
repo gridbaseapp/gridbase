@@ -10,6 +10,7 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const Store = require('electron-store');
+const { autoUpdater } = require('electron-updater');
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = false;
 
@@ -80,8 +81,9 @@ function createWindow() {
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
 
-  ipcMain.on('export-ready', (event, arg) => {
+  ipcMain.on('export:ready', (_, arg) => {
     const defaultPath = `${os.homedir()}/Downloads/${arg.name}.${arg.format}`;
+
     dialog
       .showSaveDialog(win, { showsTagField: false, defaultPath })
       .then(({ filePath }) => {
@@ -89,6 +91,21 @@ function createWindow() {
           fs.copyFileSync(arg.path, filePath);
         }
       });
+  });
+
+  ipcMain.on('autoupdater:check-for-updates', () => {
+    autoUpdater.checkForUpdatesAndNotify();
+  });
+
+  ipcMain.on('autoupdater:quit-and-install', () => {
+    autoUpdater.quitAndInstall();
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    win.webContents.send('autoupdater:update-available', {
+      currentVersion: app.getVersion(),
+      availableVersion: info.version,
+    });
   });
 }
 

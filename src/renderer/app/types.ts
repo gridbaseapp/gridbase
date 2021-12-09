@@ -31,3 +31,8 @@ export interface AppContextDescriptor {
   setFocus: Dispatch<SetStateAction<string[]>>;
   setExclusiveFocus: Dispatch<SetStateAction<string[]>>;
 }
+
+export interface AvailableUpdate {
+  currentVersion: string;
+  availableVersion: string;
+}

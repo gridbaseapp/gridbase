@@ -1,8 +1,11 @@
 appId: "dbadmin.id"
-mac:
-  category: "public.app-category.developer-tools"
 files:
 - "package.json"
 -
   from: "build"
   to: ""
+mac:
+  category: "public.app-category.developer-tools"
+publish:
+  provider: "generic"
+  url: "http://localhost:3000"

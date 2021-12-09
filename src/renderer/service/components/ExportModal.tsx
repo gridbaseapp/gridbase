@@ -249,7 +249,7 @@ export function ExportModal({
       }
     }
 
-    ipcRenderer.send('export-ready', { name: entity.name, format, path });
+    ipcRenderer.send('export:ready', { name: entity.name, format, path });
     onClose();
   }
 
