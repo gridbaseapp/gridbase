@@ -3,7 +3,7 @@ import { ListChildComponentProps } from 'react-window';
 import classNames from 'classnames';
 import Tippy from '@tippyjs/react/headless';
 import { useGridContext } from '../../hooks';
-import { GUTTER_WIDTH, HEADER_HEIGHT } from './constants';
+import { GUTTER_WIDTH, HEADER_HEIGHT, PAD_WIDTH } from './constants';
 import styles from './GridRow.scss';
 import { SelectionModifier } from '../../types';
 import { CellInput } from './CellInput';
@@ -12,6 +12,7 @@ export function GridRow({ index, style }: ListChildComponentProps) {
   const {
     columns,
     rows,
+    frozenGridWidth,
     selectRow,
     onEditCell,
     onDeleteRow,
@@ -43,9 +44,15 @@ export function GridRow({ index, style }: ListChildComponentProps) {
     row && selectRow(index, modifier);
   }
 
+  let width = 'auto';
+
+  if (frozenGridWidth) {
+    width = `${frozenGridWidth}px`;
+  }
+
   return React.useMemo(() =>
     <div
-      style={{ ...style, top, width: 'auto' }}
+      style={{ ...style, top, width }}
       className={css}
       onMouseDown={handleMouseDown}
     >
@@ -92,6 +99,7 @@ export function GridRow({ index, style }: ListChildComponentProps) {
           </div>
         );
       })}
+      <div className={styles.pad} style={{ width: PAD_WIDTH }}></div>
     </div>
-  , [row, columns]);
+  , [row, columns, frozenGridWidth]);
 }

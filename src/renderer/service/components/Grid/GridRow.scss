@@ -87,6 +87,7 @@
 }
 
 .gutter {
+  flex: 0 0 auto;
   position: sticky;
   left: 0;
   background-color: #fff;
@@ -125,6 +126,7 @@
 }
 
 .cell {
+  flex: 0 0 auto;
   padding: 4px 5px;
 
   .truncate {
@@ -144,6 +146,10 @@
     font-size: 11px;
     padding: 4px 4px;
   }
+}
+
+.pad {
+  flex: 0 0 auto;
 }
 
 .null {

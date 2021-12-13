@@ -1,4 +1,4 @@
-import React, { useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useRef, useImperativeHandle, forwardRef, useState } from 'react';
 import { stringify } from 'csv-stringify/sync';
 import { FixedSizeList } from 'react-window';
 import { GridContext } from '../../contexts';
@@ -56,6 +56,8 @@ export const Grid = forwardRef<GridRef, Props>(({
       rangeStartRow.current = 0;
     },
   }));
+
+  const [frozenGridWidth, setFrozenGridWidth] = useState<number | null>(null);
 
   function scrollToItem(index: number) {
     const scrollTop = outerRef.current!.scrollTop;
@@ -202,6 +204,9 @@ export const Grid = forwardRef<GridRef, Props>(({
   const contextValue = {
     columns,
     rows,
+    frozenGridWidth,
+    gridOuterRef: outerRef,
+    setFrozenGridWidth,
     onResizeColumn,
     onReorderColumn,
     onSortColumns,

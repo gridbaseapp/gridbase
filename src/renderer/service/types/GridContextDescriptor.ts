@@ -1,3 +1,4 @@
+import React, { Dispatch, SetStateAction } from 'react';
 import { SelectionModifier } from './SelectionModifier';
 import { Column, SortOrder } from './Column';
 import { Row } from './Row';
@@ -5,6 +6,9 @@ import { Row } from './Row';
 export interface GridContextDescriptor {
   columns: Column[];
   rows: Row[];
+  frozenGridWidth: number | null;
+  gridOuterRef: React.MutableRefObject<HTMLDivElement | undefined>;
+  setFrozenGridWidth: Dispatch<SetStateAction<number | null>>;
   onResizeColumn(column: Column, width: number): void;
   onReorderColumn?(column: Column, order: SortOrder): void;
   onSortColumns(columns: Column[]): void;

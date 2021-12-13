@@ -8,7 +8,6 @@ import { useServiceContext, useServiceStash } from '../../hooks';
 import { SaveAs } from './SaveAs';
 import { useFocus, useHotkey, useElementSize, useResizable } from '../../../app/hooks';
 import { Grid, GridRef } from '../Grid';
-import { COLUMN_MIN_WIDTH, COLUMN_MAX_WIDTH } from '../Table/constants';
 
 type QueryExecutionStatus = 'running' | 'success';
 
@@ -229,9 +228,6 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
   }
 
   function handleResizeColumn(column: Column, width: number) {
-    if (width < COLUMN_MIN_WIDTH) width = COLUMN_MIN_WIDTH;
-    if (width > COLUMN_MAX_WIDTH) width = COLUMN_MAX_WIDTH;
-
     setColumns(state => {
       const i = state.findIndex(e => e.name === column.name);
 

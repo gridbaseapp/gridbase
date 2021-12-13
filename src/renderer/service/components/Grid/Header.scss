@@ -8,14 +8,20 @@
 }
 
 .columns {
+  flex: 0 0 auto;
   display: flex;
   background-color: #ddd;
 }
 
 .gutter {
+  flex: 0 0 auto;
   position: sticky;
   left: 0;
   background-color: #fff;
   border-right: 1px solid #ddd;
   z-index: 1;
+}
+
+.pad {
+  background-color: #fff;
 }

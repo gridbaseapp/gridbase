@@ -11,7 +11,6 @@ import { SortSettingsModal } from './SortSettingsModal';
 import { ChangesBanner } from './ChangesBanner';
 import { Grid, GridRef } from '../Grid';
 import { ExportModal } from '../ExportModal';
-import { COLUMN_MIN_WIDTH, COLUMN_MAX_WIDTH } from './constants';
 import styles from './Table.scss';
 
 const PER_PAGE = 1000;
@@ -148,9 +147,6 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
   }, [page]);
 
   function handleResizeColumn(column: Column, width: number) {
-    if (width < COLUMN_MIN_WIDTH) width = COLUMN_MIN_WIDTH;
-    if (width > COLUMN_MAX_WIDTH) width = COLUMN_MAX_WIDTH;
-
     setColumns(state => {
       const i = state.findIndex(e => e.name === column.name);
 

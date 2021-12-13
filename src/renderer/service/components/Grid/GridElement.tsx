@@ -1,7 +1,7 @@
 import React, { forwardRef, useRef } from 'react';
 import { Header } from './Header';
 import styles from './GridElement.scss';
-import { GUTTER_WIDTH, HEADER_HEIGHT, ROW_HEIGHT } from './constants';
+import { GUTTER_WIDTH, HEADER_HEIGHT, PAD_WIDTH, ROW_HEIGHT } from './constants';
 import { useGridContext } from '../../hooks';
 import { useMouseSelectable } from '../../../app/hooks';
 
@@ -47,7 +47,7 @@ export const GridElement = forwardRef<HTMLDivElement, Props>(({ children, style 
   });
 
   const height = parseFloat(String(style.height)) + HEADER_HEIGHT;
-  const width = GUTTER_WIDTH + columns
+  const width = GUTTER_WIDTH + PAD_WIDTH + columns
     .filter(e => e.isVisible)
     .reduce((acc, e) => acc + e.width, 0);
 

@@ -23,11 +23,11 @@ import { inTheMiddle } from '../../../CollisionDetection';
 import { useGridContext } from '../../hooks';
 import { HeaderCell, SortableHeaderCell } from './HeaderCell';
 import styles from './Header.scss';
-import { HEADER_HEIGHT, GUTTER_WIDTH } from './constants';
+import { HEADER_HEIGHT, GUTTER_WIDTH, PAD_WIDTH } from './constants';
 import { Column } from '../../types';
 
 export function Header() {
-  const { columns, rows, onSortColumns, selectRow } = useGridContext();
+  const { columns, rows, frozenGridWidth, onSortColumns, selectRow } = useGridContext();
 
   const [focusedColumn, setFocusedColumn] = useState<Column | null>(null);
 
@@ -60,9 +60,17 @@ export function Header() {
   }
 
   const visibleColumns = columns.filter(e => e.isVisible);
+  let width = 'auto';
+
+  if (frozenGridWidth) {
+    width = `${frozenGridWidth}px`;
+  }
 
   return (
-    <div className={styles.header} style={{ height: HEADER_HEIGHT }} onMouseDown={ev => ev.stopPropagation()}>
+    <div
+      className={styles.header} style={{ height: HEADER_HEIGHT, width, minWidth: '100%' }}
+      onMouseDown={ev => ev.stopPropagation()}
+    >
       <div
         style={{ width: GUTTER_WIDTH }}
         className={styles.gutter}
@@ -97,6 +105,7 @@ export function Header() {
             document.body,
           )}
         </DndContext>
+        <div style={{ width: PAD_WIDTH }} className={styles.pad}></div>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import classNames from 'classnames';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useResizable } from '../../../app/hooks';
+import { useResizableColumn } from './hooks';
 import { useGridContext } from '../../hooks';
 import { Column, SortOrder } from '../../types';
 import styles from './HeaderCell.scss';
@@ -60,14 +60,12 @@ export const HeaderCell = forwardRef<HTMLDivElement, HeaderCellProps>(({
   const { columns, onResizeColumn, onReorderColumn } = useGridContext();
 
   const {
-    resizableElementRef,
+    resizableColumnRef,
     resizableTrigger,
-  } = useResizable<HTMLDivElement>(({ width }) => {
-    onResizeColumn(column, width);
-  });
+  } = useResizableColumn(column, width => onResizeColumn(column, width));
 
   function setNodeRef(node: HTMLDivElement) {
-    resizableElementRef.current = node;
+    resizableColumnRef.current = node;
 
     if (typeof ref === 'function') {
       ref(node);
