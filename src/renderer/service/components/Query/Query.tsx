@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import classNames from 'classnames';
-import { editor } from 'monaco-editor';
+import { editor, languages } from 'monaco-editor';
 import Tippy from '@tippyjs/react/headless';
 import { Column, Entity, Row, SqlQuery, LoadingStatus } from '../../types';
 import styles from './Query.scss';
@@ -19,10 +19,17 @@ interface Props {
   onFocus(): void;
 }
 
+const POPULAR_KEYWORDS = [
+  'CREATE', 'INSERT', 'SELECT', 'FROM', 'ALTER', 'ADD', 'DISTINCT', 'UPDATE', 'SET',
+  'DELETE', 'TRUNCATE', 'AS', 'ORDER', 'ASC', 'DESC', 'BETWEEN', 'WHERE', 'AND', 'OR',
+  'NOT', 'LIMIT', 'IS', 'NULL', 'DROP', 'GROUP', 'HAVING', 'IN', 'JOIN', 'LEFT',
+  'OUTER', 'INNER', 'UNION', 'EXISTS', 'LIKE', 'ILIKE', 'CASE',
+];
+
 export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
   const [gridContainerRef, gridSize] = useElementSize();
 
-  const { connection, adapter, schemas, setEntities } = useServiceContext();
+  const { connection, adapter, schemas, activeSchemaId, setEntities } = useServiceContext();
 
   const [
     loadSqlQueries,
@@ -79,6 +86,81 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
     sqlInitialValue.current = query.sql;
     setQuery(query);
     setLoadingStatus('success');
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const [
+        keywordsResult,
+        schemasResult,
+        entitiesResult,
+      ] = await Promise.all([
+        adapter.queryNoTypeCasting('SELECT UPPER(word) AS keyword FROM pg_get_keywords()'),
+        adapter.getSchemas(),
+        adapter.getEntities(),
+      ]);
+
+      languages.registerCompletionItemProvider('pgsql', {
+        provideCompletionItems: function (model, position) {
+          const word = model.getWordUntilPosition(position);
+
+          const range = {
+            startLineNumber: position.lineNumber,
+            endLineNumber: position.lineNumber,
+            startColumn: word.startColumn,
+            endColumn: word.endColumn
+          };
+
+          const keywords = keywordsResult.rows.map(row => {
+            const isPopular = POPULAR_KEYWORDS.includes(row.keyword);
+            const lowerCased = row.keyword.toLowerCase();
+
+            return {
+              label: row.keyword,
+              kind: languages.CompletionItemKind.Keyword,
+              filterText: lowerCased,
+              insertText: row.keyword,
+              sortText: isPopular ? `1:${lowerCased}` : `9:${lowerCased}`,
+              range: range
+            };
+          });
+
+          const schemas = schemasResult.map(row => {
+            const lowerCased = row.name.toLowerCase();
+
+            return {
+              label: row.name,
+              kind: languages.CompletionItemKind.Module,
+              filterText: lowerCased,
+              insertText: row.name,
+              sortText: row.internal ? `9:${lowerCased}` : `2:${lowerCased}`,
+              range: range
+            };
+          });
+
+          const entities = entitiesResult.map(row => {
+            const lowerCased = row.name.toLowerCase();
+
+            return {
+              label: row.name,
+              kind: languages.CompletionItemKind.Class,
+              filterText: lowerCased,
+              insertText: row.name,
+              sortText: row.schemaId === activeSchemaId ? `3:${lowerCased}` : `9:${lowerCased}`,
+              range: range
+            };
+          });
+
+          let suggestions: languages.CompletionItem[] = [];
+
+          suggestions = suggestions.concat(keywords);
+          suggestions = suggestions.concat(schemas);
+          suggestions = suggestions.concat(entities);
+
+          return { suggestions };
+        }
+      });
+    })();
   }, []);
 
   const setEditorRef = useCallback(ref => {
