@@ -1,3 +1,3 @@
 export { useServiceContext } from './useServiceContext';
-export { useServiceStash } from './useServiceStash';
+export { useServiceStore } from './useServiceStore';
 export { useGridContext } from './useGridContext';

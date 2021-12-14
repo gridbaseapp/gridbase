@@ -19,7 +19,7 @@ Store.initRenderer();
 const WINDOW_RECT_STORE_KEY = 'window-rect';
 
 function createWindow() {
-  const store = new Store();
+  const store = new Store({ name: 'config.main' });
   const screenSize = screen.getPrimaryDisplay().workAreaSize;
   const windowRect = store.get(WINDOW_RECT_STORE_KEY, {});
 

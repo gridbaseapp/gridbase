@@ -4,7 +4,7 @@ import Tippy from '@tippyjs/react/headless';
 import { Entity, EntityType, SqlQuery } from '../../types';
 import { useExclusiveFocus, useHotkey } from '../../../app/hooks';
 import styles from './SidebarItem.scss';
-import { useServiceContext, useServiceStash } from '../../hooks';
+import { useServiceContext, useServiceStore } from '../../hooks';
 
 interface Props {
   entity: Entity;
@@ -40,7 +40,7 @@ export function SidebarItem({
   const [
     loadSqlQueries,
     saveSqlQueries,
-  ] = useServiceStash<SqlQuery[]>(`queries`, []);
+  ] = useServiceStore<SqlQuery[]>(`queries`, []);
 
   const inputRef = useRef<HTMLInputElement>(null);
 

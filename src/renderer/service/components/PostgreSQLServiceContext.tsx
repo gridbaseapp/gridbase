@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { useAppContext, useDidUpdateEffect } from '../../app/hooks';
+import React, { useRef, useState } from 'react';
+import Store from 'electron-store';
+import { useDidUpdateEffect } from '../../app/hooks';
 import { Service } from '../../app/types';
 import { PostgreSQLAdapter } from '../adapter';
 import { ServiceContext } from '../contexts';
@@ -13,7 +14,7 @@ interface Props {
 export function PostgreSQLServiceContext({ service, children }: Props) {
   const { connection } = service;
 
-  const { stash } = useAppContext();
+  const store = useRef(new Store({ name: `config.service.${connection.uuid}` }));
 
   const [adapter, setAdapter] = useState<PostgreSQLAdapter>(service.adapter);
   const [schemas, setSchemas] = useState<Schema[]>([]);
@@ -26,7 +27,7 @@ export function PostgreSQLServiceContext({ service, children }: Props) {
 
   useDidUpdateEffect(() => {
     if (activeSchemaId) {
-      stash.set(`service-${connection.uuid}.defaultSchemaId`, activeSchemaId);
+      store.current.set('defaultSchemaId', activeSchemaId);
     }
   }, [activeSchemaId]);
 
@@ -72,8 +73,8 @@ export function PostgreSQLServiceContext({ service, children }: Props) {
   async function loadData(status: LoadingStatus = 'loading') {
     setDataLoadingStatus(status);
 
-    const defaultSchemaId = stash.get(`service-${connection.uuid}.defaultSchemaId`);
-    const sqlQueries = stash.get(`service-${connection.uuid}.queries`, []) as SqlQuery[];
+    const defaultSchemaId = store.current.get('defaultSchemaId');
+    const sqlQueries = store.current.get('queries', []) as SqlQuery[];
 
     const [schemas, entities] = await Promise.all([
       adapter.getSchemas(),

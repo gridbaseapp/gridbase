@@ -6,8 +6,8 @@ import { Dock } from './Dock';
 import { PostgreSQLServiceContext, PostgreSQLService } from '../../service';
 import { TitleBar } from './TitleBar';
 import styles from './App.scss';
-import { useDidUpdateEffect, useFocus, useHotkey, useAppSecureStash } from '../hooks';
-import { Stash } from '../Stash';
+import { useDidUpdateEffect, useFocus, useHotkey, useSecureStore } from '../hooks';
+import { SecureStore } from '../SecureStore';
 import { AvailableUpdate, Connection, Service } from '../types';
 import { AppContext } from './AppContext';
 import { getPasswordFromVault } from '../vault';
@@ -27,7 +27,7 @@ function AppContent({ initialConnections }: Props) {
   const [isLauncherVisible, setLauncherVisible] = useState(true);
   const [availableUpdate, setAvailableUpdate] = useState<AvailableUpdate | null>(null);
 
-  const [_, saveConnections] = useAppSecureStash<Connection[]>('connections');
+  const [_, saveConnections] = useSecureStore<Connection[]>('connections');
 
   const scope = 'App';
 
@@ -209,23 +209,23 @@ function AppContent({ initialConnections }: Props) {
 }
 
 export function App() {
-  const [stash, setStash] = useState<Stash | null>(null);
+  const [store, setStore] = useState<SecureStore | null>(null);
   const [connections, setConnections] = useState<Connection[] | null>(null);
 
   useEffect(() => {
     (async () => {
       const password = await getPasswordFromVault();
-      const stash = new Stash(password);
+      const store = new SecureStore(password);
 
-      setStash(stash);
-      setConnections(stash.getSecure('connections', []));
+      setStore(store);
+      setConnections(store.get('connections', []));
     })();
   }, []);
 
   return (
     <div className={styles.app}>
-      {stash && connections ? (
-        <AppContext stash={stash}>
+      {store && connections ? (
+        <AppContext store={store}>
           <AppContent initialConnections={connections} />
         </AppContext>
       ) : (

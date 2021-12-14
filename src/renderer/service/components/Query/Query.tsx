@@ -4,7 +4,7 @@ import { editor } from 'monaco-editor';
 import Tippy from '@tippyjs/react/headless';
 import { Column, Entity, Row, SqlQuery, LoadingStatus } from '../../types';
 import styles from './Query.scss';
-import { useServiceContext, useServiceStash } from '../../hooks';
+import { useServiceContext, useServiceStore } from '../../hooks';
 import { SaveAs } from './SaveAs';
 import { useFocus, useHotkey, useElementSize, useResizable } from '../../../app/hooks';
 import { Grid, GridRef } from '../Grid';
@@ -26,7 +26,7 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
   const [
     loadSqlQueries,
     saveSqlQueries,
-  ] = useServiceStash<SqlQuery[]>('queries', []);
+  ] = useServiceStore<SqlQuery[]>('queries', []);
 
   const [editorSectionHeight, setEditorSectionHeight] = useState(200);
   const [loadingStatus, setLoadingStatus] = useState<LoadingStatus>('loading');

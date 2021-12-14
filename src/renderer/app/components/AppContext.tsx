@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { Context } from '../context';
-import { Stash } from '../Stash';
+import { SecureStore } from '../SecureStore';
 
 interface Props {
-  stash: Stash;
+  store: SecureStore;
   children: React.ReactNode;
 }
 
-export function AppContext({ stash, children }: Props) {
+export function AppContext({ store, children }: Props) {
   const [focus, setFocus] = useState<string[]>([]);
   const [exclusiveFocus, setExclusiveFocus] = useState<string[]>([]);
 
   const contextValue = {
-    stash,
+    store,
     focus,
     exclusiveFocus,
     setFocus,

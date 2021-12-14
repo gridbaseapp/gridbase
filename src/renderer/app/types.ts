@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from 'react';
 import { PostgreSQLAdapter } from '../service/adapter';
-import { Stash } from './Stash';
+import { SecureStore } from './SecureStore';
 
 export interface Connection {
   uuid: string;
@@ -25,7 +25,7 @@ export interface Service {
 }
 
 export interface AppContextDescriptor {
-  stash: Stash;
+  store: SecureStore;
   focus: string[];
   exclusiveFocus: string[];
   setFocus: Dispatch<SetStateAction<string[]>>;

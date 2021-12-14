@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { debounce, isEqual } from 'lodash';
 import classNames from 'classnames';
 import { useDidUpdateEffect, useElementSize, useFocus, useHotkey } from '../../../app/hooks';
-import { useServiceContext, useServiceStash } from '../../hooks';
+import { useServiceContext, useServiceStore } from '../../hooks';
 import { Column, Entity, SortOrder, Row, LoadingStatus } from '../../types';
 import { mergeColumnsWithAttributes } from './utils';
 import { Pagination } from './Pagination';
@@ -30,7 +30,7 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
   const [
     loadColumnsFromStash,
     saveColumnsToStash,
-  ] = useServiceStash<Column[]>(`columns.${entity.id}`, []);
+  ] = useServiceStore<Column[]>(`columns.${entity.id}`, []);
 
   const [isExportModalVisible, setExportModalVisible] = useState(false);
 

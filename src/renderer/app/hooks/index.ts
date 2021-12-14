@@ -3,7 +3,7 @@ export { useDidUpdateEffect } from './useDidUpdateEffect';
 export { useFocus } from './useFocus';
 export { useExclusiveFocus } from './useExclusiveFocus';
 export { useHotkey } from './useHotkey';
-export { useAppSecureStash } from './useAppSecureStash';
+export { useSecureStore } from './useSecureStore';
 export { useElementSize } from './useElementSize';
 export { useResizable } from './useResizable';
 export { useMouseSelectable } from './useMouseSelectable';

@@ -1,8 +1,8 @@
 import Store from 'electron-store';
 import { encrypt, decrypt } from './crypto';
 
-export class Stash {
-  private readonly store = new Store();
+export class SecureStore {
+  private readonly store = new Store({ name: 'config.secure' });
   private readonly password: string;
 
   constructor(password: string) {
@@ -10,14 +10,6 @@ export class Stash {
   }
 
   get(key: string, defaultValue?: any) {
-    return this.store.get(key, defaultValue);
-  }
-
-  set(key: string, value: any) {
-    this.store.set(key, value);
-  }
-
-  getSecure(key: string, defaultValue?: any) {
     const value = <string>this.store.get(key);
 
     if (value) {
@@ -27,7 +19,7 @@ export class Stash {
     }
   }
 
-  setSecure(key: string, value: any) {
+  set(key: string, value: any) {
     this.store.set(key, encrypt(this.password, JSON.stringify(value)));
   }
 }
