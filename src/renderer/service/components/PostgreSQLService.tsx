@@ -12,6 +12,7 @@ import { useServiceContext } from '../hooks';
 import { useFocus, useHotkey } from '../../app/hooks';
 import { EntityType } from '../types';
 import { PostgreSQLAdapter } from '../adapter';
+import { KeyBindings } from '../../Hotkeys';
 
 type FocusedSection = 'sidebar' | 'content';
 
@@ -57,15 +58,15 @@ export function PostgreSQLService({ isVisible }: Props) {
 
   useFocus(scope, isVisible);
 
-  useHotkey(scope, 'meta+t', () => {
+  useHotkey(scope, KeyBindings['service.show_goto'], () => {
     setGoToVisible(true);
   });
 
-  useHotkey(scope, 'meta+w', () => {
+  useHotkey(scope, KeyBindings['service.close_tab'], () => {
     if (activeEntityId) closeEntity(activeEntityId);
   }, [entities, activeEntityId, openEntityIds]);
 
-  useHotkey(scope, 'meta+shift+e', () => {
+  useHotkey(scope, KeyBindings['service.toggle_focus_sidebar_content'], () => {
     if (openEntityIds.length === 0) {
       setFocusedSection('sidebar');
     } else {
@@ -73,7 +74,7 @@ export function PostgreSQLService({ isVisible }: Props) {
     }
   }, [openEntityIds]);
 
-  useHotkey(scope, 'meta+shift+[', () => {
+  useHotkey(scope, KeyBindings['service.switch_tab_left'], () => {
     if (!activeEntityId) return;
     if (openEntityIds.length === 0) return;
 
@@ -83,7 +84,7 @@ export function PostgreSQLService({ isVisible }: Props) {
     setActiveEntityId(openEntityIds[idx]);
   }, [activeEntityId, openEntityIds]);
 
-  useHotkey(scope, 'meta+shift+]', () => {
+  useHotkey(scope, KeyBindings['service.switch_tab_right'], () => {
     if (!activeEntityId) return;
     if (openEntityIds.length === 0) return;
 

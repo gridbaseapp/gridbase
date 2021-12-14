@@ -7,6 +7,7 @@ import styles from './SidebarEntities.scss';
 import { useServiceContext } from '../../hooks';
 import { useFocus, useHotkey } from '../../../app/hooks';
 import { SidebarItem } from './SidebarItem';
+import { KeyBindings } from '../../../Hotkeys';
 
 interface Props {
   entityTypes: EntityType[];
@@ -95,7 +96,7 @@ export function SidebarEntities({ entityTypes }: Props) {
 
   useFocus(name);
 
-  useHotkey(scopes, 'meta+f', () => {
+  useHotkey(scopes, KeyBindings['sidebar_entities.search'], () => {
     filterElementRef.current?.focus();
   });
 
@@ -114,7 +115,7 @@ export function SidebarEntities({ entityTypes }: Props) {
     scrollToEntity(idx);
   }, [filteredEntities], { global: false });
 
-  useHotkey(scopes, 'meta+arrowdown', () => {
+  useHotkey(scopes, KeyBindings['sidebar_entities.scroll_bottom'], () => {
     setFocusedEntityIndex(filteredEntities.length - 1);
     scrollToEntity(filteredEntities.length - 1);
   }, [filteredEntities], { global: false });
@@ -126,7 +127,7 @@ export function SidebarEntities({ entityTypes }: Props) {
     scrollToEntity(idx);
   }, [filteredEntities], { global: false });
 
-  useHotkey(scopes, 'meta+arrowup', () => {
+  useHotkey(scopes, KeyBindings['sidebar_entities.scroll_top'], () => {
     setFocusedEntityIndex(0);
     scrollToEntity(0);
   }, [filteredEntities], { global: false });
@@ -155,7 +156,7 @@ export function SidebarEntities({ entityTypes }: Props) {
     clearFocusedEntityFilter();
   }, [filteredEntities], { global: false });
 
-  useHotkey(scopes, 'meta+e', () => {
+  useHotkey(scopes, KeyBindings['sidebar_entities.edit'], () => {
     setEditedEntityIndex(focusedEntityIndex);
   }, [filteredEntities, focusedEntityIndex]);
 

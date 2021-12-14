@@ -4,6 +4,7 @@ import { useServiceContext } from '../hooks';
 import styles from './GoTo.scss';
 import { Entity } from '../types';
 import { useExclusiveFocus, useHotkey } from '../../app/hooks';
+import { KeyBindings } from '../../Hotkeys';
 
 interface Props {
   onClose(): void;
@@ -73,7 +74,7 @@ export function GoTo({ onClose }: Props) {
     scrollToEntity(idx);
   }, [filteredEntities]);
 
-  useHotkey(scope, 'meta+arrowdown', () => {
+  useHotkey(scope, KeyBindings['goto.scroll_bottom'], () => {
     setFocusedEntityIndex(filteredEntities.length - 1);
     scrollToEntity(filteredEntities.length - 1);
   }, [filteredEntities]);
@@ -85,7 +86,7 @@ export function GoTo({ onClose }: Props) {
     scrollToEntity(idx);
   }, [filteredEntities]);
 
-  useHotkey(scope, 'meta+arrowup', () => {
+  useHotkey(scope, KeyBindings['goto.scroll_top'], () => {
     setFocusedEntityIndex(0);
     scrollToEntity(0);
   }, [filteredEntities]);

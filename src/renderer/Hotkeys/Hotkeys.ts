@@ -77,4 +77,4 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
   }
 });
 
-export default { on, off };
+export { on, off };

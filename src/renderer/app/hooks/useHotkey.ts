@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import Hotkeys from '../../Hotkeys';
+import { on, off } from '../../Hotkeys';
 import { useAppContext } from './useAppContext';
 
 interface Options {
@@ -52,11 +52,11 @@ export function useHotkey(
     }
 
     function unbind() {
-      Hotkeys.off(keys, wrappedHandler);
+      off(keys, wrappedHandler);
     }
 
     if (hasFocus) {
-      Hotkeys.on(keys, wrappedHandler);
+      on(keys, wrappedHandler);
     } else {
       unbind();
     }

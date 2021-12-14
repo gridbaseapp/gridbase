@@ -13,6 +13,7 @@ import { AppContext } from './AppContext';
 import { getPasswordFromVault } from '../vault';
 import { findExistingConnection } from '../utils';
 import { ipcRenderer } from 'electron';
+import { KeyBindings } from '../../Hotkeys';
 
 const CHECK_FOR_UPDATES_INTERVAL = 5 * 60 * 60 * 1000; // 5 hours
 
@@ -33,63 +34,60 @@ function AppContent({ initialConnections }: Props) {
 
   useFocus(scope);
 
-  useHotkey(scope, 'meta+n', () => {
+  useHotkey(scope, KeyBindings['app.show_launcher'], () => {
     setLauncherVisible(true);
   });
 
-  useHotkey(scope, 'meta+.', () => {
+  useHotkey(scope, KeyBindings['app.disconnect'], () => {
     if (activeService) handleDisconnect(activeService);
   }, [activeService]);
 
   // prevent default scroll behavior
-  useHotkey(scope, [
-    'arrowup', 'arrowdown', 'meta+arrowup', 'meta+arrowdown',
-    'alt+arrowup', 'alt+arrowdown', 'space',
-  ], (ev) => {
+  useHotkey(scope, KeyBindings['app.prevent_default_scroll_behavior'], (ev) => {
     ev.preventDefault();
   }, [], { global: false });
 
-  useHotkey(scope, 'meta+1', () => {
+  useHotkey(scope, KeyBindings['app.switch_connection_1'], () => {
     const service = services[0];
     if (service) setActiveService(service);
   }, [services]);
 
-  useHotkey(scope, 'meta+2', () => {
+  useHotkey(scope, KeyBindings['app.switch_connection_2'], () => {
     const service = services[1];
     if (service) setActiveService(service);
   }, [services]);
 
-  useHotkey(scope, 'meta+3', () => {
+  useHotkey(scope, KeyBindings['app.switch_connection_3'], () => {
     const service = services[2];
     if (service) setActiveService(service);
   }, [services]);
 
-  useHotkey(scope, 'meta+4', () => {
+  useHotkey(scope, KeyBindings['app.switch_connection_4'], () => {
     const service = services[3];
     if (service) setActiveService(service);
   }, [services]);
 
-  useHotkey(scope, 'meta+5', () => {
+  useHotkey(scope, KeyBindings['app.switch_connection_5'], () => {
     const service = services[4];
     if (service) setActiveService(service);
   }, [services]);
 
-  useHotkey(scope, 'meta+6', () => {
+  useHotkey(scope, KeyBindings['app.switch_connection_6'], () => {
     const service = services[5];
     if (service) setActiveService(service);
   }, [services]);
 
-  useHotkey(scope, 'meta+7', () => {
+  useHotkey(scope, KeyBindings['app.switch_connection_7'], () => {
     const service = services[6];
     if (service) setActiveService(service);
   }, [services]);
 
-  useHotkey(scope, 'meta+8', () => {
+  useHotkey(scope, KeyBindings['app.switch_connection_8'], () => {
     const service = services[7];
     if (service) setActiveService(service);
   }, [services]);
 
-  useHotkey(scope, 'meta+9', () => {
+  useHotkey(scope, KeyBindings['app.switch_connection_9'], () => {
     const service = services[8];
     if (service) setActiveService(service);
   }, [services]);

@@ -12,6 +12,7 @@ import { ChangesBanner } from './ChangesBanner';
 import { Grid, GridRef } from '../Grid';
 import { ExportModal } from '../ExportModal';
 import styles from './Table.scss';
+import { KeyBindings } from '../../../Hotkeys';
 
 const PER_PAGE = 1000;
 
@@ -132,7 +133,7 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
 
   useFocus(name, hasFocus);
 
-  useHotkey(scopes, 'meta+r', async () => {
+  useHotkey(scopes, KeyBindings['table.reload'], async () => {
     setLoadingStatus('reloading');
 
     const cols = await loadColumns();

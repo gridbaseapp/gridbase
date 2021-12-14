@@ -8,6 +8,7 @@ import { GridElement } from './GridElement';
 import { GridRow } from './GridRow';
 import { ROW_HEIGHT } from './constants';
 import { useHotkey } from '../../../app/hooks';
+import { KeyBindings } from '../../../Hotkeys';
 
 interface Props {
   scopes: string[];
@@ -76,7 +77,7 @@ export const Grid = forwardRef<GridRef, Props>(({
     scrollToItem(index);
   }, [height, rows]);
 
-  useHotkey(scopes, 'meta+arrowdown', () => {
+  useHotkey(scopes, KeyBindings['grid.scroll_bottom'], () => {
     selectRow(rows.length - 1, 'select');
     scrollToItem(rows.length - 1);
   }, [height, rows]);
@@ -88,7 +89,7 @@ export const Grid = forwardRef<GridRef, Props>(({
     scrollToItem(index);
   }, [height, rows]);
 
-  useHotkey(scopes, 'meta+shift+arrowdown', () => {
+  useHotkey(scopes, KeyBindings['grid.select_rows_bottom'], () => {
     selectRow(rows.length - 1, 'range');
     scrollToItem(rows.length - 1);
   }, [height, rows]);
@@ -101,7 +102,7 @@ export const Grid = forwardRef<GridRef, Props>(({
     scrollToItem(index);
   }, [height, rows]);
 
-  useHotkey(scopes, 'meta+arrowup', () => {
+  useHotkey(scopes, KeyBindings['grid.scroll_top'], () => {
     selectRow(0, 'select');
     scrollToItem(0);
   }, [height, rows]);
@@ -113,12 +114,12 @@ export const Grid = forwardRef<GridRef, Props>(({
     scrollToItem(index);
   }, [height, rows]);
 
-  useHotkey(scopes, 'meta+shift+arrowup', () => {
+  useHotkey(scopes, KeyBindings['grid.select_rows_top'], () => {
     selectRow(0, 'range');
     scrollToItem(0);
   }, [height, rows]);
 
-  useHotkey(scopes, 'meta+a', () => {
+  useHotkey(scopes, KeyBindings['grid.select_all'], () => {
     selectRow(0, 'select');
     selectRow(rows.length - 1, 'range');
   }, []);
@@ -127,7 +128,7 @@ export const Grid = forwardRef<GridRef, Props>(({
     selectRow(-1, 'select');
   }, []);
 
-  useHotkey(scopes, 'meta+c', () => {
+  useHotkey(scopes, KeyBindings['grid.copy'], () => {
     const selectedRows = rows.filter(e => e.isSelected);
 
     if (selectedRows.length === 0) return;

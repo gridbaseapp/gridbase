@@ -8,6 +8,7 @@ import { useServiceContext, useServiceStore } from '../../hooks';
 import { SaveAs } from './SaveAs';
 import { useFocus, useHotkey, useElementSize, useResizable } from '../../../app/hooks';
 import { Grid, GridRef } from '../Grid';
+import { KeyBindings } from '../../../Hotkeys';
 
 type QueryExecutionStatus = 'running' | 'success';
 
@@ -149,11 +150,11 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
 
   useFocus(name, hasFocus);
 
-  useHotkey(scopes, 'meta+s', () => {
+  useHotkey(scopes, KeyBindings['query.save'], () => {
     if (query && entity.status === 'unsaved') saveQuery(query);
   }, [query, entity]);
 
-  useHotkey(scopes, 'meta+r', () => {
+  useHotkey(scopes, KeyBindings['query.run'], () => {
     runQuery();
   }, [query]);
 

@@ -4,6 +4,7 @@ import { NewConnection } from './NewConnection';
 import styles from './Launcher.scss';
 import { Connection, Service } from '../types';
 import { useExclusiveFocus, useHotkey } from '../hooks';
+import { KeyBindings } from '../../Hotkeys';
 
 interface Props {
   connections: Connection[];
@@ -57,11 +58,11 @@ export function Launcher({
     if (services.length > 0) onClose();
   });
 
-  useHotkey(scope, 'meta+n', () => {
+  useHotkey(scope, KeyBindings['launcher.show_new_connection_form'], () => {
     setNewConnectionVisible(true);
   });
 
-  useHotkey(scope, 'meta+f', () => {
+  useHotkey(scope, KeyBindings['launcher.search'], () => {
     filterInputRef.current?.focus();
   });
 

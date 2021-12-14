@@ -5,6 +5,7 @@ import { Entity, EntityType, SqlQuery } from '../../types';
 import { useExclusiveFocus, useHotkey } from '../../../app/hooks';
 import styles from './SidebarItem.scss';
 import { useServiceContext, useServiceStore } from '../../hooks';
+import { KeyBindings } from '../../../Hotkeys';
 
 interface Props {
   entity: Entity;
@@ -56,7 +57,7 @@ export function SidebarItem({
 
   useExclusiveFocus(name, isEdited);
 
-  useHotkey(name, 'meta+s, enter', () => {
+  useHotkey(name, KeyBindings['sidebar_item.save'], () => {
     handleUpdate();
   }, [value]);
 

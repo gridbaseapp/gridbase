@@ -8,6 +8,7 @@ import { EntityType } from '../../types';
 import styles from './Sidebar.scss';
 import { useFocus, useHotkey } from '../../../app/hooks';
 import { Tab } from './types';
+import { KeyBindings } from '../../../Hotkeys';
 
 interface Props {
   hasFocus: boolean;
@@ -23,7 +24,7 @@ export function Sidebar({ hasFocus, onFocus }: Props) {
 
   useFocus(name, hasFocus);
 
-  useHotkey([`Service-${connection.uuid}`, name], 'meta+r', () => {
+  useHotkey([`Service-${connection.uuid}`, name], KeyBindings['sidebar.reload'], () => {
     loadData('reloading');
   }, []);
 
