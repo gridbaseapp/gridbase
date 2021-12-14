@@ -122,7 +122,7 @@ export const Grid = forwardRef<GridRef, Props>(({
   useHotkey(scopes, KeyBindings['grid.select_all'], () => {
     selectRow(0, 'select');
     selectRow(rows.length - 1, 'range');
-  }, []);
+  }, [rows]);
 
   useHotkey(scopes, 'escape', () => {
     selectRow(-1, 'select');
