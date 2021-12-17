@@ -75,24 +75,24 @@ export const Grid = forwardRef<GridRef, Props>(({
     if (index > rows.length - 1) index = rows.length - 1;
     selectRow(index, 'select');
     scrollToItem(index);
-  }, [height, rows]);
+  }, [height, rows], { global: false });
 
   useHotkey(scopes, KeyBindings['grid.scroll_bottom'], () => {
     selectRow(rows.length - 1, 'select');
     scrollToItem(rows.length - 1);
-  }, [height, rows]);
+  }, [height, rows], { global: false });
 
   useHotkey(scopes, 'shift+arrowdown', () => {
     let index = activeRow.current + 1;
     if (index > rows.length - 1) index = rows.length - 1;
     selectRow(index, 'range');
     scrollToItem(index);
-  }, [height, rows]);
+  }, [height, rows], { global: false });
 
   useHotkey(scopes, KeyBindings['grid.select_rows_bottom'], () => {
     selectRow(rows.length - 1, 'range');
     scrollToItem(rows.length - 1);
-  }, [height, rows]);
+  }, [height, rows], { global: false });
 
   useHotkey(scopes, 'arrowup', () => {
     let index = activeRow.current - 1;
@@ -100,33 +100,41 @@ export const Grid = forwardRef<GridRef, Props>(({
     if (index < 0) index = 0;
     selectRow(index, 'select');
     scrollToItem(index);
-  }, [height, rows]);
+  }, [height, rows], { global: false });
 
   useHotkey(scopes, KeyBindings['grid.scroll_top'], () => {
     selectRow(0, 'select');
     scrollToItem(0);
-  }, [height, rows]);
+  }, [height, rows], { global: false });
 
   useHotkey(scopes, 'shift+arrowup', () => {
     let index = activeRow.current - 1;
     if (index < 0) index = 0;
     selectRow(index, 'range');
     scrollToItem(index);
-  }, [height, rows]);
+  }, [height, rows], { global: false });
 
   useHotkey(scopes, KeyBindings['grid.select_rows_top'], () => {
     selectRow(0, 'range');
     scrollToItem(0);
-  }, [height, rows]);
+  }, [height, rows], { global: false });
 
   useHotkey(scopes, KeyBindings['grid.select_all'], () => {
     selectRow(0, 'select');
     selectRow(rows.length - 1, 'range');
-  }, [rows]);
+  }, [rows], { global: false });
 
   useHotkey(scopes, 'escape', () => {
     selectRow(-1, 'select');
-  }, []);
+  }, [], { global: false });
+
+  useHotkey(scopes, 'tab', () => {
+    const activeRow = rows.find(e => e.isActive);
+
+    if (onEditCell && activeRow && !activeRow.editedCell) {
+      onEditCell(activeRow, columns[0]);
+    }
+  }, [rows]);
 
   useHotkey(scopes, KeyBindings['grid.copy'], () => {
     const selectedRows = rows.filter(e => e.isSelected);
@@ -137,7 +145,7 @@ export const Grid = forwardRef<GridRef, Props>(({
     const values = selectedRows.map(row => cols.map(col => row.getValue(col)));
 
     navigator.clipboard.writeText(stringify(values));
-  }, [columns, rows]);
+  }, [columns, rows], { global: false });
 
   function selectRow(index: number, modifier: SelectionModifier) {
     if (index === -1) {

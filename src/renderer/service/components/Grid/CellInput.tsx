@@ -1,4 +1,5 @@
 import React, { ChangeEvent, useEffect, useRef } from 'react';
+import { useExclusiveFocus, useHotkey } from '../../../app/hooks';
 import { useGridContext } from '../../hooks';
 import { Row } from "../../types";
 
@@ -8,14 +9,53 @@ interface Props {
 }
 
 export function CellInput({ row, column }: Props) {
-  const { onCancelEditCell, onUpdateCell } = useGridContext();
+  const {
+    columns,
+    onCancelEditCell,
+    onEditCell,
+    onUpdateCell,
+  } = useGridContext();
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
+      inputRef.current.select();
     }
   }, [row && row.editedCell]);
+
+  const scope = 'CellInput'
+  useExclusiveFocus(scope);
+
+  useHotkey(scope, 'escape', () => {
+    onUpdateCell && onUpdateCell(row, column, row.cells[column]);
+    handleOnBlur();
+  }, [row]);
+
+  useHotkey(scope, 'tab', () => {
+    if (!onEditCell || !row.editedCell) return;
+
+    const visibleColumns = [...columns].filter(e => e.isVisible);
+
+    const columnIndex = visibleColumns.findIndex(e => e.name === row.editedCell);
+    let nextColumn = visibleColumns[columnIndex + 1];
+    if (!nextColumn) nextColumn = visibleColumns[0];
+
+    onEditCell(row, nextColumn);
+  }, [columns, row]);
+
+  useHotkey(scope, 'shift+tab', () => {
+    if (!onEditCell || !row.editedCell) return;
+
+    const visibleColumns = [...columns].filter(e => e.isVisible);
+
+    const columnIndex = visibleColumns.findIndex(e => e.name === row.editedCell);
+    let previousColumn = visibleColumns[columnIndex - 1];
+    if (!previousColumn) previousColumn = visibleColumns[visibleColumns.length - 1];
+
+    onEditCell(row, previousColumn);
+  }, [columns, row]);
 
   function handleChange(ev: ChangeEvent<HTMLInputElement>) {
     onUpdateCell && onUpdateCell(row, column, ev.target.value);
