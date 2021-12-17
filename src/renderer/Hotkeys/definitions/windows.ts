@@ -20,6 +20,8 @@ export default {
   'app.switch_connection_8': 'ctrl+8',
   'app.switch_connection_9': 'ctrl+9',
 
+  'cell_input.save': 'ctrl+s',
+
   'goto.scroll_bottom': 'ctrl+arrowdown',
   'goto.scroll_top':  'ctrl+arrowup',
 
@@ -49,6 +51,7 @@ export default {
   'service.switch_tab_right': 'ctrl+shift+]',
 
   'table.reload': 'ctrl+r',
+  'table.save': 'ctrl+s',
 
   'query.save': 'ctrl+s',
   'query.run': 'ctrl+r',

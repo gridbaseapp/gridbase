@@ -1,5 +1,6 @@
 import React, { ChangeEvent, useEffect, useRef } from 'react';
 import { useExclusiveFocus, useHotkey } from '../../../app/hooks';
+import { KeyBindings } from '../../../Hotkeys';
 import { useGridContext } from '../../hooks';
 import { Row } from "../../types";
 
@@ -14,6 +15,7 @@ export function CellInput({ row, column }: Props) {
     onCancelEditCell,
     onEditCell,
     onUpdateCell,
+    onSaveChange,
   } = useGridContext();
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -30,6 +32,10 @@ export function CellInput({ row, column }: Props) {
 
   useHotkey(scope, 'escape', () => {
     onUpdateCell && onUpdateCell(row, column, row.cells[column]);
+    handleOnBlur();
+  }, [row]);
+
+  useHotkey(scope, 'enter', () => {
     handleOnBlur();
   }, [row]);
 
@@ -55,6 +61,10 @@ export function CellInput({ row, column }: Props) {
     if (!previousColumn) previousColumn = visibleColumns[visibleColumns.length - 1];
 
     onEditCell(row, previousColumn);
+  }, [columns, row]);
+
+  useHotkey(scope, KeyBindings['cell_input.save'], () => {
+    onSaveChange && onSaveChange();
   }, [columns, row]);
 
   function handleChange(ev: ChangeEvent<HTMLInputElement>) {

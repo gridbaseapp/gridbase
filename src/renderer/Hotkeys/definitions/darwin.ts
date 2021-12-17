@@ -20,6 +20,8 @@ export default {
   'app.switch_connection_8': 'meta+8',
   'app.switch_connection_9': 'meta+9',
 
+  'cell_input.save': 'meta+s',
+
   'goto.scroll_bottom': 'meta+arrowdown',
   'goto.scroll_top':  'meta+arrowup',
 
@@ -49,6 +51,7 @@ export default {
   'service.switch_tab_right': 'meta+shift+]',
 
   'table.reload': 'meta+r',
+  'table.save': 'meta+s',
 
   'query.save': 'meta+s',
   'query.run': 'meta+r',

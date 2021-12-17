@@ -25,6 +25,7 @@ interface Props {
   onUpdateCell?(row: Row, column: string, value: string): void
   onDeleteRow?(row: Row): void;
   onAddRow?(target: Row): void;
+  onSaveChange?(): void;
 }
 
 export interface GridRef {
@@ -46,6 +47,7 @@ export const Grid = forwardRef<GridRef, Props>(({
   onUpdateCell,
   onDeleteRow,
   onAddRow,
+  onSaveChange,
 }, ref) => {
   const elementRef = useRef<FixedSizeList>(null);
   const outerRef = useRef<HTMLDivElement>();
@@ -225,6 +227,7 @@ export const Grid = forwardRef<GridRef, Props>(({
     onUpdateCell,
     onDeleteRow,
     onAddRow,
+    onSaveChange,
   }
 
   return (

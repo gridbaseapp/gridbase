@@ -147,6 +147,10 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
     setLoadingStatus('success');
   }, [page]);
 
+  useHotkey(scopes, KeyBindings['table.save'], () => {
+    handleSaveChange();
+  }, [schemas, rows, columns]);
+
   function handleResizeColumn(column: Column, width: number) {
     setColumns(state => {
       const i = state.findIndex(e => e.name === column.name);
@@ -409,6 +413,8 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
   async function handleSaveChange() {
     setLoadingStatus('reloading');
 
+    await adapter.query('BEGIN');
+
     const promises: Promise<any>[] = [];
 
     const updates = rows.filter(e => e.hasChanges);
@@ -447,6 +453,7 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
     });
 
     await Promise.all(promises);
+    await adapter.query('COMMIT');
 
     const cols = await loadColumns();
     const [total, reloadedRows] = await loadRows(cols, page);
@@ -515,6 +522,7 @@ export function Table({ entity, isVisible, hasFocus, onFocus }: Props) {
               onUpdateCell={handleUpdateCell}
               onDeleteRow={handleDeleteRow}
               onAddRow={handleAddRow}
+              onSaveChange={handleSaveChange}
             />
           </div>
 

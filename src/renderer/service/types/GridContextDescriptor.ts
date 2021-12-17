@@ -18,4 +18,5 @@ export interface GridContextDescriptor {
   onUpdateCell?(row: Row, column: string, value: string): void;
   onDeleteRow?(row: Row): void;
   onAddRow?(target: Row): void;
+  onSaveChange?(): void;
 }
