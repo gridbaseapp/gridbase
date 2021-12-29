@@ -52,7 +52,7 @@ function createWindow() {
 
   const menu = [
     {
-      label: 'dbadmin',
+      label: 'GridBase',
       submenu: [
         { role: 'quit' },
       ],

@@ -1,5 +1,5 @@
 {
-  "name": "dbadmin",
+  "name": "GridBase",
   "version": "1.0.0",
   "author": "Kamil Giszczak <beerkg@gmail.com>",
   "main": "src/main/index.js",

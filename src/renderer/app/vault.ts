@@ -2,8 +2,8 @@ import { randomBytes } from 'crypto';
 import { getPassword, setPassword } from 'keytar';
 
 const SECRET_LENGTH = 64;
-const SERVICE_NAME = 'dbadmin';
-const ACCOUNT_NAME = 'dbadmin';
+const SERVICE_NAME = 'GridBase';
+const ACCOUNT_NAME = 'GridBase';
 
 export async function getPasswordFromVault() {
   let password = await getPassword(SERVICE_NAME, ACCOUNT_NAME);
