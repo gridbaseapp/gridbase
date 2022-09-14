@@ -1,34 +1,53 @@
-import { CollisionDetection } from '@dnd-kit/core';
+import { CollisionDetection, CollisionDescriptor } from '@dnd-kit/core';
+
+export function sortCollisionsAsc(
+  { data: { value: a } }: CollisionDescriptor,
+  { data: { value: b } }: CollisionDescriptor,
+) {
+  return a - b;
+}
 
 export const inTheMiddle: CollisionDetection = ({
   active,
   collisionRect,
   droppableContainers,
+  droppableRects,
 }) => {
-  const containers = droppableContainers
-    .map(({ id, rect: { current: rect } }) => ({ id, rect }))
-    .sort((a, b) => (a.rect?.offsetLeft || 0) - (b.rect?.offsetLeft || 0));
+  const sortedContainers = droppableContainers.sort(({ id: aId }, { id: bId }) => {
+    const rectA = droppableRects.get(aId)!;
+    const rectB = droppableRects.get(bId)!;
 
-  const activeIndex = containers.findIndex(e => e.id === active.id);
+    return rectA.left - rectB.left;
+  });
 
-  let droppableContainerId: string | null = null;
+  const collisions: CollisionDescriptor[] = [];
 
-  for (const [i, { id, rect }] of containers.entries()) {
-    if (!rect) continue;
+  const activeIndex = droppableContainers.findIndex(e => e.id === active.id);
 
-    const center = rect.offsetLeft + rect.width / 2;
+  for (const [i, droppableContainer] of sortedContainers.entries()) {
+    const { id } = droppableContainer;
+    const rect = droppableRects.get(id);
 
-    if (i < activeIndex) {
-      if (collisionRect.left < center) {
-        droppableContainerId = id;
-        break;
-      }
-    } else if (i > activeIndex) {
-      if (collisionRect.right > center) {
-        droppableContainerId = id;
+    if (rect) {
+      const center = rect.left + rect.width / 2;
+
+      if (i < activeIndex) {
+        if (collisionRect.left < center) {
+          collisions.push({
+            id,
+            data: { droppableContainer, value: collisionRect.left + center },
+          });
+        }
+      } else if (i > activeIndex) {
+        if (collisionRect.right > center) {
+          collisions.push({
+            id,
+            data: { droppableContainer, value: collisionRect.right - center },
+          });
+        }
       }
     }
   }
 
-  return droppableContainerId;
+  return collisions.sort(sortCollisionsAsc);
 };

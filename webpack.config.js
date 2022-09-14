@@ -1,6 +1,6 @@
 const path = require('path');
-const dotenv = require('dotenv')
-const webpack = require('webpack');
+const dotenv = require('dotenv');
+const { ExternalsPlugin, IgnorePlugin, DefinePlugin } = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
@@ -49,14 +49,14 @@ module.exports = (_, { mode }) => {
       ],
     },
     plugins: [
-      new webpack.DefinePlugin({
+      new DefinePlugin({
         '__REACT_DEVTOOLS_GLOBAL_HOOK__': '({ isDisabled: true })',
         'RELEASE_API_URL': `'${process.env.RELEASE_API_URL}'`,
       }),
-      new webpack.IgnorePlugin({
+      new IgnorePlugin({
         resourceRegExp: /^pg-native$/,
       }),
-      new webpack.ExternalsPlugin('commonjs', ['keytar']),
+      new ExternalsPlugin('commonjs', ['keytar']),
       new HtmlWebpackPlugin({
         template: 'src/renderer/index.html',
       }),

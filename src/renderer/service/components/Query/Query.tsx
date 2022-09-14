@@ -163,7 +163,7 @@ export function Query({ entity, isVisible, hasFocus, onFocus }: Props) {
     })();
   }, []);
 
-  const setEditorRef = useCallback(ref => {
+  const setEditorRef = useCallback((ref: HTMLDivElement) => {
     if (ref) {
       const instance = editor.create(ref, {
         value: '',
