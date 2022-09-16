@@ -51,6 +51,7 @@ module.exports = (_, { mode }) => {
     plugins: [
       new DefinePlugin({
         '__REACT_DEVTOOLS_GLOBAL_HOOK__': '({ isDisabled: true })',
+        'SPLASH_TIMEOUT': `'${process.env.SPLASH_TIMEOUT}'`,
         'RELEASE_API_URL': `'${process.env.RELEASE_API_URL}'`,
       }),
       new IgnorePlugin({

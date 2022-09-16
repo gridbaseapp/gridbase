@@ -1,27 +1,7 @@
 html, body {
-  margin: 0;
-  padding: 0;
   font: 12px sans-serif;
 }
 
-* {
+*, *:before, *:after {
   box-sizing: border-box;
-}
-
-.app {
-  height: 100vh;
-  display: grid;
-  grid-template-columns: 60px auto;
-  grid-template-rows: 30px auto;
-  grid-template-areas: "header header" "dock content";
-  user-select: none;
-}
-
-a {
-  color: #551a8b;
-  cursor: pointer;
-}
-
-:global(.hidden) {
-  display: none;
 }

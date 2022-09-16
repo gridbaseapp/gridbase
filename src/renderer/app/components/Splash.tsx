@@ -1,12 +1,17 @@
-import React from 'react';
-import styles from './Splash.scss';
+import React, { forwardRef } from 'react';
+import { animated } from '@react-spring/web';
+import css from './Splash.scss';
 
-export function Splash() {
+interface Props {
+  style: React.CSSProperties;
+}
+
+const Component = forwardRef<HTMLDivElement, Props>(({ style }, ref) => {
   return (
-    <div className={styles.splash}>
-      <div className={styles.panel}>
+    <div ref={ref} style={style} className={css.splash}>
+      <div className={css.panel}>
         <h1>GridBase</h1>
-        <div className={styles.gridbaseLoader}>
+        <div className={css.gridbaseLoader}>
           <div></div><div></div><div></div>
           <div></div><div></div><div></div>
           <div></div><div></div><div></div>
@@ -14,4 +19,6 @@ export function Splash() {
       </div>
     </div>
   );
-}
+});
+
+export const Splash = animated(Component);
