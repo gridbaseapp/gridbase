@@ -35,7 +35,7 @@ export function App() {
   const splashTransition = useTransition(!store || !connections, {
     from: { opacity: 1, scale: 1 },
     enter: { opacity: 1, scale: 1 },
-    leave: { opacity: 0, scale: 1.5 },
+    leave: { opacity: 0, scale: 2 },
   });
 
   return (

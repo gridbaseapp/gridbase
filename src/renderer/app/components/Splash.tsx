@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { animated } from '@react-spring/web';
-import css from './Splash.scss';
+import styles from './Splash.scss';
 
 interface Props {
   style: React.CSSProperties;
@@ -8,13 +8,15 @@ interface Props {
 
 const Component = forwardRef<HTMLDivElement, Props>(({ style }, ref) => {
   return (
-    <div ref={ref} style={style} className={css.splash}>
-      <div className={css.panel}>
-        <h1>GridBase</h1>
-        <div className={css.gridbaseLoader}>
-          <div></div><div></div><div></div>
-          <div></div><div></div><div></div>
-          <div></div><div></div><div></div>
+    <div className={styles.splash}>
+      <div ref={ref} style={style} className={styles.content}>
+        <div className={styles.panel}>
+          <h1>GridBase</h1>
+          <div className={styles.gridbaseLoader}>
+            <div></div><div></div><div></div>
+            <div></div><div></div><div></div>
+            <div></div><div></div><div></div>
+          </div>
         </div>
       </div>
     </div>

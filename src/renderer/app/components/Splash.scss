@@ -4,10 +4,16 @@
   right: 0;
   top: 0;
   bottom: 0;
+  overflow: hidden;
+  background-color: transparent;
+}
+
+.content {
   display: flex;
   justify-content: center;
   align-items: center;
   font-family: sans-serif;
+  height: 100%;
   background-color: #fff;
 }
 

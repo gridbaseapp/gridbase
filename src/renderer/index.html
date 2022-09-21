@@ -17,10 +17,16 @@
       right: 0;
       top: 0;
       bottom: 0;
+      overflow: hidden;
+      background-color: transparent;
+    }
+
+    .content {
       display: flex;
       justify-content: center;
       align-items: center;
       font-family: sans-serif;
+      height: 100%;
       background-color: #fff;
     }
 
@@ -114,17 +120,20 @@
         opacity: 0.5;
       }
     }
+
   </style>
 </head>
 <body>
   <div id="app">
     <div class="splash">
-      <div class="panel">
-        <h1>GridBase</h1>
-        <div class="gridbase-loader">
-          <div></div><div></div><div></div>
-          <div></div><div></div><div></div>
-          <div></div><div></div><div></div>
+      <div class="content">
+        <div class="panel">
+          <h1>GridBase</h1>
+          <div class="gridbase-loader">
+            <div></div><div></div><div></div>
+            <div></div><div></div><div></div>
+            <div></div><div></div><div></div>
+          </div>
         </div>
       </div>
     </div>
