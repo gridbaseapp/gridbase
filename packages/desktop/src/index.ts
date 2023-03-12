@@ -1,5 +1,5 @@
-import { app, BrowserWindow } from "electron";
-import { createWindow } from "./window";
+import { app, BrowserWindow } from 'electron';
+import { createWindow } from './window';
 
 app.whenReady().then(() => {
   createWindow();

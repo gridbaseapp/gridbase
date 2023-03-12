@@ -1,6 +1,5 @@
-import { screen } from 'electron';
+import { screen, BrowserWindow } from 'electron';
 import { loadWindowRect, saveWindowRect } from "./store";
-import { BrowserWindow } from "electron";
 
 export interface WindowRect {
   x: number;
@@ -9,11 +8,31 @@ export interface WindowRect {
   height: number;
 }
 
-const MIN_WINDOW_WIDTH = 800;
-const MIN_WINDOW_HEIGHT = 600;
+const MIN_WINDOW_WIDTH = 1024;
+const MIN_WINDOW_HEIGHT = 768;
+
+function getCenter(outerPoint: number, innerPoint: number) {
+  return outerPoint / 2 - innerPoint / 2;
+}
+
+function primaryScreenRect() {
+  return screen.getPrimaryDisplay().workArea;
+}
+
+function defaultWindowRect(): WindowRect {
+  const { width: screenWidth, height: screenHeight } = primaryScreenRect();
+
+  const width = Math.max(screenWidth / 2, MIN_WINDOW_WIDTH);
+  const height = Math.max(screenHeight / 2, MIN_WINDOW_HEIGHT);
+
+  const x = getCenter(screenWidth, width);
+  const y = getCenter(screenHeight, height);
+
+  return { x, y, width, height };
+}
 
 export function createWindow() {
-  const { x, y, width, height } = loadWindowRect(defaultWindowRect());
+  const { x, y, width, height } = loadWindowRect() || defaultWindowRect();
 
   const window = new BrowserWindow({
     x,
@@ -21,28 +40,10 @@ export function createWindow() {
     width,
     height,
     minWidth: MIN_WINDOW_WIDTH,
-    minHeight: MIN_WINDOW_HEIGHT
-  })
+    minHeight: MIN_WINDOW_HEIGHT,
+  });
 
   window.on('close', () => {
-    const [x, y] = window.getPosition();
-    const [width, height] = window.getSize();
-
-    saveWindowRect({ x: x!, y: y!, width: width!, height: height! });
+    saveWindowRect(window.getBounds());
   });
-}
-
-export function defaultWindowRect(): WindowRect {
-  const {
-    width: screenWidth,
-    height: screenHeight,
-  } = screen.getPrimaryDisplay().workAreaSize;
-
-  const width = screenWidth / 2;
-  const height = screenHeight / 2;
-
-  const x = screenWidth / 2 - width / 2;
-  const y = screenHeight / 2 - height / 2;
-
-  return { x, y, width, height };
 }

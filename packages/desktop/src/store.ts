@@ -2,15 +2,15 @@ import Store from 'electron-store';
 import type { WindowRect } from './window';
 
 interface MainStore {
-  "window-rect": WindowRect;
+  'window-rect': WindowRect;
 }
 
 const store = new Store<MainStore>({ name: 'config.main' });
 
-export function loadWindowRect(defaultWindowRect: WindowRect) {
-  return store.get("window-rect", defaultWindowRect);
+export function loadWindowRect() {
+  return store.get<string, WindowRect | undefined>('window-rect');
 }
 
 export function saveWindowRect(rect: WindowRect) {
-  store.set("window-rect", rect);
+  store.set('window-rect', rect);
 }
