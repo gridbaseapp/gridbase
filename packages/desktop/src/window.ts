@@ -32,7 +32,7 @@ function defaultWindowRect(): WindowRect {
 }
 
 export function createWindow() {
-  const { x, y, width, height } = loadWindowRect() || defaultWindowRect();
+  const { x, y, width, height } = loadWindowRect() ?? defaultWindowRect();
 
   const window = new BrowserWindow({
     x,
