@@ -1,5 +1,5 @@
 import { screen, BrowserWindow } from 'electron';
-import { loadWindowRect, saveWindowRect } from "./store";
+import { loadWindowRect, saveWindowRect } from './store';
 
 export interface WindowRect {
   x: number;
