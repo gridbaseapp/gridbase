@@ -14,5 +14,8 @@ module.exports = {
   parserOptions: {
     project: true,
     tsconfigRootDir: __dirname,
-  }
+  },
+  rules: {
+    'import/prefer-default-export': 'off',
+  },
 }

@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import type { WindowRect } from './window';
+import type { WindowRect } from './types';
 
 interface MainStore {
   'window-rect': WindowRect;

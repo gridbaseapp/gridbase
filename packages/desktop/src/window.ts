@@ -1,12 +1,7 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { screen, BrowserWindow } from 'electron';
 import { loadWindowRect, saveWindowRect } from './store';
-
-export interface WindowRect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+import type { WindowRect } from './types';
 
 const MIN_WINDOW_WIDTH = 1024;
 const MIN_WINDOW_HEIGHT = 768;
@@ -28,11 +23,21 @@ function defaultWindowRect(): WindowRect {
   const x = getCenter(screenWidth, width);
   const y = getCenter(screenHeight, height);
 
-  return { x, y, width, height };
+  return {
+    x,
+    y,
+    width,
+    height,
+  };
 }
 
 export function createWindow() {
-  const { x, y, width, height } = loadWindowRect() ?? defaultWindowRect();
+  const {
+    x,
+    y,
+    width,
+    height,
+  } = loadWindowRect() ?? defaultWindowRect();
 
   const window = new BrowserWindow({
     x,
