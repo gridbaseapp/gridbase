@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { screen, BrowserWindow } from 'electron';
+import { app, screen, BrowserWindow } from 'electron';
 import { loadWindowRect, saveWindowRect } from './store';
 import type { WindowRect } from './types';
 
@@ -31,7 +31,7 @@ function defaultWindowRect(): WindowRect {
   };
 }
 
-export function createWindow() {
+export async function createWindow() {
   const {
     x,
     y,
@@ -51,4 +51,11 @@ export function createWindow() {
   window.on('close', () => {
     saveWindowRect(window.getBounds());
   });
+
+  try {
+    await window.loadURL('http://localhost:8080');
+  } catch (error) {
+    console.trace(error); // eslint-disable-line no-console
+    app.exit(1);
+  }
 }
