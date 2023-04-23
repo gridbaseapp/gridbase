@@ -1,10 +1,18 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { app, BrowserWindow } from 'electron';
+import { app, session, BrowserWindow } from 'electron';
 import { createWindow } from './window';
 
 app
   .whenReady()
   .then(() => {
+    session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          'Content-Security-Policy': ["default-src 'self'"],
+        },
+      });
+    });
+
     createWindow();
 
     app.on('activate', () => {

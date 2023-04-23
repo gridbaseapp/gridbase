@@ -19,5 +19,13 @@ module.exports = {
   rules: {
     'import/prefer-default-export': 'off',
     'react/react-in-jsx-scope': 'off',
+    '@typescript-eslint/no-misused-promises': [
+      'error',
+      {
+        'checksVoidReturn': {
+          'attributes': false,
+        },
+      },
+    ],
   },
 }
