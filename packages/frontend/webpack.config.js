@@ -1,5 +1,6 @@
 const { DefinePlugin } = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
   resolve: {
@@ -22,6 +23,18 @@ module.exports = {
       template: 'src/index.html',
     }),
   ],
+  optimization: {
+    minimizer: [
+      new TerserPlugin({
+        extractComments: false,
+        terserOptions: {
+          format: {
+            comments: false,
+          }
+        },
+      }),
+    ],
+  },
   devtool: false,
   devServer: {
     client: {
