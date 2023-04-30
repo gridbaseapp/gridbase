@@ -4,14 +4,21 @@ import { createWindow } from './window';
 app
   .whenReady()
   .then(() => {
-    session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-      callback({
-        responseHeaders: {
-          ...details.responseHeaders,
-          'Content-Security-Policy': ["default-src 'self'"],
-        },
+    session
+      .defaultSession
+      .webRequest
+      .onHeadersReceived((details, callback) => {
+        const csp = app.isPackaged
+          ? "default-src 'self'"
+          : "default-src 'self'; style-src 'unsafe-inline'";
+
+        callback({
+          responseHeaders: {
+            ...details.responseHeaders,
+            'Content-Security-Policy': csp,
+          },
+        });
       });
-    });
 
     createWindow();
 
