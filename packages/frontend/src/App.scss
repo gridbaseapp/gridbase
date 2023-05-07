@@ -1,0 +1,15 @@
+.header {
+  color: red;
+
+  &--green {
+    color: green;
+  }
+
+  &--gray {
+    color: gray;
+  }
+
+  &__blue {
+    color: blue;
+  }
+}
